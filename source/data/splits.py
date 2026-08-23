@@ -1,7 +1,10 @@
 """Group-safe dataset splitting utilities guaranteeing zero participant leakage across partitions."""
 
+import hashlib
+import json
+import os
 import random
-from typing import Any, Dict, List, Sequence, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 import networkx as nx
 
 from source.data.candidate_extractor import CandidateExample
@@ -55,6 +58,13 @@ def verify_split_disjointness(
             "test_participants": len(test_accounts),
         },
     }
+
+
+def compute_candidate_list_checksum(candidates: Sequence[CandidateExample]) -> str:
+    """Compute deterministic SHA-256 checksum over candidate IDs."""
+    cand_ids = sorted([c.candidate_id for c in candidates])
+    joined = "\n".join(cand_ids)
+    return hashlib.sha256(joined.encode("utf-8")).hexdigest()
 
 
 class GroupSafeSplitter:
@@ -157,3 +167,61 @@ class GroupSafeSplitter:
         test_set = [candidates[i] for i in test_indices]
 
         return train_set, val_set, test_set
+
+    def generate_and_save_split_manifest(
+        self,
+        train_candidates: Sequence[CandidateExample],
+        val_candidates: Sequence[CandidateExample],
+        test_candidates: Sequence[CandidateExample],
+        output_path: str,
+    ) -> Dict[str, Any]:
+        """Verify disjointness and serialize persistent split manifest."""
+        audit = verify_split_disjointness(train_candidates, val_candidates, test_candidates)
+        if not audit["is_disjoint"]:
+            raise ValueError(f"Split leakage detected during manifest generation: {audit}")
+
+        def get_typology_counts(cands: Sequence[CandidateExample]) -> Dict[str, int]:
+            counts: Dict[str, int] = {}
+            for c in cands:
+                counts[c.typology_label] = counts.get(c.typology_label, 0) + 1
+            return counts
+
+        manifest = {
+            "metadata": {
+                "splitter_seed": self.seed,
+                "train_ratio": self.train_ratio,
+                "val_ratio": self.val_ratio,
+                "test_ratio": self.test_ratio,
+                "total_candidates": len(train_candidates) + len(val_candidates) + len(test_candidates),
+            },
+            "disjointness_audit": audit,
+            "splits": {
+                "train": {
+                    "candidate_count": len(train_candidates),
+                    "participant_count": audit["counts"]["train_participants"],
+                    "candidate_ids": sorted([c.candidate_id for c in train_candidates]),
+                    "sha256_checksum": compute_candidate_list_checksum(train_candidates),
+                    "typology_distribution": get_typology_counts(train_candidates),
+                },
+                "validation": {
+                    "candidate_count": len(val_candidates),
+                    "participant_count": audit["counts"]["val_participants"],
+                    "candidate_ids": sorted([c.candidate_id for c in val_candidates]),
+                    "sha256_checksum": compute_candidate_list_checksum(val_candidates),
+                    "typology_distribution": get_typology_counts(val_candidates),
+                },
+                "test": {
+                    "candidate_count": len(test_candidates),
+                    "participant_count": audit["counts"]["test_participants"],
+                    "candidate_ids": sorted([c.candidate_id for c in test_candidates]),
+                    "sha256_checksum": compute_candidate_list_checksum(test_candidates),
+                    "typology_distribution": get_typology_counts(test_candidates),
+                },
+            },
+        }
+
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+
+        return manifest
