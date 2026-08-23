@@ -3,3 +3,7 @@ project/
 bootstrap.sh
 DROP_HERE/
 TAKE_THIS/
+__pycache__/
+*.pyc
+.DS_Store
+.pytest_cache/
