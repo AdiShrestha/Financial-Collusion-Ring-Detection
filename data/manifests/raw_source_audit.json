@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "factory_version": "2.2.0",
+  "amlworld_sources": {
+    "HI-Small_Patterns.txt": {
+      "format": "block_delimited",
+      "begin_tag": "BEGIN LAUNDERING ATTEMPT - <TYPE>",
+      "end_tag": "END LAUNDERING ATTEMPT",
+      "typologies": [
+        "FAN-OUT",
+        "FAN-IN",
+        "CYCLE",
+        "GATHER-SCATTER",
+        "SCATTER-GATHER",
+        "BIPARTITE",
+        "STACK",
+        "RANDOM"
+      ]
+    },
+    "HI-Small_Trans.csv": {
+      "format": "csv",
+      "expected_columns": [
+        "Timestamp",
+        "From Bank",
+        "Account",
+        "To Bank",
+        "Account",
+        "Amount Received",
+        "Receiving Currency",
+        "Amount Paid",
+        "Payment Currency",
+        "Payment Format",
+        "Is Laundering"
+      ]
+    }
+  },
+  "elliptic_sources": {
+    "wallets_features.csv": {
+      "format": "csv",
+      "feature_count": 56,
+      "timesteps": 49,
+      "expected_columns": [
+        "wallet_id",
+        "timestep",
+        "feature_0"
+      ]
+    },
+    "wallets_classes.csv": {
+      "format": "csv",
+      "expected_columns": [
+        "wallet_id",
+        "class"
+      ]
+    },
+    "AddrAddr_edgelist.csv": {
+      "format": "csv",
+      "expected_columns": [
+        "input_address",
+        "output_address",
+        "tx_hash"
+      ]
+    }
+  },
+  "audit_summary": {
+    "total_specs_defined": 5,
+    "all_schemas_valid": true
+  }
+}
