@@ -205,6 +205,18 @@ class StreamingTransactionLoader:
                 f"Ingestion reject threshold exceeded: {self.rejected_rows_count} rejected rows (threshold: {self.reject_threshold})"
             )
 
+    def stream_transactions(
+        self,
+        csv_source: Union[str, TextIO],
+    ) -> Iterator[List[Dict[str, Any]]]:
+        """Convenience iterator yielding lists of transaction dictionaries."""
+        for chunk_data in self.stream_csv_chunks(csv_source):
+            n = len(chunk_data["transaction_id"])
+            records = []
+            for i in range(n):
+                records.append({k: chunk_data[k][i] for k in chunk_data})
+            yield records
+
 
 def convert_csv_to_parquet(
     csv_path: str = "data/raw/HI-Small_Trans.csv",
