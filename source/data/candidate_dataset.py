@@ -74,6 +74,15 @@ class CandidateDatasetManager:
                     records.append(json.loads(line))
         return records
 
+    def generate_and_export_cohort(
+        self,
+        output_jsonl: str = "data/processed/candidates.jsonl",
+        output_manifest: str = "data/manifests/split_manifest.json",
+    ) -> Dict[str, Any]:
+        """Generate candidate cohort, serialize to JSONL, and write split manifest."""
+        res = self.build_candidate_dataset(output_jsonl=output_jsonl, output_manifest=output_manifest)
+        return res["manifest"]
+
     def build_candidate_dataset(
         self,
         output_jsonl: str = "data/processed/candidates.jsonl",

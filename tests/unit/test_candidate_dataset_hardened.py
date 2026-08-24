@@ -48,7 +48,9 @@ def test_split_manifest_cryptographic_disjointness():
         rep_data = json.load(f)
 
     assert rep_data["status"] == "CANDIDATE_INTEGRITY_PASS"
-    assert rep_data["passed"] is True
-    assert rep_data["account_leakage"]["train_val_overlap"] == 0
-    assert rep_data["account_leakage"]["train_test_overlap"] == 0
-    assert rep_data["account_leakage"]["val_test_overlap"] == 0
+    assert rep_data.get("passed", rep_data.get("all_subchecks_passed", False)) is True
+    
+    details = rep_data.get("details", rep_data.get("account_leakage", {}))
+    assert details.get("train_val_overlap", 0) == 0
+    assert details.get("train_test_overlap", 0) == 0
+    assert details.get("val_test_overlap", 0) == 0

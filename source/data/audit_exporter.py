@@ -72,6 +72,8 @@ def export_observed_audit(
     c_stats = pattern_audit.get("cycle_pattern_stats", {})
     cl_stats = pattern_audit.get("cluster_independence_stats", {})
 
+    total_cycle_count = c_stats.get("total_cycle_patterns", 0)
+
     report: Dict[str, Any] = {
         "audit_version": "2.2.0",
         "dataset_name": "IBM AMLworld HI-Small",
@@ -97,7 +99,8 @@ def export_observed_audit(
             "laundering_rate": l_stats.get("laundering_percentage", 0.0),
         },
         "cycle_typology_breakdown": {
-            "total_cycle_patterns": c_stats.get("total_cycle_patterns", 0),
+            "total_cycles": total_cycle_count,
+            "total_cycle_patterns": total_cycle_count,
             "length_distribution": c_stats.get("length_distribution", {}),
             "cycle_accounts_count": c_stats.get("total_cycle_accounts", 0),
             "duration_stats_seconds": c_stats.get("duration_stats", {}),
@@ -106,6 +109,15 @@ def export_observed_audit(
             "independent_components": cl_stats.get("connected_components_count", 0),
             "largest_cluster_size": cl_stats.get("largest_component_size", 0),
             "independent_groups_count": cl_stats.get("independent_groups_count", 0),
+        },
+        "cluster_independence": {
+            "independent_components": cl_stats.get("connected_components_count", 0),
+            "largest_cluster_size": cl_stats.get("largest_component_size", 0),
+            "independent_groups_count": cl_stats.get("independent_groups_count", 0),
+        },
+        "data_quality_summary": {
+            "join_rate": pattern_audit.get("transaction_join_rate", 1.0),
+            "malformed_rows": q_stats.get("malformed_rows_count", 0),
         },
         "join_integrity": {
             "pattern_transactions_matched_rate": pattern_audit.get("transaction_join_rate", 1.0),
@@ -124,6 +136,7 @@ def export_observed_audit(
 
     # Update Phase 0 gate report
     phase0_report = {
+        "gate_id": "PHASE0_FEASIBILITY_GATE",
         "gate": "Phase 0 (Data Ingestion & Observed Audit)",
         "status": "PHASE0_GATE_PASS",
         "passed": True,
