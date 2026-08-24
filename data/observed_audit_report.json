@@ -2,46 +2,59 @@
   "audit_version": "2.2.0",
   "dataset_name": "IBM AMLworld HI-Small",
   "dataset_type": "Synthetic Multi-Agent Financial Benchmark",
-  "audit_timestamp": "2026-08-24T04:20:18.461470+00:00",
+  "audit_timestamp": "2026-08-24T07:35:09.546629+00:00",
   "files": {
     "transactions_csv": {
-      "sha256": "dbf02bf38c4da6585384a260efffd009415ff3563c36ff750df41f80320d75ad",
-      "byte_size": 12308,
-      "row_count": 154,
-      "unique_accounts": 155
+      "sha256": "b19d39f515523373f991b689c07e11e7b0b95c17a2c27a87d91584ae16c5b040",
+      "byte_size": 475664283,
+      "row_count": 5078345,
+      "unique_accounts": 515080
     },
     "patterns_txt": {
-      "sha256": "f0f802cc821ea71bdbd2b91a3802f758ecce3b2b518fc95a723bfd8b63c45ba0",
-      "byte_size": 13343,
-      "pattern_block_count": 32
+      "sha256": "2c546b5ce6009e73851f0139af053cf845f08bf92f3bc82fe1eb937dec2ef39b",
+      "byte_size": 323844,
+      "pattern_count": 370
     }
   },
-  "typology_distribution": {
-    "CYCLE": 32
+  "observed_summary": {
+    "total_transactions": 5078345,
+    "total_accounts": 515080,
+    "laundering_transactions": 5177,
+    "laundering_rate": 0.10194266045335636
   },
   "cycle_typology_breakdown": {
-    "total_cycles": 32,
+    "total_cycle_patterns": 54,
     "length_distribution": {
-      "3": 8,
-      "4": 8,
-      "5": 8,
-      "6": 8
+      "3": 9,
+      "4": 7,
+      "5": 3,
+      "6": 1,
+      "10": 6,
+      "2": 14,
+      "7": 5,
+      "11": 4,
+      "8": 4,
+      "12": 1
     },
-    "duration_stats": {
-      "mean_duration_seconds": 0.0,
-      "min_duration_seconds": 0.0,
-      "max_duration_seconds": 0.0
-    },
-    "total_cycle_accounts": 144
+    "cycle_accounts_count": 271,
+    "duration_stats_seconds": {
+      "mean_duration_seconds": 237251.11111111112,
+      "min_duration_seconds": 6960.0,
+      "max_duration_seconds": 344220.0
+    }
   },
-  "cluster_independence": {
-    "independent_groups_count": 32,
-    "largest_component_size": 1
+  "cluster_overlap_analysis": {
+    "independent_components": 210,
+    "largest_cluster_size": 32,
+    "independent_groups_count": 210
   },
-  "data_quality_summary": {
-    "malformed_rows": 0,
-    "duplicate_keys": 0,
-    "out_of_order_timestamps": 0,
-    "join_rate": 1.0
+  "join_integrity": {
+    "pattern_transactions_matched_rate": 1.0
+  },
+  "quality_checks": {
+    "no_critical_malformed_rows": true,
+    "duplicate_transactions_count": 12,
+    "out_of_order_timestamps": 2418736,
+    "valid_rows_emitted": 5078345
   }
 }

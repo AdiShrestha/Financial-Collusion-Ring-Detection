@@ -101,18 +101,8 @@ class PatternGroupAuditor:
         join_rate = 1.0
 
         if trans_source is not None:
-            # Build set of transaction signature keys from trans_source
-            if hasattr(trans_source, "seek"):
-                trans_source.seek(0)
-
-            main_tx_keys: Set[Tuple[str, str, float]] = set()
-            for chunk in self.loader.stream_transactions(trans_source):
-                for tx in chunk:
-                    f_acc = str(tx.get("from_account", ""))
-                    t_acc = str(tx.get("to_account", ""))
-                    amt = round(float(tx.get("amount_paid", 0.0)), 2)
-                    main_tx_keys.add((f_acc, t_acc, amt))
-
+            # Build set of pattern transaction signature keys (small set, fast)
+            pattern_tx_dict: Dict[Tuple[str, str, float], int] = {}
             for b in blocks:
                 for tx in b.get("transactions", []):
                     total_pattern_txs += 1
@@ -122,9 +112,24 @@ class PatternGroupAuditor:
                         amt = round(float(tx.get("amount_paid", 0.0)), 2)
                     except (ValueError, TypeError):
                         amt = 0.0
+                    k = (f_acc, t_acc, amt)
+                    pattern_tx_dict[k] = pattern_tx_dict.get(k, 0) + 1
 
-                    if (f_acc, t_acc, amt) in main_tx_keys:
-                        matched_pattern_txs += 1
+            if hasattr(trans_source, "seek"):
+                trans_source.seek(0)
+
+            found_counts: Dict[Tuple[str, str, float], int] = {}
+            for chunk in self.loader.stream_transactions(trans_source):
+                for tx in chunk:
+                    f_acc = str(tx.get("from_account", ""))
+                    t_acc = str(tx.get("to_account", ""))
+                    amt = round(float(tx.get("amount_paid", 0.0)), 2)
+                    k = (f_acc, t_acc, amt)
+                    if k in pattern_tx_dict:
+                        found_counts[k] = found_counts.get(k, 0) + 1
+
+            for k, count in pattern_tx_dict.items():
+                matched_pattern_txs += min(count, found_counts.get(k, 0))
 
             if total_pattern_txs > 0:
                 join_rate = matched_pattern_txs / total_pattern_txs
