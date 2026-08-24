@@ -1,0 +1,779 @@
+{
+  "metadata": {
+    "test_split_sha256": "d99fbc094a1b072da17090d1ad56dfce3478427abefc79e943594ebd5680452c",
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "num_test_candidates": 28,
+    "claims_registered": 4
+  },
+  "model_benchmarks": {
+    "GCNBaseline": {
+      "mean_pr_auc": 0.6333333333333333,
+      "std_pr_auc": 0.16329931618554516,
+      "mean_roc_auc": 0.45,
+      "std_roc_auc": 0.24494897427831783,
+      "mean_f1_macro": 0.3333333333333333,
+      "std_f1_macro": 0.0,
+      "num_seeds": 5
+    },
+    "GATBaseline": {
+      "mean_pr_auc": 0.7,
+      "std_pr_auc": 0.16329931618554516,
+      "mean_roc_auc": 0.55,
+      "std_roc_auc": 0.2449489742783178,
+      "mean_f1_macro": 0.3333333333333333,
+      "std_f1_macro": 0.0,
+      "num_seeds": 5
+    },
+    "GraphSAGEBaseline": {
+      "mean_pr_auc": 0.7,
+      "std_pr_auc": 0.16329931618554516,
+      "mean_roc_auc": 0.55,
+      "std_roc_auc": 0.2449489742783178,
+      "mean_f1_macro": 0.3333333333333333,
+      "std_f1_macro": 0.0,
+      "num_seeds": 5
+    },
+    "SimplicialComplexNet": {
+      "mean_pr_auc": 0.6833333333333332,
+      "std_pr_auc": 0.1224744871391589,
+      "mean_roc_auc": 0.6,
+      "std_roc_auc": 0.1224744871391589,
+      "mean_f1_macro": 0.3666666666666666,
+      "std_f1_macro": 0.06666666666666668,
+      "num_seeds": 5
+    },
+    "CellularComplexNet": {
+      "mean_pr_auc": 0.5833333333333333,
+      "std_pr_auc": 0.12909944487358055,
+      "mean_roc_auc": 0.4,
+      "std_roc_auc": 0.2,
+      "mean_f1_macro": 0.3333333333333333,
+      "std_f1_macro": 0.0,
+      "num_seeds": 5
+    },
+    "TopoRingNet": {
+      "mean_pr_auc": 0.6333333333333333,
+      "std_pr_auc": 0.23921166824012205,
+      "mean_roc_auc": 0.4,
+      "std_roc_auc": 0.406201920231798,
+      "mean_f1_macro": 0.26666666666666666,
+      "std_f1_macro": 0.13333333333333333,
+      "num_seeds": 5
+    }
+  },
+  "hypothesis_testing": {
+    "metadata": {
+      "alpha": 0.05,
+      "min_effect_size": 0.147,
+      "correction_method": "Holm-Bonferroni Step-Down",
+      "hypotheses_count": 4,
+      "strongest_baseline_gnn": "GATBaseline"
+    },
+    "hypotheses": {
+      "H1": {
+        "hypothesis_id": "H1",
+        "description": "TopoRingNet vs strongest GNN (PR-AUC)",
+        "model_a": "TopoRingNet",
+        "model_b": "GATBaseline",
+        "primary_metric": "pr_auc",
+        "raw_p_value": 0.015625,
+        "adjusted_p_value": 0.0625,
+        "wilcoxon_w_statistic": 0.0,
+        "cliffs_delta": -1.0,
+        "cliffs_delta_ci_lower": -1.0,
+        "cliffs_delta_ci_upper": -1.0,
+        "cliffs_delta_interpretation": "large",
+        "is_significant_after_correction": false,
+        "verdict": "INCONCLUSIVE"
+      },
+      "H2": {
+        "hypothesis_id": "H2",
+        "description": "CellularComplexNet vs SimplicialComplexNet on k>=4 cycles (F1-Macro)",
+        "model_a": "CellularComplexNet",
+        "model_b": "SimplicialComplexNet",
+        "primary_metric": "f1_macro",
+        "raw_p_value": 0.015625,
+        "adjusted_p_value": 0.0625,
+        "wilcoxon_w_statistic": 0.0,
+        "cliffs_delta": -0.5102040816326531,
+        "cliffs_delta_ci_lower": -0.9591836734693877,
+        "cliffs_delta_ci_upper": 0.02040816326530612,
+        "cliffs_delta_interpretation": "large",
+        "is_significant_after_correction": false,
+        "verdict": "INCONCLUSIVE"
+      },
+      "H3": {
+        "hypothesis_id": "H3",
+        "description": "TopoRingNet vs CellularComplexNet structural ablation (PR-AUC)",
+        "model_a": "TopoRingNet",
+        "model_b": "CellularComplexNet",
+        "primary_metric": "pr_auc",
+        "raw_p_value": 0.015625,
+        "adjusted_p_value": 0.0625,
+        "wilcoxon_w_statistic": 0.0,
+        "cliffs_delta": 1.0,
+        "cliffs_delta_ci_lower": 1.0,
+        "cliffs_delta_ci_upper": 1.0,
+        "cliffs_delta_interpretation": "large",
+        "is_significant_after_correction": false,
+        "verdict": "INCONCLUSIVE"
+      },
+      "H4": {
+        "hypothesis_id": "H4",
+        "description": "TopoRingNet cross-track superiority (PR-AUC)",
+        "model_a": "TopoRingNet",
+        "model_b": "GATBaseline",
+        "primary_metric": "pr_auc",
+        "raw_p_value": 0.11358280636962219,
+        "adjusted_p_value": 0.11358280636962219,
+        "wilcoxon_w_statistic": 28.0,
+        "cliffs_delta": 0.0,
+        "cliffs_delta_ci_lower": -0.42857142857142855,
+        "cliffs_delta_ci_upper": 0.5714285714285714,
+        "cliffs_delta_interpretation": "negligible",
+        "is_significant_after_correction": false,
+        "verdict": "INCONCLUSIVE"
+      }
+    },
+    "overall_verdicts": {
+      "H1": "INCONCLUSIVE",
+      "H2": "INCONCLUSIVE",
+      "H3": "INCONCLUSIVE",
+      "H4": "INCONCLUSIVE"
+    }
+  },
+  "subgroup_analysis": {
+    "by_typology": {
+      "CYCLE": {
+        "GCNBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.2,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.2,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.2
+        }
+      },
+      "FAN-OUT": {
+        "GCNBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.2,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.2,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.2
+        }
+      },
+      "FAN-IN": {
+        "GCNBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.2,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.2,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.2
+        }
+      },
+      "GATHER-SCATTER": {
+        "GCNBaseline": {
+          "count": 2,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 2,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 2,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 2,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 2,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 2,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.2,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.2,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.2
+        }
+      },
+      "BIPARTITE": {
+        "GCNBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 3,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.2,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.2,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.2
+        }
+      },
+      "NEGATIVE_CANDIDATE": {
+        "GCNBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.5,
+          "std_pr_auc": 0.0,
+          "mean_roc_auc": 0.5,
+          "std_roc_auc": 0.0,
+          "mean_f1_macro": 0.5,
+          "std_f1_macro": 0.0
+        }
+      }
+    },
+    "by_track": {
+      "amlworld": {
+        "GCNBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.2,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.2,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.2
+        }
+      },
+      "elliptic_actors": {
+        "GCNBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.9,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.9,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.9,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "GATBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.8,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.8,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.8,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "GraphSAGEBaseline": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "SimplicialComplexNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.7,
+          "std_pr_auc": 0.2449489742783178,
+          "mean_roc_auc": 0.7,
+          "std_roc_auc": 0.2449489742783178,
+          "mean_f1_macro": 0.7,
+          "std_f1_macro": 0.2449489742783178
+        },
+        "CellularComplexNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.6,
+          "std_pr_auc": 0.20000000000000004,
+          "mean_roc_auc": 0.6,
+          "std_roc_auc": 0.20000000000000004,
+          "mean_f1_macro": 0.6,
+          "std_f1_macro": 0.20000000000000004
+        },
+        "TopoRingNet": {
+          "count": 14,
+          "status": "EVALUATED",
+          "num_seeds": 5,
+          "mean_pr_auc": 0.5,
+          "std_pr_auc": 0.0,
+          "mean_roc_auc": 0.5,
+          "std_roc_auc": 0.0,
+          "mean_f1_macro": 0.5,
+          "std_f1_macro": 0.0
+        }
+      }
+    },
+    "models_evaluated": [
+      "GCNBaseline",
+      "GATBaseline",
+      "GraphSAGEBaseline",
+      "SimplicialComplexNet",
+      "CellularComplexNet",
+      "TopoRingNet"
+    ],
+    "typologies_evaluated": [
+      "CYCLE",
+      "FAN-OUT",
+      "FAN-IN",
+      "GATHER-SCATTER",
+      "BIPARTITE",
+      "NEGATIVE_CANDIDATE"
+    ],
+    "tracks_evaluated": [
+      "amlworld",
+      "elliptic_actors"
+    ]
+  },
+  "claim_registry": {
+    "CLM-001": {
+      "claim_id": "CLM-001",
+      "hypothesis_id": "H1",
+      "statement": "TopoRingNet significantly outperforms the strongest GNN baseline on test split PR-AUC.",
+      "primary_metric": "pr_auc",
+      "p_value_raw": 0.015625,
+      "p_value_adj": 0.0625,
+      "effect_size_delta": -1.0,
+      "effect_ci_low": -1.0,
+      "effect_ci_high": -1.0,
+      "verdict": "INCONCLUSIVE",
+      "sample_size": 28,
+      "reproduction_command": "python3 -m pytest tests/unit/test_hypothesis_tester.py"
+    },
+    "CLM-002": {
+      "claim_id": "CLM-002",
+      "hypothesis_id": "H2",
+      "statement": "CellularComplexNet significantly outperforms SimplicialComplexNet on k>=4 polygonal cycles on F1-Macro.",
+      "primary_metric": "f1_macro",
+      "p_value_raw": 0.015625,
+      "p_value_adj": 0.0625,
+      "effect_size_delta": -0.5102040816326531,
+      "effect_ci_low": -0.9591836734693877,
+      "effect_ci_high": 0.02040816326530612,
+      "verdict": "INCONCLUSIVE",
+      "sample_size": 28,
+      "reproduction_command": "python3 -m pytest tests/unit/test_hypothesis_tester.py"
+    },
+    "CLM-003": {
+      "claim_id": "CLM-003",
+      "hypothesis_id": "H3",
+      "statement": "TopoRingNet significantly outperforms CellularComplexNet structural ablation on PR-AUC.",
+      "primary_metric": "pr_auc",
+      "p_value_raw": 0.015625,
+      "p_value_adj": 0.0625,
+      "effect_size_delta": 1.0,
+      "effect_ci_low": 1.0,
+      "effect_ci_high": 1.0,
+      "verdict": "INCONCLUSIVE",
+      "sample_size": 28,
+      "reproduction_command": "python3 -m pytest tests/unit/test_hypothesis_tester.py"
+    },
+    "CLM-004": {
+      "claim_id": "CLM-004",
+      "hypothesis_id": "H4",
+      "statement": "TopoRingNet achieves superior detection across both IBM AMLworld and Elliptic++ tracks on PR-AUC.",
+      "primary_metric": "pr_auc",
+      "p_value_raw": 0.11358280636962219,
+      "p_value_adj": 0.11358280636962219,
+      "effect_size_delta": 0.0,
+      "effect_ci_low": -0.42857142857142855,
+      "effect_ci_high": 0.5714285714285714,
+      "verdict": "INCONCLUSIVE",
+      "sample_size": 28,
+      "reproduction_command": "python3 -m pytest tests/unit/test_hypothesis_tester.py"
+    }
+  }
+}
