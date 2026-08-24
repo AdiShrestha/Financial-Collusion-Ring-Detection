@@ -182,20 +182,20 @@ class GCNBaseline(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         self.convs = nn.ModuleList()
-        self.bns = nn.ModuleList()
+        self.lns = nn.ModuleList()
 
         self.convs.append(GCNLayer(in_dim, hidden_dim))
-        self.bns.append(nn.BatchNorm1d(hidden_dim))
+        self.lns.append(nn.LayerNorm(hidden_dim))
 
         for _ in range(num_layers - 1):
             self.convs.append(GCNLayer(hidden_dim, hidden_dim))
-            self.bns.append(nn.BatchNorm1d(hidden_dim))
+            self.lns.append(nn.LayerNorm(hidden_dim))
 
         self.classifier = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_dim // 2, out_dim),
+            nn.Linear(hidden_dim, out_dim),
         )
 
     def forward(
@@ -218,8 +218,7 @@ class GCNBaseline(nn.Module):
         h = x
         for i in range(self.num_layers):
             h = self.convs[i](h, edge_index)
-            if h.size(0) > 1:
-                h = self.bns[i](h)
+            h = self.lns[i](h)
             h = F.relu(h)
             h = self.dropout(h)
 
@@ -249,20 +248,24 @@ class GATBaseline(nn.Module):
         self.readout = readout
         self.dropout = nn.Dropout(dropout)
 
-        head_dim = hidden_dim // num_heads
+        head_dim = max(1, hidden_dim // num_heads)
         self.convs = nn.ModuleList()
+        self.lns = nn.ModuleList()
 
         self.convs.append(GATLayer(in_dim, head_dim, num_heads=num_heads, dropout=dropout, concat=True))
+        self.lns.append(nn.LayerNorm(head_dim * num_heads))
         for _ in range(num_layers - 2):
-            self.convs.append(GATLayer(hidden_dim, head_dim, num_heads=num_heads, dropout=dropout, concat=True))
+            self.convs.append(GATLayer(head_dim * num_heads, head_dim, num_heads=num_heads, dropout=dropout, concat=True))
+            self.lns.append(nn.LayerNorm(head_dim * num_heads))
         if num_layers > 1:
-            self.convs.append(GATLayer(hidden_dim, hidden_dim, num_heads=1, dropout=dropout, concat=False))
+            self.convs.append(GATLayer(head_dim * num_heads, hidden_dim, num_heads=1, dropout=dropout, concat=False))
+            self.lns.append(nn.LayerNorm(hidden_dim))
 
         self.classifier = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.ELU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_dim // 2, out_dim),
+            nn.Linear(hidden_dim, out_dim),
         )
 
     def forward(
@@ -282,8 +285,9 @@ class GATBaseline(nn.Module):
             x = x.x
 
         h = x
-        for conv in self.convs:
+        for i, conv in enumerate(self.convs):
             h = conv(h, edge_index)
+            h = self.lns[i](h)
             h = F.elu(h)
             h = self.dropout(h)
 
@@ -313,20 +317,20 @@ class GraphSAGEBaseline(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         self.convs = nn.ModuleList()
-        self.bns = nn.ModuleList()
+        self.lns = nn.ModuleList()
 
         self.convs.append(SAGELayer(in_dim, hidden_dim))
-        self.bns.append(nn.BatchNorm1d(hidden_dim))
+        self.lns.append(nn.LayerNorm(hidden_dim))
 
         for _ in range(num_layers - 1):
             self.convs.append(SAGELayer(hidden_dim, hidden_dim))
-            self.bns.append(nn.BatchNorm1d(hidden_dim))
+            self.lns.append(nn.LayerNorm(hidden_dim))
 
         self.classifier = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_dim // 2, out_dim),
+            nn.Linear(hidden_dim, out_dim),
         )
 
     def forward(
@@ -348,8 +352,7 @@ class GraphSAGEBaseline(nn.Module):
         h = x
         for i in range(self.num_layers):
             h = self.convs[i](h, edge_index)
-            if h.size(0) > 1:
-                h = self.bns[i](h)
+            h = self.lns[i](h)
             h = F.relu(h)
             h = self.dropout(h)
 
