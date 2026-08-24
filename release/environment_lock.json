@@ -1,0 +1,25 @@
+{
+  "python_version": "3.12.8 (v3.12.8:2dc476bcb91, Dec  3 2024, 14:43:19) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "platform": "macOS-26.6-arm64-arm-64bit",
+  "file_hashes": {
+    "project/PRE_REGISTRATION.md": "1607b0d49b141bc9a3e961134c5c966e4d535b806e0ff66dd671a6a1044b8835",
+    "project/architecture.md": "e6dea65db4edb56eb4fbc45bb266e4a13463fb3518dbc17a345bafe3028cf0da",
+    "project/gate_b_report.json": "3f038b1ecd9eba8287d028c1726e6fd27917d93b44aa0453484b603f3c5416d0",
+    "project/gate_c_report.json": "1dee4b3633e8c895fb37f8fab00f0fbeda7c34cc923ece9b8c05a78fd01f5d78",
+    "project/gate_d_report.json": "b90fe41ef055077556e5e77a0c9ef6a5f74a7abed63d223321b59cf514add45a",
+    "project/gate_e_report.json": "316e0802a5fd455a9a5ee9292e4b2539de0b873d82293f04dfdc270474e9825c",
+    "project/invariants.md": "2da59e4ab673d15e3a4aa7a1d20352ab1038f3bf5f4bcaff8977f6b395b3314f",
+    "project/project_description.md": "11e0f71962af7e47bbf65fff6e6314251c99d2dd2b1970e4e032b61ea187896f",
+    "results/ablation_summary.json": "894d875c550205da49a1bd3dfc4d822729de9402ea4022df372971a79b5ab86f",
+    "results/confirmatory_stats.json": "22d90c63fad05016071798ef0a77fc5fb21c1c7b150763cdf6cf17b7db7d74cb",
+    "source/evidence/claim_registry.py": "1ff96771d211b2b3281d4f2b0ef879ac4369dd988ddabe7eab1cfb37c81ca8db",
+    "source/evidence/hypothesis_tester.py": "8d9aad9b068e0f5953204f94ad330928297d0e0f6124d1c8e2df758f109c1d6b",
+    "source/experiments/confirmatory_runner.py": "85f5ab2d7293e736860fad52bf4a747a2f2395292922acb6c170addc00f05e60",
+    "source/models/gnn_baselines.py": "4f845ad1ff89dd4cfad518d3aa4418ec77b722003f889c199ec024be160b291b",
+    "source/models/ph_augmented_net.py": "af3be2820949cabe14fa7d80a6dea730778ee38081fa72e74997580190799ff4",
+    "source/paper/claim_synchronizer.py": "8a52c14e80b433a5d90c64623695e419a63b5547648d940fe81b107465ac69a1",
+    "source/paper/compiler.py": "2a21d44344245bb5f933917773675fd277e2c53fc2b7e033cb287bb2b11e1265",
+    "source/topology/incidence.py": "2d955b77edf48b0be40dddee54d9f0677244a1bb4d53b09de790b8a8cd6a1587",
+    "source/topology/oracles.py": "729a73cb4663697c1ac7a0963f6456962c7af95ae0297bf1e9822f02ac545a36"
+  }
+}
