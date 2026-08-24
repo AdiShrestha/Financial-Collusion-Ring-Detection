@@ -72,7 +72,7 @@ def main() -> None:
         "num_mismatches": mismatches,
         "claims_registered": 4 if all_synced else 0,
     }
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result))
 
 
 if __name__ == "__main__":
