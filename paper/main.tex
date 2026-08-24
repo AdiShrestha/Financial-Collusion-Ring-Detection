@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\title{Topological Deep Learning for Anti-Money Laundering Detection}
+\author{Research Team}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present TopoRingNet, a topological deep learning architecture for anti-money laundering detection.
+\end{abstract}
+
+\section{Introduction}
+Money laundering is bad. TopoRingNet uses homology \cite{carlsson2009topology}.
+
+\section{Related Work}
+Prior work used GNNs \cite{kipf2016semi}.
+
+\section{Topological Formulation}
+We define boundaries $B_1$ and $B_2$ such that $B_1 B_2 = 0$. We use Hodge Laplacians and persistent homology.
+
+\section{Architecture (TopoRingNet)}
+TopoRingNet leverages persistent homology features.
+
+\section{Experimental Evaluation}
+We compared models.
+
+\section{Results \& Pre-Registered Hypotheses H1-H4}
+GCNBaseline: PR-AUC 0.633±0.163, ROC-AUC 0.45±0.245, F1 0.333±0.0
+GATBaseline: PR-AUC 0.700±0.163, ROC-AUC 0.55±0.245, F1 0.333±0.0
+GraphSAGEBaseline: PR-AUC 0.700±0.163, ROC-AUC 0.55±0.245, F1 0.333±0.0
+SimplicialComplexNet: PR-AUC 0.683±0.122, ROC-AUC 0.60±0.122, F1 0.367±0.067
+CellularComplexNet: PR-AUC 0.583±0.129, ROC-AUC 0.40±0.200, F1 0.333±0.0
+TopoRingNet: PR-AUC 0.850±0.082, ROC-AUC 0.85±0.122, F1 0.533±0.163
+
+All hypotheses H1-H4 were INCONCLUSIVE in this project's test data.
+
+\section{Discussion}
+We discuss the results.
+
+\section{Conclusion}
+Conclusion here.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
