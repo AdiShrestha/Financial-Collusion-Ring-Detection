@@ -1,0 +1,63 @@
+# IBM AMLworld HI-Small Schema Contract & Validation Rules
+dataset_name: "IBM AMLworld HI-Small"
+version: "1.0.0"
+license: "CDLA-Sharing-1.0 (Data) / Apache-2.0 (Code)"
+
+source_files:
+  transactions:
+    path: "data/raw/HI-Small_Trans.csv"
+    expected_sha256: "b19d39f515523373f991b689c07e11e7b0b95c17a2c27a87d91584ae16c5b040"
+    expected_lines: 5078346
+    expected_rows: 5078345
+  patterns:
+    path: "data/raw/HI-Small_Patterns.txt"
+    expected_sha256: "2c546b5ce6009e73851f0139af053cf845f08bf92f3bc82fe1eb937dec2ef39b"
+    expected_patterns: 370
+    expected_cycle_patterns_3_to_12: 40
+
+columns:
+  - name: "Timestamp"
+    type: "string"
+    format: "YYYY/MM/DD hh:mm"
+    nullable: false
+  - name: "From Bank"
+    type: "integer"
+    nullable: false
+  - name: "Account"
+    type: "string"
+    nullable: false
+  - name: "To Bank"
+    type: "integer"
+    nullable: false
+  - name: "Account.1"
+    type: "string"
+    nullable: false
+  - name: "Amount Received"
+    type: "float"
+    min_value: 0.0
+    nullable: false
+  - name: "Receiving Currency"
+    type: "string"
+    nullable: false
+  - name: "Amount Paid"
+    type: "float"
+    min_value: 0.0
+    nullable: false
+  - name: "Payment Currency"
+    type: "string"
+    nullable: false
+  - name: "Payment Format"
+    type: "string"
+    allowed_values: ["ACH", "Wire", "Cheque", "Credit Card", "Reinvestment", "Cash"]
+    nullable: false
+  - name: "Is Laundering"
+    type: "integer"
+    allowed_values: [0, 1]
+    nullable: false
+
+validation_policy:
+  reject_threshold: 0
+  fail_on_missing_source: true
+  fail_on_hash_mismatch: true
+  fail_on_unparsed_timestamp: true
+  fail_on_negative_amount: true

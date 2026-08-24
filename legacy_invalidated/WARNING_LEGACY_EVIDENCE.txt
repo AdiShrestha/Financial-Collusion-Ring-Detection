@@ -1,0 +1,19 @@
+================================================================================
+WARNING: LEGACY EMPIRICAL EVIDENCE INVALIDATION NOTICE
+================================================================================
+
+Date: 2026-08-24
+Specification: Final Remediation Specification for KUSET-Ready AMLworld Study
+Authority: Factory Specification §5a / Constitution §8
+
+Per the formal adversarial audit and final remediation specification, all downstream
+empirical outputs prior to Chunk 15 have been invalidated and quarantined:
+
+1. Legacy synthetic candidate generators (ACC_POS_ / ACC_BEN_) and degenerate 4-vector PH caches.
+2. Legacy 35 PyTorch model checkpoints trained on non-partitioned / synthetic cohorts.
+3. Legacy prediction ledgers, statistical summaries, and ungrounded figures.
+4. Legacy LaTeX macros and empirical claims in older manuscript drafts.
+
+All ongoing scientific claims, models, and tables are strictly derived from the
+reconstructed, provenance-verified Parquet pipeline established in Chunks 15–18.
+================================================================================

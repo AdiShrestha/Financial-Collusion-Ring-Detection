@@ -1,27 +1,37 @@
-"""Streaming and chunked CSV ingestion engine for IBM AMLworld transaction datasets.
+"""Streaming and validated CSV-to-Parquet ingestion engine for IBM AMLworld datasets.
 
-Contract C10-01: Provides memory-bounded streaming iterator yielding chunked
-batches of multigraph transactions with deterministic transaction IDs, malformed
-row logging, timestamp normalization, and log1p amount transforms.
+Contract C15-01 (T-DESC): Validates raw transaction logs, extracts source line numbers,
+computes stable deterministic transaction IDs and raw row hashes, parses absolute epoch
+timestamps, logs rejected records, and writes partitioned immutable Parquet tables.
 """
 
 import csv
+import hashlib
 import io
+import json
 import math
 import os
+import sys
 from datetime import datetime
-from typing import Any, Dict, Iterator, List, Optional, TextIO, Union
+from typing import Any, Dict, Iterator, List, Optional, TextIO, Tuple, Union
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+
+def compute_file_sha256(file_path: str) -> str:
+    """Compute SHA-256 hash of a physical file."""
+    h = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        while chunk := f.read(1024 * 1024):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def parse_timestamp_to_epoch(ts_str: str) -> float:
-    """Parse transaction timestamp string to float epoch seconds."""
+    """Parse transaction timestamp string to float Unix epoch seconds."""
     ts_clean = str(ts_str).strip()
     if not ts_clean:
-        return 0.0
-    try:
-        return float(ts_clean)
-    except ValueError:
-        pass
+        raise ValueError("Empty timestamp string")
 
     for fmt in (
         "%Y/%m/%d %H:%M",
@@ -38,282 +48,233 @@ def parse_timestamp_to_epoch(ts_str: str) -> float:
         except ValueError:
             continue
 
-    return 0.0
+    # Fallback to direct float conversion if already epoch
+    try:
+        return float(ts_clean)
+    except ValueError:
+        raise ValueError(f"Unrecognized timestamp format: {ts_str}")
 
 
 class StreamingTransactionLoader:
-    """Memory-bounded streaming CSV loader for AML transaction data."""
+    """Memory-bounded streaming CSV loader and validator for AML transaction data."""
+
+    EXPECTED_HEADER_COUNT = 11
 
     def __init__(
         self,
-        chunk_size: int = 50000,
-        max_malformed_tolerance: float = 0.001,
+        chunk_size: int = 100000,
+        reject_threshold: int = 0,
     ):
         self.chunk_size = chunk_size
-        self.max_malformed_tolerance = max_malformed_tolerance
+        self.reject_threshold = reject_threshold
         self.total_rows_read: int = 0
         self.valid_rows_emitted: int = 0
-        self.malformed_rows_count: int = 0
-        self.malformed_row_samples: List[Dict[str, Any]] = []
-        self._min_timestamp_epoch: Optional[float] = None
+        self.rejected_rows_count: int = 0
+        self.reject_ledger: List[Dict[str, Any]] = []
 
-    def reset_stats(self) -> None:
-        """Reset internal counter statistics."""
+    def stream_csv_chunks(
+        self,
+        csv_source: Union[str, TextIO],
+        source_sha256: Optional[str] = None,
+    ) -> Iterator[Dict[str, List[Any]]]:
+        """Stream validated row batches formatted as column dictionaries for PyArrow conversion."""
         self.total_rows_read = 0
         self.valid_rows_emitted = 0
-        self.malformed_rows_count = 0
-        self.malformed_row_samples.clear()
-        self._min_timestamp_epoch = None
+        self.rejected_rows_count = 0
+        self.reject_ledger = []
 
-    def _resolve_column_indices(self, header: List[str]) -> Dict[str, int]:
-        """Resolve column indices from header names supporting duplicate 'Account' headers."""
-        indices: Dict[str, int] = {}
-        clean_header = [h.strip().lower() for h in header]
+        is_file_path = isinstance(csv_source, str) and os.path.exists(csv_source)
+        if is_file_path and source_sha256 is None:
+            source_sha256 = compute_file_sha256(csv_source)
+        elif source_sha256 is None:
+            source_sha256 = "stream_unknown_hash"
 
-        # Find timestamps
-        for i, h in enumerate(clean_header):
-            if "timestamp" in h or "time" in h or "date" in h:
-                indices["timestamp"] = i
-                break
+        file_prefix = source_sha256[:8]
 
-        # Find From Bank & To Bank
-        for i, h in enumerate(clean_header):
-            if "from bank" in h or (h.startswith("from") and "bank" in h):
-                indices["from_bank"] = i
-            elif "to bank" in h or (h.startswith("to") and "bank" in h):
-                indices["to_bank"] = i
-
-        # Find Account columns (AMLworld standard has 'Account' then 'Account.1' or repeated 'Account')
-        account_indices = [
-            i for i, h in enumerate(clean_header)
-            if "account" in h and "bank" not in h
-        ]
-
-        if len(account_indices) >= 2:
-            indices["from_account"] = account_indices[0]
-            indices["to_account"] = account_indices[1]
-        elif len(account_indices) == 1:
-            indices["from_account"] = account_indices[0]
-            indices["to_account"] = account_indices[0]
-
-        # Specific alias overrides if present
-        for i, h in enumerate(clean_header):
-            if "from_account" in h or "from account" in h:
-                indices["from_account"] = i
-            elif "to_account" in h or "to account" in h:
-                indices["to_account"] = i
-            elif "amount received" in h or "amount_received" in h or "received" in h:
-                indices["amount_received"] = i
-            elif "receiving currency" in h or "receiving_currency" in h:
-                indices["receiving_currency"] = i
-            elif "amount paid" in h or "amount_paid" in h or "paid" in h:
-                indices["amount_paid"] = i
-            elif "payment currency" in h or "payment_currency" in h:
-                indices["payment_currency"] = i
-            elif "payment format" in h or "payment_format" in h or "format" in h:
-                indices["payment_format"] = i
-            elif "is laundering" in h or "is_laundering" in h or "laundering" in h:
-                indices["is_laundering"] = i
-
-        # Fallback to positional mapping if key columns missing
-        defaults = {
-            "timestamp": 0,
-            "from_bank": 1,
-            "from_account": 2,
-            "to_bank": 3,
-            "to_account": 4,
-            "amount_received": 5,
-            "receiving_currency": 6,
-            "amount_paid": 7,
-            "payment_currency": 8,
-            "payment_format": 9,
-            "is_laundering": 10,
-        }
-        for k, v in defaults.items():
-            if k not in indices:
-                indices[k] = v
-
-        return indices
-
-    def _parse_row(
-        self,
-        row: List[str],
-        col_idx: Dict[str, int],
-        tx_id: int,
-        line_num: int,
-    ) -> Optional[Dict[str, Any]]:
-        """Parse single CSV row into normalized transaction dictionary."""
-        max_req_idx = max(
-            col_idx.get("from_account", 2),
-            col_idx.get("to_account", 4),
-            col_idx.get("timestamp", 0),
-        )
-
-        if len(row) <= max_req_idx:
-            self.malformed_rows_count += 1
-            if len(self.malformed_row_samples) < 50:
-                self.malformed_row_samples.append({
-                    "line_number": line_num,
-                    "reason": f"Insufficient columns ({len(row)} <= {max_req_idx})",
-                    "raw": ",".join(row),
-                })
-            return None
-
-        # Extract values
-        ts_raw = row[col_idx["timestamp"]].strip() if col_idx["timestamp"] < len(row) else ""
-        ts_epoch = parse_timestamp_to_epoch(ts_raw)
-
-        if self._min_timestamp_epoch is None or ts_epoch < self._min_timestamp_epoch:
-            if ts_epoch > 0:
-                self._min_timestamp_epoch = ts_epoch
-
-        t_min = self._min_timestamp_epoch or 0.0
-        ts_rel = max(0.0, ts_epoch - t_min)
-
-        from_bank = row[col_idx["from_bank"]].strip() if col_idx["from_bank"] < len(row) else ""
-        from_account = row[col_idx["from_account"]].strip() if col_idx["from_account"] < len(row) else ""
-        to_bank = row[col_idx["to_bank"]].strip() if col_idx["to_bank"] < len(row) else ""
-        to_account = row[col_idx["to_account"]].strip() if col_idx["to_account"] < len(row) else ""
-
-        if not from_account or not to_account:
-            self.malformed_rows_count += 1
-            if len(self.malformed_row_samples) < 50:
-                self.malformed_row_samples.append({
-                    "line_number": line_num,
-                    "reason": "Missing account identifiers",
-                    "raw": ",".join(row),
-                })
-            return None
-
-        # Parse numeric amounts
-        amt_rec_raw = row[col_idx["amount_received"]].strip() if col_idx["amount_received"] < len(row) else "0"
+        f = open(csv_source, "r", encoding="utf-8", newline="") if is_file_path else csv_source
         try:
-            amt_received = float(amt_rec_raw) if amt_rec_raw else 0.0
-        except ValueError:
-            amt_received = 0.0
+            reader = csv.reader(f)
+            header = next(reader, None)
+            if header is None:
+                raise ValueError("Empty CSV source")
 
-        amt_paid_raw = row[col_idx["amount_paid"]].strip() if col_idx["amount_paid"] < len(row) else "0"
-        try:
-            amt_paid = float(amt_paid_raw) if amt_paid_raw else 0.0
-        except ValueError:
-            amt_paid = 0.0
+            header = [h.strip() for h in header]
+            if len(header) != self.EXPECTED_HEADER_COUNT:
+                raise ValueError(
+                    f"Header column count mismatch: expected {self.EXPECTED_HEADER_COUNT}, got {len(header)}"
+                )
 
-        rec_curr = row[col_idx["receiving_currency"]].strip() if col_idx["receiving_currency"] < len(row) else "USD"
-        pay_curr = row[col_idx["payment_currency"]].strip() if col_idx["payment_currency"] < len(row) else "USD"
-        pay_format = row[col_idx["payment_format"]].strip() if col_idx["payment_format"] < len(row) else "Cheque"
+            batch_data: Dict[str, List[Any]] = {
+                "transaction_id": [],
+                "source_line_number": [],
+                "timestamp_raw": [],
+                "timestamp_epoch": [],
+                "from_bank": [],
+                "from_account": [],
+                "to_bank": [],
+                "to_account": [],
+                "amount_received": [],
+                "receiving_currency": [],
+                "amount_paid": [],
+                "payment_currency": [],
+                "payment_format": [],
+                "is_laundering": [],
+                "raw_row_sha256": [],
+            }
 
-        # Laundering flag
-        is_laundering_raw = row[col_idx["is_laundering"]].strip() if col_idx["is_laundering"] < len(row) else "0"
-        try:
-            is_laundering = int(is_laundering_raw) if is_laundering_raw in ("0", "1") else (1 if is_laundering_raw.lower() in ("true", "yes", "1") else 0)
-        except ValueError:
-            is_laundering = 0
+            line_number = 1  # 1-indexed (line 1 was header)
 
-        log_amount = math.log1p(max(0.0, amt_paid))
-
-        return {
-            "tx_id": tx_id,
-            "timestamp_raw": ts_raw,
-            "timestamp_epoch": ts_epoch,
-            "timestamp_rel": ts_rel,
-            "from_bank": from_bank,
-            "from_account": from_account,
-            "to_bank": to_bank,
-            "to_account": to_account,
-            "amount_received": amt_received,
-            "receiving_currency": rec_curr,
-            "amount_paid": amt_paid,
-            "payment_currency": pay_curr,
-            "payment_format": pay_format,
-            "is_laundering": is_laundering,
-            "log_amount_paid": log_amount,
-            "log_amount": log_amount,
-        }
-
-    def stream_transactions(
-        self,
-        filepath_or_buffer: Union[str, io.TextIOBase, io.StringIO],
-    ) -> Iterator[List[Dict[str, Any]]]:
-        """Yield transaction batches of size `chunk_size` from CSV input."""
-        self.reset_stats()
-
-        if isinstance(filepath_or_buffer, str):
-            if not os.path.exists(filepath_or_buffer):
-                raise FileNotFoundError(f"File not found: {filepath_or_buffer}")
-            file_handle = open(filepath_or_buffer, "r", encoding="utf-8", errors="replace")
-            should_close = True
-        else:
-            file_handle = filepath_or_buffer
-            should_close = False
-
-        try:
-            reader = csv.reader(file_handle)
-            first_row = next(reader, None)
-            if first_row is None:
-                return
-
-            # Check if first row is header
-            first_row_clean = [c.strip().lower() for c in first_row]
-            has_header = any(
-                k in first_row_clean
-                for k in ("timestamp", "from bank", "account", "to bank", "amount paid")
-            )
-
-            if has_header:
-                col_idx = self._resolve_column_indices(first_row)
-                line_offset = 2
-            else:
-                col_idx = self._resolve_column_indices([
-                    "Timestamp", "From Bank", "Account", "To Bank", "Account.1",
-                    "Amount Received", "Receiving Currency", "Amount Paid",
-                    "Payment Currency", "Payment Format", "Is Laundering"
-                ])
-                line_offset = 1
-                # Process first row as data
+            for row in reader:
+                line_number += 1
                 self.total_rows_read += 1
-                rec = self._parse_row(first_row, col_idx, tx_id=1, line_num=1)
-                if rec is not None:
-                    self.valid_rows_emitted += 1
-                    current_chunk = [rec]
-                else:
-                    current_chunk = []
 
-            if not has_header:
-                current_chunk = current_chunk if 'current_chunk' in locals() else []
-            else:
-                current_chunk = []
-
-            tx_counter = len(current_chunk) + 1
-
-            for row_idx, row in enumerate(reader, start=line_offset):
-                if not row or not any(row):
+                if len(row) < self.EXPECTED_HEADER_COUNT:
+                    self.rejected_rows_count += 1
+                    self.reject_ledger.append({
+                        "line_number": line_number,
+                        "reason": f"Column count mismatch: expected {self.EXPECTED_HEADER_COUNT}, got {len(row)}",
+                        "raw_row": row,
+                    })
                     continue
 
-                self.total_rows_read += 1
-                tx_record = self._parse_row(row, col_idx, tx_id=tx_counter, line_num=row_idx)
+                try:
+                    ts_raw = row[0].strip()
+                    ts_epoch = parse_timestamp_to_epoch(ts_raw)
 
-                if tx_record is not None:
+                    from_bank = int(row[1].strip())
+                    from_account = str(row[2].strip())
+                    to_bank = int(row[3].strip())
+                    to_account = str(row[4].strip())
+
+                    amt_received = float(row[5].strip())
+                    rec_currency = str(row[6].strip())
+                    amt_paid = float(row[7].strip())
+                    pay_currency = str(row[8].strip())
+                    pay_format = str(row[9].strip())
+                    is_laundering = int(row[10].strip())
+
+                    if amt_received < 0 or amt_paid < 0:
+                        raise ValueError(f"Negative amount: received={amt_received}, paid={amt_paid}")
+
+                    if is_laundering not in (0, 1):
+                        raise ValueError(f"Invalid is_laundering flag: {is_laundering}")
+
+                    tx_id = f"tx_{file_prefix}_{line_number:08d}"
+                    raw_row_bytes = ",".join(row).encode("utf-8")
+                    raw_row_sha = hashlib.sha256(raw_row_bytes).hexdigest()
+
+                    batch_data["transaction_id"].append(tx_id)
+                    batch_data["source_line_number"].append(line_number)
+                    batch_data["timestamp_raw"].append(ts_raw)
+                    batch_data["timestamp_epoch"].append(ts_epoch)
+                    batch_data["from_bank"].append(from_bank)
+                    batch_data["from_account"].append(from_account)
+                    batch_data["to_bank"].append(to_bank)
+                    batch_data["to_account"].append(to_account)
+                    batch_data["amount_received"].append(amt_received)
+                    batch_data["receiving_currency"].append(rec_currency)
+                    batch_data["amount_paid"].append(amt_paid)
+                    batch_data["payment_currency"].append(pay_currency)
+                    batch_data["payment_format"].append(pay_format)
+                    batch_data["is_laundering"].append(is_laundering)
+                    batch_data["raw_row_sha256"].append(raw_row_sha)
+
                     self.valid_rows_emitted += 1
-                    current_chunk.append(tx_record)
-                    tx_counter += 1
 
-                if len(current_chunk) >= self.chunk_size:
-                    yield current_chunk
-                    current_chunk = []
+                except Exception as ex:
+                    self.rejected_rows_count += 1
+                    self.reject_ledger.append({
+                        "line_number": line_number,
+                        "reason": str(ex),
+                        "raw_row": row,
+                    })
 
-            if current_chunk:
-                yield current_chunk
+                if len(batch_data["transaction_id"]) >= self.chunk_size:
+                    yield batch_data
+                    batch_data = {k: [] for k in batch_data}
 
-            # Check error tolerance threshold
-            if self.total_rows_read > 0:
-                malformed_ratio = self.malformed_rows_count / self.total_rows_read
-                if malformed_ratio > self.max_malformed_tolerance and self.malformed_rows_count > 10:
-                    raise ValueError(
-                        f"Malformed row ratio {malformed_ratio:.4f} exceeded "
-                        f"tolerance threshold {self.max_malformed_tolerance:.4f} "
-                        f"({self.malformed_rows_count}/{self.total_rows_read} malformed rows)."
-                    )
+            if batch_data["transaction_id"]:
+                yield batch_data
 
         finally:
-            if should_close:
-                file_handle.close()
+            if is_file_path:
+                f.close()
+
+        if self.rejected_rows_count > self.reject_threshold:
+            raise RuntimeError(
+                f"Ingestion reject threshold exceeded: {self.rejected_rows_count} rejected rows (threshold: {self.reject_threshold})"
+            )
+
+
+def convert_csv_to_parquet(
+    csv_path: str = "data/raw/HI-Small_Trans.csv",
+    output_parquet: str = "artifacts/raw/transactions.parquet",
+    reject_ledger_path: str = "artifacts/raw/reject_ledger.json",
+    chunk_size: int = 100000,
+) -> Dict[str, Any]:
+    """Execute complete validated streaming conversion from raw CSV to master Parquet table."""
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Raw CSV file missing: {csv_path}")
+
+    os.makedirs(os.path.dirname(os.path.abspath(output_parquet)), exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(reject_ledger_path)), exist_ok=True)
+
+    file_sha256 = compute_file_sha256(csv_path)
+    loader = StreamingTransactionLoader(chunk_size=chunk_size, reject_threshold=0)
+
+    arrow_schema = pa.schema([
+        ("transaction_id", pa.string()),
+        ("source_line_number", pa.int64()),
+        ("timestamp_raw", pa.string()),
+        ("timestamp_epoch", pa.float64()),
+        ("from_bank", pa.int64()),
+        ("from_account", pa.string()),
+        ("to_bank", pa.int64()),
+        ("to_account", pa.string()),
+        ("amount_received", pa.float64()),
+        ("receiving_currency", pa.string()),
+        ("amount_paid", pa.float64()),
+        ("payment_currency", pa.string()),
+        ("payment_format", pa.string()),
+        ("is_laundering", pa.int64()),
+        ("raw_row_sha256", pa.string()),
+    ])
+
+    writer = None
+    try:
+        for chunk_data in loader.stream_csv_chunks(csv_path, source_sha256=file_sha256):
+            table = pa.Table.from_pydict(chunk_data, schema=arrow_schema)
+            if writer is None:
+                writer = pq.ParquetWriter(output_parquet, arrow_schema, compression="snappy")
+            writer.write_table(table)
+    finally:
+        if writer is not None:
+            writer.close()
+
+    # Save reject ledger
+    with open(reject_ledger_path, "w", encoding="utf-8") as f:
+        json.dump({
+            "csv_path": csv_path,
+            "source_sha256": file_sha256,
+            "total_rows_read": loader.total_rows_read,
+            "valid_rows_emitted": loader.valid_rows_emitted,
+            "rejected_rows_count": loader.rejected_rows_count,
+            "reject_samples": loader.reject_ledger[:100],
+        }, f, indent=2)
+
+    return {
+        "status": "CONVERTED",
+        "csv_path": csv_path,
+        "source_sha256": file_sha256,
+        "parquet_path": output_parquet,
+        "reject_ledger_path": reject_ledger_path,
+        "total_rows_read": loader.total_rows_read,
+        "valid_rows_emitted": loader.valid_rows_emitted,
+        "rejected_rows_count": loader.rejected_rows_count,
+    }
+
+
+if __name__ == "__main__":
+    res = convert_csv_to_parquet()
+    print("CSV to Parquet Conversion Result:")
+    print(json.dumps(res, indent=2))
