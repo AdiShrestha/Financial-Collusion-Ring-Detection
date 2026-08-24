@@ -7,12 +7,9 @@ to model checkpoints, boundary nilpotency (B1 B2 = 0), and statistical outputs.
 import hashlib
 import json
 import os
-import pickle
 import sys
-from typing import Any, Dict, List
-import numpy as np
+from typing import Any, Dict
 import pyarrow.parquet as pq
-import torch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from source.training.independent_gate_d_e_verifier import IndependentGateDEVerifier

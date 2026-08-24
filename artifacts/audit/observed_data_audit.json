@@ -2,8 +2,8 @@
   "audit_version": "2.2.0",
   "dataset_name": "IBM AMLworld HI-Small",
   "dataset_type": "Synthetic Multi-Agent Financial Benchmark",
-  "audit_timestamp": "2026-08-24T11:15:37.613337+00:00",
-  "git_commit": "867aec02d97e5756fc23d9354e5779f773ac9b09",
+  "audit_timestamp": "2026-08-24T12:09:02.653624+00:00",
+  "git_commit": "2783ea35fead2d9779b5322f824ab76b5dbc44ff",
   "files": {
     "transactions_csv": {
       "path": "data/raw/HI-Small_Trans.csv",

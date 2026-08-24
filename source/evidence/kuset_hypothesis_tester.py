@@ -9,7 +9,7 @@ import json
 import os
 import sys
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import pyarrow.parquet as pq
 from sklearn.metrics import average_precision_score, f1_score, roc_auc_score
@@ -231,6 +231,48 @@ class KUSETHypothesisTester:
             json.dump(full_report, f, indent=2)
 
         return full_report
+
+
+def holm_bonferroni_correction(raw_p_values: Sequence[float], alpha: float = 0.05) -> List[float]:
+    """Compute step-down Holm-Bonferroni adjusted p-values."""
+    m = len(raw_p_values)
+    indexed_p = sorted(enumerate(raw_p_values), key=lambda x: x[1])
+    adjusted = [0.0] * m
+    running_max = 0.0
+
+    for rank, (orig_idx, p_val) in enumerate(indexed_p):
+        multiplier = m - rank
+        adj = min(1.0, p_val * multiplier)
+        running_max = max(running_max, adj)
+        adjusted[orig_idx] = min(1.0, running_max)
+
+    return adjusted
+
+
+def paired_bootstrap_delta_pr_auc(
+    y_true: np.ndarray,
+    probs_a: np.ndarray,
+    probs_b: np.ndarray,
+    n_bootstraps: int = 1000,
+    random_seed: int = 42,
+) -> Tuple[float, float, float]:
+    """Compute paired bootstrap difference in AP."""
+    rng = np.random.default_rng(random_seed)
+    deltas = []
+    n = len(y_true)
+
+    for _ in range(n_bootstraps):
+        idx = rng.choice(n, size=n, replace=True)
+        y_b = y_true[idx]
+        if sum(y_b) > 0:
+            ap_a = average_precision_score(y_b, probs_a[idx])
+            ap_b = average_precision_score(y_b, probs_b[idx])
+            deltas.append(ap_a - ap_b)
+
+    point_diff = average_precision_score(y_true, probs_a) - average_precision_score(y_true, probs_b)
+    ci_lo = float(np.percentile(deltas, 2.5)) if deltas else point_diff
+    ci_hi = float(np.percentile(deltas, 97.5)) if deltas else point_diff
+    return float(point_diff), ci_lo, ci_hi
 
 
 if __name__ == "__main__":

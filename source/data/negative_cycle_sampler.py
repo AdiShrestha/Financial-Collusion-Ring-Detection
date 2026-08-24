@@ -274,6 +274,47 @@ def match_and_assemble_candidates(
     }
 
 
+assemble_caliper_matched_cohort = match_and_assemble_candidates
+
+
+class NegativeCycleSampler:
+    """Samples and filters negative cycles for matched control datasets."""
+
+    def __init__(self, caliper_std: float = 0.5, random_state: int = 42):
+        self.caliper_std = caliper_std
+        self.random_state = random_state
+
+    def filter_benign_candidates(
+        self,
+        candidates: List[Dict[str, Any]],
+        forbidden_accounts: Optional[Set[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Exclude laundering candidates or candidates sharing accounts with laundering patterns."""
+        if forbidden_accounts is None:
+            forbidden_accounts = set()
+
+        valid = []
+        for c in candidates:
+            if c.get("is_laundering", 0) == 1:
+                continue
+            if c.get("target_y", 0) == 1 or c.get("label", 0) == 1:
+                continue
+
+            # Check transactions
+            txs = c.get("transactions", [])
+            if any(tx.get("is_laundering", 0) == 1 for tx in txs):
+                continue
+
+            # Check accounts
+            accs = c.get("participants", c.get("nodes", c.get("ordered_cycle_accounts", [])))
+            if any(a in forbidden_accounts for a in accs):
+                continue
+
+            valid.append(c)
+
+        return valid
+
+
 if __name__ == "__main__":
     res = match_and_assemble_candidates()
     print(json.dumps(res, indent=2))

@@ -243,6 +243,54 @@ def generate_grouped_nested_splits(
     }
 
 
+build_grouped_cross_validation_splits = generate_grouped_nested_splits
+
+
+class GroupSafeSplitter:
+    """Group-safe cross-validation splitter guaranteeing zero participant account leakage."""
+
+    def __init__(self, n_splits: int = 5, random_state: int = 42):
+        self.n_splits = n_splits
+        self.random_state = random_state
+
+    def split(self, candidates: List[Any], groups: Optional[List[str]] = None) -> List[Tuple[List[int], List[int]]]:
+        """Generate train/test split indices without group leakage."""
+        if groups is None:
+            groups = [c.group_id if hasattr(c, "group_id") else f"group_{i}" for i, c in enumerate(candidates)]
+        
+        unique_groups = sorted(list(set(groups)))
+        random.seed(self.random_state)
+        random.shuffle(unique_groups)
+
+        fold_groups = [[] for _ in range(self.n_splits)]
+        for i, g in enumerate(unique_groups):
+            fold_groups[i % self.n_splits].append(g)
+
+        splits = []
+        for f_idx in range(self.n_splits):
+            test_grps = set(fold_groups[f_idx])
+            train_idx = [i for i, g in enumerate(groups) if g not in test_grps]
+            test_idx = [i for i, g in enumerate(groups) if g in test_grps]
+            splits.append((train_idx, test_idx))
+
+        return splits
+
+
+def verify_split_disjointness(train_candidates: List[Any], test_candidates: List[Any]) -> bool:
+    """Verify 0.0% overlap in participant accounts between train and test sets."""
+    train_accs = set()
+    for c in train_candidates:
+        accs = c.participant_ids if hasattr(c, "participant_ids") else c.get("ordered_cycle_accounts", [])
+        train_accs.update(accs)
+
+    for c in test_candidates:
+        accs = c.participant_ids if hasattr(c, "participant_ids") else c.get("ordered_cycle_accounts", [])
+        if any(a in train_accs for a in accs):
+            return False
+
+    return True
+
+
 if __name__ == "__main__":
     res = generate_grouped_nested_splits()
     print(json.dumps(res, indent=2))
