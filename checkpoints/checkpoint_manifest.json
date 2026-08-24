@@ -1,0 +1,21 @@
+{
+  "total_checkpoints": 35,
+  "models_count": 7,
+  "seeds_count": 5,
+  "models": [
+    "gcn",
+    "gat",
+    "graphsage",
+    "gine",
+    "scnn",
+    "ccnn",
+    "toporingnet"
+  ],
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ]
+}

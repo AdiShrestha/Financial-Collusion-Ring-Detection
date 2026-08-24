@@ -317,6 +317,19 @@ class ProductionTrainer:
                 res = self.train_single_model(model_name, seed, train_items, val_items)
                 results.append(res)
 
+        # Export manifest for mechanical gatekeeper recomputation
+        manifest_data = {
+            "total_checkpoints": len(results),
+            "models_count": len(target_models),
+            "seeds_count": len(target_seeds),
+            "models": target_models,
+            "seeds": target_seeds,
+            "runs": results,
+        }
+        manifest_path = os.path.join(self.checkpoint_dir, "checkpoint_manifest.json")
+        with open(manifest_path, "w", encoding="utf-8") as f:
+            json.dump(manifest_data, f, indent=2)
+
         return results
 
 
