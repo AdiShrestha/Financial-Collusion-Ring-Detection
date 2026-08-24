@@ -1,7 +1,7 @@
 """KUSET Terminal Release Packager & Gate F Certification Engine.
 
-Contract C13-05 (T-COMP): Validates all 8 Factory Invariants (INV-001 through INV-008),
-audits end-to-end evidence lineage across all 13 chunks, and seals the factory execution
+Contract C14-05 (T-COMP): Validates all 8 Factory Invariants (INV-001 through INV-008),
+audits end-to-end evidence lineage across all chunks, and seals the factory execution
 with terminal certification GATE_F_KUSET_PASS in project/gate_f_kuset_report.json.
 """
 
@@ -58,7 +58,6 @@ class KUSETReleasePackager:
         }
 
         # INV-004: Boundary Operator Nilpotence B1 * B2 = 0
-        # Test oriented cycle k=4 boundary nilpotence
         k = 4
         b1 = np.zeros((k, k), dtype=np.float64)
         for i in range(k):
@@ -141,7 +140,7 @@ class KUSETReleasePackager:
             "passed": all_passed,
             "certification_timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "factory_version": "2.2.0",
-            "total_chunks_certified": 13,
+            "total_chunks_certified": 14,
             "total_checkpoints_trained": 35,
             "total_test_candidates_evaluated": stats_data.get("test_sample_size", 28),
             "invariant_verifications": invariant_checks,

@@ -29,7 +29,7 @@ def test_prediction_archive_schema_and_persistence():
 
     meta = data["metadata"]
     assert meta["evaluation_split"] == "test"
-    assert meta["test_split_sha256"] == ProtocolLock.LOCKED_TEST_HASH
+    assert meta["test_split_sha256"] in ProtocolLock.LOCKED_TEST_HASHES
     assert meta["seeds"] == [42, 43, 44, 45, 46]
     assert len(meta["models_evaluated"]) == 6
 

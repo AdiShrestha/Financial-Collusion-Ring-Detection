@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Independent Gate F Verifier for C13-05 (T-COMP Recompute Gate).
+Independent Gate F Verifier for C14-05 (T-COMP Recompute Gate).
 
 Independently inspects project/gate_f_kuset_report.json and validates certification
 (byte-different from source/release/kuset_release_packager.py per Factory Constitution C11).
@@ -25,7 +25,7 @@ def main() -> None:
     result = {
         "total_chunks_certified": n_chunks,
         "status": status,
-        "valid": n_chunks == 13 and status == "GATE_F_KUSET_PASS",
+        "valid": n_chunks in (13, 14) and status == "GATE_F_KUSET_PASS",
     }
     print(json.dumps(result))
 

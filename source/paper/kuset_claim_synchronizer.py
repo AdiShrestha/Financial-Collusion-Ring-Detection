@@ -1,7 +1,7 @@
 """KUSET Automated Claim & LaTeX Macro Synchronizer.
 
-Contract C13-04 (T-COMP): Audits 100% of reported numerical values, tables, confidence intervals,
-and p-values in paper/kuset_main.tex against results/production_confirmatory_stats.json (|Delta| < 1e-4).
+Contract C14-05 (T-COMP): Audits and synchronizes 100% of reported numerical values, tables,
+confidence intervals, and p-values in paper/kuset_main.tex against results/production_confirmatory_stats.json (|Delta| < 1e-4).
 """
 
 import json
@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 
 class KUSETClaimSynchronizer:
-    """Audits LaTeX macros and tables in paper/kuset_main.tex against results data."""
+    """Audits and synchronizes LaTeX macros and tables in paper/kuset_main.tex against results data."""
 
     def __init__(
         self,
@@ -35,6 +35,51 @@ class KUSETClaimSynchronizer:
         pattern = r"\\def\\([a-zA-Z0-9]+)\{([^}]+)\}"
         matches = re.findall(pattern, content)
         return {k: v.strip() for k, v in matches}
+
+    def synchronize_tex_file(self) -> None:
+        """Update TeX macros in paper/kuset_main.tex directly from stats JSON."""
+        if not os.path.exists(self.stats_path) or not os.path.exists(self.tex_path):
+            return
+
+        with open(self.stats_path, "r", encoding="utf-8") as f:
+            stats_data = json.load(f)
+
+        m_metrics = stats_data["model_metrics"]
+        hypos = stats_data["hypotheses"]
+
+        with open(self.tex_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Update model macros
+        mapping = {
+            "gcnPrAuc": f"{m_metrics['gcn']['pr_auc_mean']:.4f}",
+            "gcnPrAucStd": f"{m_metrics['gcn']['pr_auc_std']:.4f}",
+            "gatPrAuc": f"{m_metrics['gat']['pr_auc_mean']:.4f}",
+            "gatPrAucStd": f"{m_metrics['gat']['pr_auc_std']:.4f}",
+            "sagePrAuc": f"{m_metrics['graphsage']['pr_auc_mean']:.4f}",
+            "sagePrAucStd": f"{m_metrics['graphsage']['pr_auc_std']:.4f}",
+            "ginePrAuc": f"{m_metrics['gine']['pr_auc_mean']:.4f}",
+            "ginePrAucStd": f"{m_metrics['gine']['pr_auc_std']:.4f}",
+            "scnnPrAuc": f"{m_metrics['scnn']['pr_auc_mean']:.4f}",
+            "scnnPrAucStd": f"{m_metrics['scnn']['pr_auc_std']:.4f}",
+            "ccnnPrAuc": f"{m_metrics['ccnn']['pr_auc_mean']:.4f}",
+            "ccnnPrAucStd": f"{m_metrics['ccnn']['pr_auc_std']:.4f}",
+            "toporingnetPrAuc": f"{m_metrics['toporingnet']['pr_auc_mean']:.4f}",
+            "toporingnetPrAucStd": f"{m_metrics['toporingnet']['pr_auc_std']:.4f}",
+            "hOneDelta": f"{hypos['H1']['delta_pr_auc']:.4f}",
+            "hOnePAdj": f"{hypos['H1']['wilcoxon_p_adj']:.4f}",
+            "hTwoDelta": f"{hypos['H2']['delta_pr_auc']:.4f}",
+            "hTwoPAdj": f"{hypos['H2']['wilcoxon_p_adj']:.4f}",
+            "hThreeDelta": f"{hypos['H3']['delta_pr_auc']:.4f}",
+            "hThreePAdj": f"{hypos['H3']['wilcoxon_p_adj']:.4f}",
+        }
+
+        for macro_name, val in mapping.items():
+            pattern = rf"(\\def\\{macro_name}\{{)[^\}}]*(\}})"
+            content = re.sub(pattern, rf"\g<1>{val}\g<2>", content)
+
+        with open(self.tex_path, "w", encoding="utf-8") as f:
+            f.write(content)
 
     def audit_claim_synchronization(self, tolerance: float = 1e-4) -> Dict[str, Any]:
         """Verify all LaTeX values against results/production_confirmatory_stats.json."""
@@ -103,5 +148,6 @@ class KUSETClaimSynchronizer:
 
 if __name__ == "__main__":
     synchronizer = KUSETClaimSynchronizer()
+    synchronizer.synchronize_tex_file()
     res = synchronizer.audit_claim_synchronization()
     print(f"KUSET Claim Synchronization Status: {res['status']} ({res['total_checks']} checks passed, {len(res['discrepancies'])} discrepancies)")

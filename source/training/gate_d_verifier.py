@@ -2,9 +2,11 @@
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from source.evidence.protocol_lock import ProtocolLock
 from source.evidence.statistics import (
     compute_classification_metrics,
@@ -137,3 +139,10 @@ class GateDVerifier:
             json.dump(report, f, indent=2)
 
         return report
+
+
+if __name__ == "__main__":
+    verifier = GateDVerifier()
+    res = verifier.verify_gate_d()
+    print(f"Gate D Status: {res['gate_d_status']}")
+

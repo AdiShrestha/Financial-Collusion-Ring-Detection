@@ -1,4 +1,4 @@
-"""Oracle tests for Gate F-KUSET Certification (Contract C13-05)."""
+"""Oracle tests for Hardened Gate F-KUSET Certification (Contract C14-05)."""
 
 import json
 import os
@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from source.release.kuset_release_packager import KUSETReleasePackager
 
 
-def test_gate_f_kuset_report_exists_and_certified():
-    """Verify project/gate_f_kuset_report.json exists and certifies GATE_F_KUSET_PASS."""
+def test_gate_f_kuset_hardened_report():
+    """Verify project/gate_f_kuset_report.json exists, certifies GATE_F_KUSET_PASS, and checks all invariants."""
     rep_path = "project/gate_f_kuset_report.json"
     assert os.path.exists(rep_path), "Missing gate_f_kuset_report.json"
 
@@ -20,7 +20,7 @@ def test_gate_f_kuset_report_exists_and_certified():
     assert data["gate"] == "Gate F-KUSET"
     assert data["terminal_status"] == "GATE_F_KUSET_PASS"
     assert data["passed"] is True
-    assert data["total_chunks_certified"] in (13, 14)
+    assert data["total_chunks_certified"] == 14
     assert data["total_checkpoints_trained"] == 35
 
     invs = data["invariant_verifications"]
