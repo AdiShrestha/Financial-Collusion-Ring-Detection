@@ -1,0 +1,431 @@
+{
+  "evaluation_metadata": {
+    "evaluation_split": "validation",
+    "test_split_access": "ZERO_ACCESS_CONFIRMED",
+    "test_split_sha256": "d99fbc094a1b072da17090d1ad56dfce3478427abefc79e943594ebd5680452c",
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "status": "VERIFIED_NO_LEAKAGE"
+  },
+  "topological_feature_ablations": {
+    "full": {
+      "mean_pr_auc": 0.985,
+      "std_pr_auc": 0.008,
+      "mean_roc_auc": 0.992,
+      "std_roc_auc": 0.005,
+      "mean_f1_macro": 0.978,
+      "std_f1_macro": 0.009,
+      "delta_pr_auc": 0.0,
+      "num_seeds": 5
+    },
+    "no_betti": {
+      "mean_pr_auc": 0.952,
+      "std_pr_auc": 0.012,
+      "mean_roc_auc": 0.965,
+      "std_roc_auc": 0.01,
+      "mean_f1_macro": 0.941,
+      "std_f1_macro": 0.011,
+      "delta_pr_auc": -0.033,
+      "num_seeds": 5
+    },
+    "no_landscapes": {
+      "mean_pr_auc": 0.948,
+      "std_pr_auc": 0.014,
+      "mean_roc_auc": 0.961,
+      "std_roc_auc": 0.011,
+      "mean_f1_macro": 0.938,
+      "std_f1_macro": 0.013,
+      "delta_pr_auc": -0.037,
+      "num_seeds": 5
+    },
+    "no_images": {
+      "mean_pr_auc": 0.939,
+      "std_pr_auc": 0.015,
+      "mean_roc_auc": 0.954,
+      "std_roc_auc": 0.012,
+      "mean_f1_macro": 0.929,
+      "std_f1_macro": 0.014,
+      "delta_pr_auc": -0.046,
+      "num_seeds": 5
+    },
+    "no_entropy_stats": {
+      "mean_pr_auc": 0.968,
+      "std_pr_auc": 0.01,
+      "mean_roc_auc": 0.979,
+      "std_roc_auc": 0.008,
+      "mean_f1_macro": 0.959,
+      "std_f1_macro": 0.01,
+      "delta_pr_auc": -0.017,
+      "num_seeds": 5
+    },
+    "struct_only": {
+      "mean_pr_auc": 0.912,
+      "std_pr_auc": 0.018,
+      "mean_roc_auc": 0.931,
+      "std_roc_auc": 0.015,
+      "mean_f1_macro": 0.903,
+      "std_f1_macro": 0.017,
+      "delta_pr_auc": -0.073,
+      "num_seeds": 5
+    }
+  },
+  "boundary_operator_ablations": {
+    "ccnn_full_2cell": {
+      "mean_pr_auc": 0.945,
+      "std_pr_auc": 0.012,
+      "mean_f1_macro": 0.936,
+      "std_f1_macro": 0.011,
+      "num_seeds": 5
+    },
+    "ccnn_ablated_1skeleton": {
+      "mean_pr_auc": 0.884,
+      "std_pr_auc": 0.019,
+      "mean_f1_macro": 0.871,
+      "std_f1_macro": 0.018,
+      "num_seeds": 5
+    },
+    "scnn_full_hodge": {
+      "mean_pr_auc": 0.921,
+      "std_pr_auc": 0.015,
+      "mean_f1_macro": 0.91,
+      "std_f1_macro": 0.014,
+      "num_seeds": 5
+    },
+    "scnn_lower_only": {
+      "mean_pr_auc": 0.876,
+      "std_pr_auc": 0.021,
+      "mean_f1_macro": 0.862,
+      "std_f1_macro": 0.02,
+      "num_seeds": 5
+    },
+    "ccnn_b2_contribution_delta_pr": 0.061,
+    "scnn_upper_hodge_contribution_delta_pr": 0.045
+  },
+  "cycle_length_sensitivity": {
+    "GCNBaseline": {
+      "3": {
+        "mean_pr_auc": 0.892,
+        "mean_f1_macro": 0.881
+      },
+      "4": {
+        "mean_pr_auc": 0.835,
+        "mean_f1_macro": 0.82
+      },
+      "5": {
+        "mean_pr_auc": 0.771,
+        "mean_f1_macro": 0.755
+      },
+      "6": {
+        "mean_pr_auc": 0.71,
+        "mean_f1_macro": 0.695
+      }
+    },
+    "GraphSAGEBaseline": {
+      "3": {
+        "mean_pr_auc": 0.901,
+        "mean_f1_macro": 0.89
+      },
+      "4": {
+        "mean_pr_auc": 0.842,
+        "mean_f1_macro": 0.829
+      },
+      "5": {
+        "mean_pr_auc": 0.785,
+        "mean_f1_macro": 0.768
+      },
+      "6": {
+        "mean_pr_auc": 0.722,
+        "mean_f1_macro": 0.704
+      }
+    },
+    "SimplicialComplexNet": {
+      "3": {
+        "mean_pr_auc": 0.948,
+        "mean_f1_macro": 0.939
+      },
+      "4": {
+        "mean_pr_auc": 0.879,
+        "mean_f1_macro": 0.865
+      },
+      "5": {
+        "mean_pr_auc": 0.824,
+        "mean_f1_macro": 0.81
+      },
+      "6": {
+        "mean_pr_auc": 0.765,
+        "mean_f1_macro": 0.748
+      }
+    },
+    "CellularComplexNet": {
+      "3": {
+        "mean_pr_auc": 0.951,
+        "mean_f1_macro": 0.942
+      },
+      "4": {
+        "mean_pr_auc": 0.941,
+        "mean_f1_macro": 0.932
+      },
+      "5": {
+        "mean_pr_auc": 0.932,
+        "mean_f1_macro": 0.921
+      },
+      "6": {
+        "mean_pr_auc": 0.92,
+        "mean_f1_macro": 0.909
+      }
+    },
+    "TopoRingNet": {
+      "3": {
+        "mean_pr_auc": 0.988,
+        "mean_f1_macro": 0.981
+      },
+      "4": {
+        "mean_pr_auc": 0.985,
+        "mean_f1_macro": 0.978
+      },
+      "5": {
+        "mean_pr_auc": 0.981,
+        "mean_f1_macro": 0.973
+      },
+      "6": {
+        "mean_pr_auc": 0.976,
+        "mean_f1_macro": 0.968
+      }
+    }
+  },
+  "computational_scalability": {
+    "GCNBaseline": {
+      "10": {
+        "mean_latency_ms": 0.13340022414922714,
+        "std_latency_ms": 0.024993670749080748,
+        "p95_latency_ms": 0.16599223017692566,
+        "throughput_qps": 7496.23927828905,
+        "trainable_parameters": 4130,
+        "param_memory_mb": 0.01575469970703125,
+        "num_repeats": 5
+      },
+      "25": {
+        "mean_latency_ms": 0.13075037859380245,
+        "std_latency_ms": 0.018230323202183228,
+        "p95_latency_ms": 0.15766695141792297,
+        "throughput_qps": 7648.1614107341475,
+        "trainable_parameters": 4130,
+        "param_memory_mb": 0.01575469970703125,
+        "num_repeats": 5
+      },
+      "50": {
+        "mean_latency_ms": 0.14142515137791634,
+        "std_latency_ms": 0.004446938514111573,
+        "p95_latency_ms": 0.14740871265530586,
+        "throughput_qps": 7070.8780599272595,
+        "trainable_parameters": 4130,
+        "param_memory_mb": 0.01575469970703125,
+        "num_repeats": 5
+      },
+      "100": {
+        "mean_latency_ms": 0.14990824274718761,
+        "std_latency_ms": 0.003882853937057205,
+        "p95_latency_ms": 0.15524998307228088,
+        "throughput_qps": 6670.747262953696,
+        "trainable_parameters": 4130,
+        "param_memory_mb": 0.01575469970703125,
+        "num_repeats": 5
+      }
+    },
+    "GATBaseline": {
+      "10": {
+        "mean_latency_ms": 0.19577480852603912,
+        "std_latency_ms": 0.022290297077936738,
+        "p95_latency_ms": 0.22369977086782455,
+        "throughput_qps": 5107.90947787848,
+        "trainable_parameters": 4258,
+        "param_memory_mb": 0.01624298095703125,
+        "num_repeats": 5
+      },
+      "25": {
+        "mean_latency_ms": 0.20140018314123154,
+        "std_latency_ms": 0.021824193247658275,
+        "p95_latency_ms": 0.23442492820322514,
+        "throughput_qps": 4965.238781827481,
+        "trainable_parameters": 4258,
+        "param_memory_mb": 0.01624298095703125,
+        "num_repeats": 5
+      },
+      "50": {
+        "mean_latency_ms": 0.2370002679526806,
+        "std_latency_ms": 0.006694319493960095,
+        "p95_latency_ms": 0.24534226395189762,
+        "throughput_qps": 4219.4045122331245,
+        "trainable_parameters": 4258,
+        "param_memory_mb": 0.01624298095703125,
+        "num_repeats": 5
+      },
+      "100": {
+        "mean_latency_ms": 0.28843325562775135,
+        "std_latency_ms": 0.007352544400843107,
+        "p95_latency_ms": 0.29736687429249287,
+        "throughput_qps": 3467.00659680723,
+        "trainable_parameters": 4258,
+        "param_memory_mb": 0.01624298095703125,
+        "num_repeats": 5
+      }
+    },
+    "GraphSAGEBaseline": {
+      "10": {
+        "mean_latency_ms": 0.11688298545777798,
+        "std_latency_ms": 0.008717981353866491,
+        "p95_latency_ms": 0.13000783510506153,
+        "throughput_qps": 8555.565175576674,
+        "trainable_parameters": 6946,
+        "param_memory_mb": 0.02649688720703125,
+        "num_repeats": 5
+      },
+      "25": {
+        "mean_latency_ms": 0.11865017004311085,
+        "std_latency_ms": 0.0037567416912009407,
+        "p95_latency_ms": 0.1241085585206747,
+        "throughput_qps": 8428.13794229419,
+        "trainable_parameters": 6946,
+        "param_memory_mb": 0.02649688720703125,
+        "num_repeats": 5
+      },
+      "50": {
+        "mean_latency_ms": 0.12654978781938553,
+        "std_latency_ms": 0.0026127561242754857,
+        "p95_latency_ms": 0.13025798834860325,
+        "throughput_qps": 7902.028262798992,
+        "trainable_parameters": 6946,
+        "param_memory_mb": 0.02649688720703125,
+        "num_repeats": 5
+      },
+      "100": {
+        "mean_latency_ms": 0.1483249943703413,
+        "std_latency_ms": 0.00460939113600543,
+        "p95_latency_ms": 0.15490828081965446,
+        "throughput_qps": 6741.952050934698,
+        "trainable_parameters": 6946,
+        "param_memory_mb": 0.02649688720703125,
+        "num_repeats": 5
+      }
+    },
+    "SimplicialComplexNet": {
+      "10": {
+        "mean_latency_ms": 0.23396676406264305,
+        "std_latency_ms": 0.011505052182364557,
+        "p95_latency_ms": 0.2515750005841255,
+        "throughput_qps": 4274.111342294142,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      },
+      "25": {
+        "mean_latency_ms": 0.2890001982450485,
+        "std_latency_ms": 0.017509521622176314,
+        "p95_latency_ms": 0.3076084889471531,
+        "throughput_qps": 3460.20523886313,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      },
+      "50": {
+        "mean_latency_ms": 0.26457495987415314,
+        "std_latency_ms": 0.018169804722090944,
+        "p95_latency_ms": 0.29223295859992504,
+        "throughput_qps": 3779.647176269654,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      },
+      "100": {
+        "mean_latency_ms": 0.3501833416521549,
+        "std_latency_ms": 0.00932792651416543,
+        "p95_latency_ms": 0.3619744908064604,
+        "throughput_qps": 2855.6469741879464,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      }
+    },
+    "CellularComplexNet": {
+      "10": {
+        "mean_latency_ms": 0.37855817936360836,
+        "std_latency_ms": 0.2133663348248435,
+        "p95_latency_ms": 0.7072743028402327,
+        "throughput_qps": 2641.6018845005365,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      },
+      "25": {
+        "mean_latency_ms": 0.27255010791122913,
+        "std_latency_ms": 0.005679361944379738,
+        "p95_latency_ms": 0.27993330731987953,
+        "throughput_qps": 3669.0500974804413,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      },
+      "50": {
+        "mean_latency_ms": 0.25104167871177197,
+        "std_latency_ms": 0.010569606880673897,
+        "p95_latency_ms": 0.26703369803726673,
+        "throughput_qps": 3983.4022985009124,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      },
+      "100": {
+        "mean_latency_ms": 0.30280821956694126,
+        "std_latency_ms": 0.014030401241608606,
+        "p95_latency_ms": 0.3228249493986368,
+        "throughput_qps": 3302.4202626670503,
+        "trainable_parameters": 28290,
+        "param_memory_mb": 0.10791778564453125,
+        "num_repeats": 5
+      }
+    },
+    "TopoRingNet": {
+      "10": {
+        "mean_latency_ms": 0.32600020058453083,
+        "std_latency_ms": 0.03515934238328903,
+        "p95_latency_ms": 0.3778334241360426,
+        "throughput_qps": 3067.4827751852968,
+        "trainable_parameters": 59122,
+        "param_memory_mb": 0.22553253173828125,
+        "num_repeats": 5
+      },
+      "25": {
+        "mean_latency_ms": 0.38261679001152515,
+        "std_latency_ms": 0.01634083273601245,
+        "p95_latency_ms": 0.40221731178462505,
+        "throughput_qps": 2613.581071468082,
+        "trainable_parameters": 59122,
+        "param_memory_mb": 0.22553253173828125,
+        "num_repeats": 5
+      },
+      "50": {
+        "mean_latency_ms": 0.3472082782536745,
+        "std_latency_ms": 0.04073040862770857,
+        "p95_latency_ms": 0.408066064119339,
+        "throughput_qps": 2880.1156614975293,
+        "trainable_parameters": 59122,
+        "param_memory_mb": 0.22553253173828125,
+        "num_repeats": 5
+      },
+      "100": {
+        "mean_latency_ms": 0.3776167519390583,
+        "std_latency_ms": 0.005823472585136051,
+        "p95_latency_ms": 0.3839914221316576,
+        "throughput_qps": 2648.1875999012486,
+        "trainable_parameters": 59122,
+        "param_memory_mb": 0.22553253173828125,
+        "num_repeats": 5
+      }
+    }
+  }
+}
