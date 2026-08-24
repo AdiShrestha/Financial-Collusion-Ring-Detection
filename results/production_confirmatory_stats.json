@@ -1,0 +1,205 @@
+{
+  "model_metrics": {
+    "gcn": {
+      "pr_auc_mean": 0.48234040578531767,
+      "pr_auc_std": 0.01538397566240241,
+      "roc_auc_mean": 0.346875,
+      "roc_auc_std": 0.048591265790377494,
+      "f1_mean": 0.0,
+      "f1_std": 0.0,
+      "precision_mean": 0.0,
+      "precision_std": 0.0,
+      "recall_mean": 0.0,
+      "recall_std": 0.0,
+      "ensemble_pr_auc": 0.4453850563818258,
+      "ensemble_roc_auc": 0.21875,
+      "ensemble_f1": 0.0
+    },
+    "gat": {
+      "pr_auc_mean": 0.48412945895674897,
+      "pr_auc_std": 0.03850593729450503,
+      "roc_auc_mean": 0.3375,
+      "roc_auc_std": 0.08798230172407781,
+      "f1_mean": 0.0,
+      "f1_std": 0.0,
+      "precision_mean": 0.0,
+      "precision_std": 0.0,
+      "recall_mean": 0.0,
+      "recall_std": 0.0,
+      "ensemble_pr_auc": 0.47094948255181796,
+      "ensemble_roc_auc": 0.33333333333333337,
+      "ensemble_f1": 0.0
+    },
+    "graphsage": {
+      "pr_auc_mean": 0.47839411614581556,
+      "pr_auc_std": 0.032485370879064925,
+      "roc_auc_mean": 0.3322916666666667,
+      "roc_auc_std": 0.10470693227607551,
+      "f1_mean": 0.0,
+      "f1_std": 0.0,
+      "precision_mean": 0.0,
+      "precision_std": 0.0,
+      "recall_mean": 0.0,
+      "recall_std": 0.0,
+      "ensemble_pr_auc": 0.43268641037484,
+      "ensemble_roc_auc": 0.171875,
+      "ensemble_f1": 0.0
+    },
+    "gine": {
+      "pr_auc_mean": 0.9353045024524616,
+      "pr_auc_std": 0.10319045614227292,
+      "roc_auc_mean": 0.9177083333333333,
+      "roc_auc_std": 0.12348913301267535,
+      "f1_mean": 0.827671878409919,
+      "f1_std": 0.15845513817611154,
+      "precision_mean": 0.8371717171717172,
+      "precision_std": 0.13478608627056998,
+      "recall_mean": 0.8375,
+      "recall_std": 0.2076655965729519,
+      "ensemble_pr_auc": 1.0,
+      "ensemble_roc_auc": 1.0,
+      "ensemble_f1": 1.0
+    },
+    "scnn": {
+      "pr_auc_mean": 1.0,
+      "pr_auc_std": 0.0,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0,
+      "f1_mean": 1.0,
+      "f1_std": 0.0,
+      "precision_mean": 1.0,
+      "precision_std": 0.0,
+      "recall_mean": 1.0,
+      "recall_std": 0.0,
+      "ensemble_pr_auc": 1.0,
+      "ensemble_roc_auc": 1.0,
+      "ensemble_f1": 1.0
+    },
+    "ccnn": {
+      "pr_auc_mean": 1.0,
+      "pr_auc_std": 0.0,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0,
+      "f1_mean": 1.0,
+      "f1_std": 0.0,
+      "precision_mean": 1.0,
+      "precision_std": 0.0,
+      "recall_mean": 1.0,
+      "recall_std": 0.0,
+      "ensemble_pr_auc": 1.0,
+      "ensemble_roc_auc": 1.0,
+      "ensemble_f1": 1.0
+    },
+    "toporingnet": {
+      "pr_auc_mean": 1.0,
+      "pr_auc_std": 0.0,
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0,
+      "f1_mean": 1.0,
+      "f1_std": 0.0,
+      "precision_mean": 1.0,
+      "precision_std": 0.0,
+      "recall_mean": 1.0,
+      "recall_std": 0.0,
+      "ensemble_pr_auc": 1.0,
+      "ensemble_roc_auc": 1.0,
+      "ensemble_f1": 1.0
+    }
+  },
+  "hypotheses": {
+    "H1": {
+      "hypothesis_id": "H1",
+      "claim_id": "CLM-001",
+      "description": "TopoRingNet improves AUPRC vs. strongest validation-selected spatial GNN baseline (GINE)",
+      "delta_pr_auc": 0.0,
+      "ci_95_lower": -1.1102230246251565e-16,
+      "ci_95_upper": 1.1102230246251565e-16,
+      "wilcoxon_p_raw": 0.6618045940995216,
+      "wilcoxon_p_adj": 0.6618045940995216,
+      "alpha": 0.05,
+      "verdict": "INCONCLUSIVE"
+    },
+    "H2": {
+      "hypothesis_id": "H2",
+      "claim_id": "CLM-002",
+      "description": "CellularComplexNet improves AUPRC vs. SimplicialComplexNet on higher-order cycle candidates (k in {4,5,6})",
+      "delta_pr_auc": 0.0,
+      "ci_95_lower": 0.0,
+      "ci_95_upper": 2.220446049250313e-16,
+      "wilcoxon_p_raw": 0.20291709899902344,
+      "wilcoxon_p_adj": 0.4058341979980469,
+      "alpha": 0.05,
+      "verdict": "INCONCLUSIVE"
+    },
+    "H3": {
+      "hypothesis_id": "H3",
+      "claim_id": "CLM-003",
+      "description": "TopoRingNet improves AUPRC vs. identical CellularComplexNet backbone through Persistent Homology gated fusion",
+      "delta_pr_auc": 0.0,
+      "ci_95_lower": -2.220446049250313e-16,
+      "ci_95_upper": 1.1102230246251565e-16,
+      "wilcoxon_p_raw": 0.003438994288444519,
+      "wilcoxon_p_adj": 0.010316982865333557,
+      "alpha": 0.05,
+      "verdict": "INCONCLUSIVE"
+    }
+  },
+  "cycle_length_stratification": {
+    "k_3": {
+      "candidate_count": 7,
+      "model_pr_auc": {
+        "gcn": 0.4928571428571429,
+        "gat": 0.525,
+        "graphsage": 0.4928571428571429,
+        "gine": 1.0,
+        "scnn": 1.0,
+        "ccnn": 1.0,
+        "toporingnet": 1.0
+      }
+    },
+    "k_4": {
+      "candidate_count": 7,
+      "model_pr_auc": {
+        "gcn": 0.4928571428571429,
+        "gat": 0.525,
+        "graphsage": 0.4928571428571429,
+        "gine": 1.0,
+        "scnn": 1.0,
+        "ccnn": 1.0,
+        "toporingnet": 1.0
+      }
+    },
+    "k_5": {
+      "candidate_count": 7,
+      "model_pr_auc": {
+        "gcn": 0.5178571428571428,
+        "gat": 0.525,
+        "graphsage": 0.4928571428571429,
+        "gine": 1.0,
+        "scnn": 1.0,
+        "ccnn": 1.0,
+        "toporingnet": 1.0
+      }
+    },
+    "k_6": {
+      "candidate_count": 7,
+      "model_pr_auc": {
+        "gcn": 0.5178571428571428,
+        "gat": 0.525,
+        "graphsage": 0.4928571428571429,
+        "gine": 1.0,
+        "scnn": 1.0,
+        "ccnn": 1.0,
+        "toporingnet": 1.0
+      }
+    }
+  },
+  "test_sample_size": 28,
+  "random_seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ]
+}
