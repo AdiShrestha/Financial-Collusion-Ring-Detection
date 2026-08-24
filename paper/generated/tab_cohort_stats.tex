@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Observed Data Cohort and Candidate Set Properties (IBM AMLworld HI-Small)}
+\label{tab:cohort_stats}
+\begin{tabular}{llr}
+\hline
+\textbf{Category} & \textbf{Metric} & \textbf{Value} \\
+\hline
+Raw Transaction Ledger & Total Transaction Records & 5,078,345 \\
+ & Total Active Accounts & 515,080 \\
+ & Total Laundering Transactions & 5,177 (0.1019\%) \\
+ & Verified Cycle Pattern Instances & 40 \\
+\hline
+Candidate Cohort & Total Cycle Candidates ($k \in [3..12]$) & 155 \\
+ & Genuine Laundering Cycles ($y=1$) & 40 (25.8\%) \\
+ & Caliper-Matched Benign Cycles ($y=0$) & 115 (74.2\%) \\
+ & Total Transactions in Candidate Graphs & 963 \\
+ & Outer Validation Scheme & 5-Fold Stratified Group CV \\
+ & Cross-Fold Account Leakage & 0.0\% (\textit{INV-006}) \\
+\hline
+\end{tabular}
+\end{table}
