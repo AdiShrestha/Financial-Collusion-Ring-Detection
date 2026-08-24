@@ -24,18 +24,59 @@
 
 \def\gcnPrAuc{1.0000}
 \def\gcnPrAucStd{0.0000}
+\def\gcnRocAuc{1.0000}
+\def\gcnRocAucStd{0.0000}
+\def\gcnFOne{0.9852}
+\def\gcnFOneStd{0.0181}
+\def\gcnEnsemblePrAuc{1.0000}
+
 \def\gatPrAuc{0.9981}
 \def\gatPrAucStd{0.0023}
+\def\gatRocAuc{0.9980}
+\def\gatRocAucStd{0.0025}
+\def\gatFOne{0.9640}
+\def\gatFOneStd{0.0226}
+\def\gatEnsemblePrAuc{1.0000}
+
 \def\sagePrAuc{1.0000}
 \def\sagePrAucStd{0.0000}
+\def\sageRocAuc{1.0000}
+\def\sageRocAucStd{0.0000}
+\def\sageFOne{1.0000}
+\def\sageFOneStd{0.0000}
+\def\sageEnsemblePrAuc{1.0000}
+
 \def\ginePrAuc{0.9990}
 \def\ginePrAucStd{0.0019}
+\def\gineRocAuc{0.9990}
+\def\gineRocAucStd{0.0020}
+\def\gineFOne{0.9624}
+\def\gineFOneStd{0.0243}
+\def\gineEnsemblePrAuc{1.0000}
+
 \def\scnnPrAuc{0.9920}
 \def\scnnPrAucStd{0.0030}
+\def\scnnRocAuc{0.9908}
+\def\scnnRocAucStd{0.0038}
+\def\scnnFOne{0.9566}
+\def\scnnFOneStd{0.0140}
+\def\scnnEnsemblePrAuc{0.9952}
+
 \def\ccnnPrAuc{0.9913}
 \def\ccnnPrAucStd{0.0098}
+\def\ccnnRocAuc{0.9878}
+\def\ccnnRocAucStd{0.0153}
+\def\ccnnFOne{0.9704}
+\def\ccnnFOneStd{0.0148}
+\def\ccnnEnsemblePrAuc{1.0000}
+
 \def\toporingnetPrAuc{0.9852}
 \def\toporingnetPrAucStd{0.0087}
+\def\toporingnetRocAuc{0.9786}
+\def\toporingnetRocAucStd{0.0178}
+\def\toporingnetFOne{0.9423}
+\def\toporingnetFOneStd{0.0168}
+\def\toporingnetEnsemblePrAuc{0.9874}
 
 \def\hOneDelta{-0.0126}
 \def\hOnePAdj{0.7635}
@@ -116,13 +157,13 @@ We test three pre-registered hypotheses:
 \toprule
 \textbf{Model Architecture} & \textbf{PR-AUC} & \textbf{ROC-AUC} & \textbf{F1 Score} & \textbf{Ensemble PR-AUC} \\
 \midrule
-GCNBaseline & \gcnPrAuc{} $\pm$ \gcnPrAucStd{} & 1.0000 $\pm$ 0.0000 & 0.9852 $\pm$ 0.0181 & 1.0000 \\
-GATBaseline & \gatPrAuc{} $\pm$ \gatPrAucStd{} & 0.9980 $\pm$ 0.0025 & 0.9640 $\pm$ 0.0226 & 1.0000 \\
-GraphSAGEBaseline & \sagePrAuc{} $\pm$ \sagePrAucStd{} & 1.0000 $\pm$ 0.0000 & 1.0000 $\pm$ 0.0000 & 1.0000 \\
-GINEBaseline (Edge-Aware) & \ginePrAuc{} $\pm$ \ginePrAucStd{} & 0.9990 $\pm$ 0.0020 & 0.9624 $\pm$ 0.0243 & 1.0000 \\
-SimplicialComplexNet (SCNN) & \scnnPrAuc{} $\pm$ \scnnPrAucStd{} & 0.9918 $\pm$ 0.0031 & 0.9640 $\pm$ 0.0226 & 1.0000 \\
-CellularComplexNet (CCNN) & \ccnnPrAuc{} $\pm$ \ccnnPrAucStd{} & 0.9908 $\pm$ 0.0102 & 0.9640 $\pm$ 0.0226 & 1.0000 \\
-\textsc{TopoRingNet} (Proposed) & \textbf{\toporingnetPrAuc{}} $\pm$ \toporingnetPrAucStd{} & \textbf{0.9857} $\pm$ 0.0090 & \textbf{0.9640} $\pm$ 0.0226 & \textbf{1.0000} \\
+GCNBaseline & \gcnPrAuc{} $\pm$ \gcnPrAucStd{} & \gcnRocAuc{} $\pm$ \gcnRocAucStd{} & \gcnFOne{} $\pm$ \gcnFOneStd{} & \gcnEnsemblePrAuc{} \\
+GATBaseline & \gatPrAuc{} $\pm$ \gatPrAucStd{} & \gatRocAuc{} $\pm$ \gatRocAucStd{} & \gatFOne{} $\pm$ \gatFOneStd{} & \gatEnsemblePrAuc{} \\
+GraphSAGEBaseline & \sagePrAuc{} $\pm$ \sagePrAucStd{} & \sageRocAuc{} $\pm$ \sageRocAucStd{} & \sageFOne{} $\pm$ \sageFOneStd{} & \sageEnsemblePrAuc{} \\
+GINEBaseline (Edge-Aware) & \ginePrAuc{} $\pm$ \ginePrAucStd{} & \gineRocAuc{} $\pm$ \gineRocAucStd{} & \gineFOne{} $\pm$ \gineFOneStd{} & \gineEnsemblePrAuc{} \\
+SimplicialComplexNet (SCNN) & \scnnPrAuc{} $\pm$ \scnnPrAucStd{} & \scnnRocAuc{} $\pm$ \scnnRocAucStd{} & \scnnFOne{} $\pm$ \scnnFOneStd{} & \scnnEnsemblePrAuc{} \\
+CellularComplexNet (CCNN) & \ccnnPrAuc{} $\pm$ \ccnnPrAucStd{} & \ccnnRocAuc{} $\pm$ \ccnnRocAucStd{} & \ccnnFOne{} $\pm$ \ccnnFOneStd{} & \ccnnEnsemblePrAuc{} \\
+\textsc{TopoRingNet} (Proposed) & \textbf{\toporingnetPrAuc{}} $\pm$ \toporingnetPrAucStd{} & \textbf{\toporingnetRocAuc{}} $\pm$ \toporingnetRocAucStd{} & \textbf{\toporingnetFOne{}} $\pm$ \toporingnetFOneStd{} & \textbf{\toporingnetEnsemblePrAuc{}} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -135,9 +176,9 @@ CellularComplexNet (CCNN) & \ccnnPrAuc{} $\pm$ \ccnnPrAucStd{} & 0.9908 $\pm$ 0.
 \toprule
 \textbf{Hypothesis} & \textbf{$\Delta$ PR-AUC} & \textbf{95\% Bootstrap CI} & \textbf{Raw $p$} & \textbf{Adjusted $p$} & \textbf{Verdict} \\
 \midrule
-H1 (\textsc{TopoRingNet} vs. \textsc{GINE}) & \hOneDelta{} & [-0.0556, 0.0000] & 0.7635 & \hOnePAdj{} & INCONCLUSIVE \\
+H1 (\textsc{TopoRingNet} vs. \textsc{GINE}) & \hOneDelta{} & [-0.0556, 0.0000] & 0.2545 & \hOnePAdj{} & INCONCLUSIVE \\
 H2 (\textsc{CCNN} vs. \textsc{SCNN}, $k \ge 4$) & \hTwoDelta{} & [-0.0000, 0.0833] & 0.9323 & \hTwoPAdj{} & INCONCLUSIVE \\
-H3 (\textsc{TopoRingNet} vs. \textsc{CCNN}) & \hThreeDelta{} & [-0.0556, 0.0000] & 0.7635 & \hThreePAdj{} & INCONCLUSIVE \\
+H3 (\textsc{TopoRingNet} vs. \textsc{CCNN}) & \hThreeDelta{} & [-0.0556, 0.0000] & 0.2949 & \hThreePAdj{} & INCONCLUSIVE \\
 \bottomrule
 \end{tabular}
 \end{table}
