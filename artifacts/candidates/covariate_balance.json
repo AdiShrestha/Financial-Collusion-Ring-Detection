@@ -1,0 +1,365 @@
+{
+  "matching_strategy": "Exact cycle-length stratum nearest-neighbor (up to 1:3)",
+  "total_positive_candidates": 40,
+  "total_matched_negative_candidates": 115,
+  "total_cohort_size": 155,
+  "smd_log_duration": -0.62965237204518,
+  "smd_log_amount": -0.067978781293866,
+  "matched_sets": [
+    {
+      "pos_candidate_id": "pos_cand_0002",
+      "matched_negative_ids": [
+        "ben_pool_00444",
+        "ben_pool_00464",
+        "ben_pool_00241"
+      ],
+      "cycle_length": 10
+    },
+    {
+      "pos_candidate_id": "pos_cand_0007",
+      "matched_negative_ids": [
+        "ben_pool_00500",
+        "ben_pool_00506",
+        "ben_pool_00466"
+      ],
+      "cycle_length": 10
+    },
+    {
+      "pos_candidate_id": "pos_cand_0019",
+      "matched_negative_ids": [
+        "ben_pool_00433",
+        "ben_pool_00473",
+        "ben_pool_00510"
+      ],
+      "cycle_length": 10
+    },
+    {
+      "pos_candidate_id": "pos_cand_0030",
+      "matched_negative_ids": [
+        "ben_pool_00105",
+        "ben_pool_00642",
+        "ben_pool_00104"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0038",
+      "matched_negative_ids": [
+        "ben_pool_00471",
+        "ben_pool_00213",
+        "ben_pool_00514"
+      ],
+      "cycle_length": 7
+    },
+    {
+      "pos_candidate_id": "pos_cand_0063",
+      "matched_negative_ids": [
+        "ben_pool_00457",
+        "ben_pool_00215",
+        "ben_pool_00611"
+      ],
+      "cycle_length": 6
+    },
+    {
+      "pos_candidate_id": "pos_cand_0068",
+      "matched_negative_ids": [
+        "ben_pool_00388",
+        "ben_pool_00279",
+        "ben_pool_00383"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0072",
+      "matched_negative_ids": [
+        "ben_pool_00272",
+        "ben_pool_00274",
+        "ben_pool_00276"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0074",
+      "matched_negative_ids": [
+        "ben_pool_00188",
+        "ben_pool_00586",
+        "ben_pool_00119"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0075",
+      "matched_negative_ids": [
+        "ben_pool_00648",
+        "ben_pool_00331",
+        "ben_pool_00306"
+      ],
+      "cycle_length": 5
+    },
+    {
+      "pos_candidate_id": "pos_cand_0103",
+      "matched_negative_ids": [
+        "ben_pool_00225",
+        "ben_pool_00627",
+        "ben_pool_00397"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0127",
+      "matched_negative_ids": [
+        "ben_pool_00200",
+        "ben_pool_00609",
+        "ben_pool_00610"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0129",
+      "matched_negative_ids": [
+        "ben_pool_00440",
+        "ben_pool_00449",
+        "ben_pool_00518"
+      ],
+      "cycle_length": 7
+    },
+    {
+      "pos_candidate_id": "pos_cand_0131",
+      "matched_negative_ids": [
+        "ben_pool_00487",
+        "ben_pool_00463",
+        "ben_pool_00483"
+      ],
+      "cycle_length": 11
+    },
+    {
+      "pos_candidate_id": "pos_cand_0138",
+      "matched_negative_ids": [
+        "ben_pool_00470",
+        "ben_pool_00485",
+        "ben_pool_00492"
+      ],
+      "cycle_length": 11
+    },
+    {
+      "pos_candidate_id": "pos_cand_0155",
+      "matched_negative_ids": [
+        "ben_pool_00313",
+        "ben_pool_00317",
+        "ben_pool_00303"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0167",
+      "matched_negative_ids": [
+        "ben_pool_00267",
+        "ben_pool_00638",
+        "ben_pool_00131"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0172",
+      "matched_negative_ids": [
+        "ben_pool_00043",
+        "ben_pool_00040",
+        "ben_pool_00445"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0174",
+      "matched_negative_ids": [
+        "ben_pool_00051",
+        "ben_pool_00055",
+        "ben_pool_00053"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0178",
+      "matched_negative_ids": [
+        "ben_pool_00636",
+        "ben_pool_00123",
+        "ben_pool_00122"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0182",
+      "matched_negative_ids": [
+        "ben_pool_00462",
+        "ben_pool_00503",
+        "ben_pool_00509"
+      ],
+      "cycle_length": 10
+    },
+    {
+      "pos_candidate_id": "pos_cand_0193",
+      "matched_negative_ids": [
+        "ben_pool_00494",
+        "ben_pool_00455",
+        "ben_pool_00432"
+      ],
+      "cycle_length": 8
+    },
+    {
+      "pos_candidate_id": "pos_cand_0218",
+      "matched_negative_ids": [
+        "ben_pool_00453",
+        "ben_pool_00502",
+        "ben_pool_00450"
+      ],
+      "cycle_length": 12
+    },
+    {
+      "pos_candidate_id": "pos_cand_0220",
+      "matched_negative_ids": [
+        "ben_pool_00475",
+        "ben_pool_00493",
+        "ben_pool_00516"
+      ],
+      "cycle_length": 7
+    },
+    {
+      "pos_candidate_id": "pos_cand_0223",
+      "matched_negative_ids": [
+        "ben_pool_00096",
+        "ben_pool_00578",
+        "ben_pool_00094"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0230",
+      "matched_negative_ids": [
+        "ben_pool_00319",
+        "ben_pool_00061",
+        "ben_pool_00305"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0232",
+      "matched_negative_ids": [
+        "ben_pool_00452"
+      ],
+      "cycle_length": 7
+    },
+    {
+      "pos_candidate_id": "pos_cand_0246",
+      "matched_negative_ids": [
+        "ben_pool_00081",
+        "ben_pool_00049",
+        "ben_pool_00637"
+      ],
+      "cycle_length": 3
+    },
+    {
+      "pos_candidate_id": "pos_cand_0248",
+      "matched_negative_ids": [
+        "ben_pool_00505",
+        "ben_pool_00472",
+        "ben_pool_00304"
+      ],
+      "cycle_length": 5
+    },
+    {
+      "pos_candidate_id": "pos_cand_0249",
+      "matched_negative_ids": [
+        "ben_pool_00289",
+        "ben_pool_00296",
+        "ben_pool_00309"
+      ],
+      "cycle_length": 5
+    },
+    {
+      "pos_candidate_id": "pos_cand_0258",
+      "matched_negative_ids": [
+        "ben_pool_00497",
+        "ben_pool_00496",
+        "ben_pool_00521"
+      ],
+      "cycle_length": 8
+    },
+    {
+      "pos_candidate_id": "pos_cand_0282",
+      "matched_negative_ids": [
+        "ben_pool_00501",
+        "ben_pool_00517",
+        "ben_pool_00515"
+      ],
+      "cycle_length": 8
+    },
+    {
+      "pos_candidate_id": "pos_cand_0293",
+      "matched_negative_ids": [
+        "ben_pool_00434",
+        "ben_pool_00486",
+        "ben_pool_00513"
+      ],
+      "cycle_length": 11
+    },
+    {
+      "pos_candidate_id": "pos_cand_0295",
+      "matched_negative_ids": [
+        "ben_pool_00436",
+        "ben_pool_00523"
+      ],
+      "cycle_length": 10
+    },
+    {
+      "pos_candidate_id": "pos_cand_0296",
+      "matched_negative_ids": [
+        "ben_pool_00199",
+        "ben_pool_00103",
+        "ben_pool_00583"
+      ],
+      "cycle_length": 7
+    },
+    {
+      "pos_candidate_id": "pos_cand_0324",
+      "matched_negative_ids": [
+        "ben_pool_00139",
+        "ben_pool_00244",
+        "ben_pool_00256"
+      ],
+      "cycle_length": 10
+    },
+    {
+      "pos_candidate_id": "pos_cand_0337",
+      "matched_negative_ids": [
+        "ben_pool_00300",
+        "ben_pool_00315",
+        "ben_pool_00057"
+      ],
+      "cycle_length": 4
+    },
+    {
+      "pos_candidate_id": "pos_cand_0350",
+      "matched_negative_ids": [
+        "ben_pool_00508"
+      ],
+      "cycle_length": 8
+    },
+    {
+      "pos_candidate_id": "pos_cand_0357",
+      "matched_negative_ids": [
+        "ben_pool_00468",
+        "ben_pool_00435",
+        "ben_pool_00479"
+      ],
+      "cycle_length": 11
+    },
+    {
+      "pos_candidate_id": "pos_cand_0367",
+      "matched_negative_ids": [
+        "ben_pool_00321",
+        "ben_pool_00164",
+        "ben_pool_00133"
+      ],
+      "cycle_length": 3
+    }
+  ]
+}
