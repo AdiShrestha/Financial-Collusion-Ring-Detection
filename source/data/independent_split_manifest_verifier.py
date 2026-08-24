@@ -20,10 +20,17 @@ def main() -> None:
         sys.exit(1)
 
     total_cands = int(data.get("metadata", {}).get("total_candidates", 0))
-    is_disjoint = bool(data.get("leakage_verification", {}).get("is_disjoint", False))
-    train_cands = len(data.get("splits", {}).get("train", []))
-    val_cands = len(data.get("splits", {}).get("val", []))
-    test_cands = len(data.get("splits", {}).get("test", []))
+    audit_data = data.get("disjointness_audit", data.get("leakage_verification", {}))
+    is_disjoint = bool(audit_data.get("is_disjoint", False))
+
+    splits_data = data.get("splits", {})
+    train_split = splits_data.get("train", {})
+    val_split = splits_data.get("validation", splits_data.get("val", {}))
+    test_split = splits_data.get("test", {})
+
+    train_cands = len(train_split.get("candidate_ids", train_split if isinstance(train_split, list) else []))
+    val_cands = len(val_split.get("candidate_ids", val_split if isinstance(val_split, list) else []))
+    test_cands = len(test_split.get("candidate_ids", test_split if isinstance(test_split, list) else []))
 
     result = {
         "is_disjoint": is_disjoint,

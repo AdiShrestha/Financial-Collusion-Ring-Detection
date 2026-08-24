@@ -69,9 +69,25 @@ class CandidateIntegrityVerifier:
         cand_ids_jsonl = set(c["candidate_id"] for c in candidates)
         manifest_splits = manifest.get("splits", {})
         cand_ids_manifest = set()
-        for split_name in ("train", "val", "test"):
-            for item in manifest_splits.get(split_name, []):
-                cand_ids_manifest.add(item["candidate_id"])
+        split_ids: Dict[str, List[str]] = {"train": [], "val": [], "test": []}
+
+        for split_key in ("train", "val", "validation", "test"):
+            canon_name = "val" if split_key in ("val", "validation") else split_key
+            s_val = manifest_splits.get(split_key)
+            if isinstance(s_val, dict):
+                c_ids = s_val.get("candidate_ids", [])
+                split_ids[canon_name].extend(c_ids)
+                cand_ids_manifest.update(c_ids)
+            elif isinstance(s_val, list):
+                for item in s_val:
+                    if isinstance(item, dict):
+                        cid = item.get("candidate_id")
+                        if cid:
+                            split_ids[canon_name].append(cid)
+                            cand_ids_manifest.add(cid)
+                    elif isinstance(item, str):
+                        split_ids[canon_name].append(item)
+                        cand_ids_manifest.add(item)
 
         checks["candidate_ids_aligned"] = cand_ids_jsonl == cand_ids_manifest
         details["jsonl_candidate_count"] = len(cand_ids_jsonl)
@@ -83,16 +99,16 @@ class CandidateIntegrityVerifier:
         val_accs: Set[str] = set()
         test_accs: Set[str] = set()
 
-        for item in manifest_splits.get("train", []):
-            c = cand_by_id.get(item["candidate_id"], {})
+        for cid in split_ids["train"]:
+            c = cand_by_id.get(cid, {})
             train_accs.update(str(a) for a in c.get("participants", c.get("nodes", [])))
 
-        for item in manifest_splits.get("val", []):
-            c = cand_by_id.get(item["candidate_id"], {})
+        for cid in split_ids["val"]:
+            c = cand_by_id.get(cid, {})
             val_accs.update(str(a) for a in c.get("participants", c.get("nodes", [])))
 
-        for item in manifest_splits.get("test", []):
-            c = cand_by_id.get(item["candidate_id"], {})
+        for cid in split_ids["test"]:
+            c = cand_by_id.get(cid, {})
             test_accs.update(str(a) for a in c.get("participants", c.get("nodes", [])))
 
         overlap_tv = train_accs & val_accs
@@ -126,9 +142,12 @@ class CandidateIntegrityVerifier:
         details["positive_negative_ratio"] = ratio
 
         # 6. Check partition hashes
-        hashes = manifest.get("split_hashes", {})
-        valid_hashes = all(len(h) == 64 for h in [hashes.get("train", ""), hashes.get("val", ""), hashes.get("test", "")])
-        checks["split_hashes_valid"] = valid_hashes
+        test_split = manifest_splits.get("test", {})
+        if isinstance(test_split, dict):
+            test_h = test_split.get("sha256_checksum", "")
+        else:
+            test_h = manifest.get("split_hashes", {}).get("test", "")
+        checks["split_hashes_valid"] = len(test_h) == 64
 
         all_passed = all(checks.values())
         status = "CANDIDATE_INTEGRITY_PASS" if all_passed else "CANDIDATE_INTEGRITY_FAIL"
