@@ -83,6 +83,7 @@ class ProductionTrainingGateVerifier:
             "status": status,
             "production_training_status": status,
             "all_subchecks_passed": all_passed,
+            "total_checkpoints": total_audited,
             "total_checkpoints_audited": total_audited,
             "required_checkpoints_count": 35,
             "models_verified": MODEL_NAMES,
