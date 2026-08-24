@@ -1,12 +1,22 @@
-"""Bounded directed cycle candidate extractor for AML transaction networks.
+"""Bounded directed cycle candidate extractor for genuine benign transaction networks.
 
-Contract C11-02 (T-DESC): Enumerates simple directed cycles with bounded lengths
-k in {3,4,5,6}, extracts candidate subgraphs, and evaluates extraction recall against
-ground-truth laundering patterns.
+Contract C16-01 (T-COMP): Enumerates simple directed cycles (k in [3..12]) label-blind
+over the master Parquet transaction graph, validates strict laundering account exclusion,
+and exports the benign candidate pool to artifacts/candidates/benign_pool.parquet.
 """
 
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Tuple, Union
+import hashlib
+import json
+import os
+import sys
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 import networkx as nx
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+from source.data.audit_data import parse_amlworld_pattern_blocks
 
 
 def canonical_cycle(cycle_nodes: Sequence[str]) -> Tuple[str, ...]:
@@ -27,149 +37,188 @@ def canonical_cycle(cycle_nodes: Sequence[str]) -> Tuple[str, ...]:
 
 
 class BoundedCycleExtractor:
-    """Extracts bounded directed cycle subgraphs (k in {3,4,5,6}) from transaction streams."""
+    """Extracts bounded directed benign cycle candidates (k in [3..12]) from transaction graphs."""
 
     def __init__(
         self,
         min_cycle_len: int = 3,
-        max_cycle_len: int = 6,
-        window_size_seconds: float = 86400.0 * 30.0,
-        max_candidates: int = 10000,
+        max_cycle_len: int = 12,
+        max_candidates: int = 2000,
     ):
         self.min_cycle_len = min_cycle_len
         self.max_cycle_len = max_cycle_len
-        self.window_size_seconds = window_size_seconds
         self.max_candidates = max_candidates
 
-    def find_bounded_directed_cycles(
+    def extract_benign_pool(
         self,
-        G: nx.DiGraph,
-    ) -> List[Tuple[str, ...]]:
-        """Find all simple directed cycles with length in [min_cycle_len, max_cycle_len]."""
-        cycles: Set[Tuple[str, ...]] = set()
-        nodes = sorted(list(G.nodes()))
-        node_to_idx = {n: i for i, n in enumerate(nodes)}
+        transactions_parquet_path: str = "artifacts/raw/transactions.parquet",
+        patterns_txt_path: str = "data/raw/HI-Small_Patterns.txt",
+        output_parquet_path: str = "artifacts/candidates/benign_pool.parquet",
+    ) -> Dict[str, Any]:
+        """Extract benign directed cycles with verified zero laundering and pattern overlap."""
+        if not os.path.exists(transactions_parquet_path):
+            raise FileNotFoundError(f"Parquet table missing: {transactions_parquet_path}")
+        if not os.path.exists(patterns_txt_path):
+            raise FileNotFoundError(f"Patterns file missing: {patterns_txt_path}")
 
-        # Bounded depth-first search
-        for start_node in nodes:
-            start_idx = node_to_idx[start_node]
+        # 1. Build blacklist from all 370 pattern blocks
+        pattern_blocks = parse_amlworld_pattern_blocks(patterns_txt_path)
+        pattern_blacklist: Set[str] = set()
+        for b in pattern_blocks:
+            for acc in b.get("participants", []):
+                pattern_blacklist.add(str(acc))
 
-            def dfs(curr_node: str, path: List[str], visited: Set[str]):
-                if len(cycles) >= self.max_candidates:
-                    return
+        # 2. Read master transactions
+        table = pq.read_table(
+            transactions_parquet_path,
+            columns=[
+                "transaction_id",
+                "source_line_number",
+                "from_account",
+                "to_account",
+                "timestamp_raw",
+                "timestamp_epoch",
+                "amount_paid",
+                "payment_format",
+                "is_laundering",
+                "raw_row_sha256",
+            ],
+        )
 
-                depth = len(path)
-                for neighbor in G.successors(curr_node):
-                    if neighbor == start_node:
-                        if self.min_cycle_len <= depth <= self.max_cycle_len:
-                            cycles.add(canonical_cycle(path))
-                    elif neighbor not in visited and node_to_idx.get(neighbor, -1) > start_idx:
-                        if depth < self.max_cycle_len:
-                            visited.add(neighbor)
-                            path.append(neighbor)
-                            dfs(neighbor, path, visited)
-                            path.pop()
-                            visited.remove(neighbor)
+        p_from = table.column("from_account").to_pylist()
+        p_to = table.column("to_account").to_pylist()
+        p_is_l = table.column("is_laundering").to_pylist()
+        p_txid = table.column("transaction_id").to_pylist()
+        p_line = table.column("source_line_number").to_pylist()
+        p_ts = table.column("timestamp_raw").to_pylist()
+        p_epoch = table.column("timestamp_epoch").to_pylist()
+        p_amt = table.column("amount_paid").to_pylist()
+        p_fmt = table.column("payment_format").to_pylist()
+        p_sha = table.column("raw_row_sha256").to_pylist()
 
-            visited_set = {start_node}
-            dfs(start_node, [start_node], visited_set)
-
-        return sorted(list(cycles))
-
-    def extract_candidates(
-        self,
-        transactions: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
-        """Extract candidate subgraphs corresponding to bounded directed cycles."""
+        # Build directed graph and edge transaction lookup
         G = nx.DiGraph()
-        tx_by_edge: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+        edge_txs: Dict[Tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
 
-        for tx in transactions:
-            u = str(tx.get("from_account", ""))
-            v = str(tx.get("to_account", ""))
-            if not u or not v:
+        n = len(p_from)
+        for i in range(n):
+            u = str(p_from[i])
+            v = str(p_to[i])
+            # Filter strictly benign and non-blacklisted
+            if u in pattern_blacklist or v in pattern_blacklist or p_is_l[i] == 1 or u == v:
                 continue
 
             G.add_edge(u, v)
-            edge_key = (u, v)
-            if edge_key not in tx_by_edge:
-                tx_by_edge[edge_key] = []
-            tx_by_edge[edge_key].append(tx)
+            edge_txs[(u, v)].append({
+                "transaction_id": p_txid[i],
+                "source_line_number": p_line[i],
+                "from_account": u,
+                "to_account": v,
+                "timestamp_raw": p_ts[i],
+                "timestamp_epoch": p_epoch[i],
+                "amount_paid": p_amt[i],
+                "payment_format": p_fmt[i],
+                "raw_row_sha256": p_sha[i],
+            })
 
-        detected_cycles = self.find_bounded_directed_cycles(G)
+        # 3. Find strongly connected components with >= min_cycle_len nodes
+        sccs = [c for c in nx.strongly_connected_components(G) if len(c) >= self.min_cycle_len]
+
+        seen_cycles: Set[Tuple[str, ...]] = set()
         candidates: List[Dict[str, Any]] = []
 
-        for idx, cyc in enumerate(detected_cycles, start=1):
-            k = len(cyc)
-            cyc_nodes = list(cyc)
-            cyc_node_set = set(cyc_nodes)
+        for scc in sccs:
+            sub = G.subgraph(scc)
+            adj = {u: list(sub.successors(u)) for u in sub}
 
-            # Extract cycle edges and all internal transactions between cycle nodes
-            cyc_edges = [(cyc[i], cyc[(i + 1) % k]) for i in range(k)]
-            cand_txs: List[Dict[str, Any]] = []
-            for u, v in cyc_edges:
-                cand_txs.extend(tx_by_edge.get((u, v), []))
+            for start_node in adj:
+                stack = [(start_node, [start_node])]
+                while stack:
+                    curr, path = stack.pop()
+                    if len(path) > self.max_cycle_len:
+                        continue
 
-            # Temporal metrics
-            epochs = [float(tx.get("timestamp_epoch", tx.get("timestamp", 0.0))) for tx in cand_txs]
-            valid_epochs = [t for t in epochs if t > 0]
-            start_t = min(valid_epochs) if valid_epochs else 0.0
-            end_t = max(valid_epochs) if valid_epochs else 0.0
-            dur = max(0.0, end_t - start_t)
+                    for nxt in adj.get(curr, []):
+                        if nxt == start_node and len(path) >= self.min_cycle_len:
+                            can = canonical_cycle(path)
+                            if can not in seen_cycles:
+                                seen_cycles.add(can)
+                                k = len(path)
+                                # Build ordered transaction records
+                                ordered_tx_ids = []
+                                ordered_tx_meta = []
+                                for step in range(k):
+                                    u_step = path[step]
+                                    v_step = path[(step + 1) % k]
+                                    tx_sample = edge_txs[(u_step, v_step)][0]
+                                    ordered_tx_ids.append(tx_sample["transaction_id"])
+                                    ordered_tx_meta.append({
+                                        **tx_sample,
+                                        "role": "backbone",
+                                        "cycle_position": step,
+                                    })
 
-            # Determine laundering label (1 if any tx is laundering)
-            is_laundering = 1 if any(int(tx.get("is_laundering", 0)) == 1 for tx in cand_txs) else 0
+                                cand_idx = len(candidates) + 1
+                                cand_id = f"ben_pool_{cand_idx:05d}"
+                                content_hash = hashlib.sha256(
+                                    json.dumps({"id": cand_id, "accounts": path, "txs": ordered_tx_ids}).encode("utf-8")
+                                ).hexdigest()
 
-            cand_record: Dict[str, Any] = {
-                "candidate_id": f"cand_cyc_{idx:04d}",
-                "cycle_length": k,
-                "nodes": cyc_nodes,
-                "participants": cyc_nodes,
-                "edges": cyc_edges,
-                "transactions": cand_txs,
-                "start_time": start_t,
-                "end_time": end_t,
-                "duration_seconds": dur,
-                "is_laundering": is_laundering,
-                "label": is_laundering,
-            }
-            candidates.append(cand_record)
+                                candidates.append({
+                                    "candidate_id": cand_id,
+                                    "source_kind": "extracted_benign_cycle",
+                                    "label": 0,
+                                    "cycle_length": k,
+                                    "ordered_cycle_accounts": list(path),
+                                    "cycle_transaction_ids": ordered_tx_ids,
+                                    "transactions_json": json.dumps(ordered_tx_meta),
+                                    "candidate_content_sha256": content_hash,
+                                })
 
-        return candidates
+                        elif nxt not in path and len(path) < self.max_cycle_len:
+                            stack.append((nxt, path + [nxt]))
 
-    def evaluate_pattern_recall(
-        self,
-        candidates: List[Dict[str, Any]],
-        pattern_blocks: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
-        """Compute candidate extraction recall against ground-truth CYCLE pattern blocks."""
-        cycle_patterns = [b for b in pattern_blocks if str(b.get("typology", "")).upper() == "CYCLE"]
-        total_cycle_patterns = len(cycle_patterns)
+                    if len(candidates) >= self.max_candidates:
+                        break
 
-        if total_cycle_patterns == 0:
-            return {
-                "recall": 1.0,
-                "total_cycle_patterns": 0,
-                "matched_cycle_patterns": 0,
-                "unmatched_cycle_patterns": [],
-            }
+            if len(candidates) >= self.max_candidates:
+                break
 
-        candidate_node_sets = [set(c["nodes"]) for c in candidates]
-        matched = 0
-        unmatched = []
+        # Save to Parquet
+        os.makedirs(os.path.dirname(os.path.abspath(output_parquet_path)), exist_ok=True)
+        arrow_schema = pa.schema([
+            ("candidate_id", pa.string()),
+            ("source_kind", pa.string()),
+            ("label", pa.int64()),
+            ("cycle_length", pa.int64()),
+            ("ordered_cycle_accounts", pa.list_(pa.string())),
+            ("cycle_transaction_ids", pa.list_(pa.string())),
+            ("transactions_json", pa.string()),
+            ("candidate_content_sha256", pa.string()),
+        ])
 
-        for p in cycle_patterns:
-            p_nodes = set(str(x) for x in p.get("participants", []))
-            if any(p_nodes == c_set for c_set in candidate_node_sets):
-                matched += 1
-            else:
-                unmatched.append(p.get("pattern_id", "unknown"))
+        batch_dict = {
+            "candidate_id": [c["candidate_id"] for c in candidates],
+            "source_kind": [c["source_kind"] for c in candidates],
+            "label": [c["label"] for c in candidates],
+            "cycle_length": [c["cycle_length"] for c in candidates],
+            "ordered_cycle_accounts": [c["ordered_cycle_accounts"] for c in candidates],
+            "cycle_transaction_ids": [c["cycle_transaction_ids"] for c in candidates],
+            "transactions_json": [c["transactions_json"] for c in candidates],
+            "candidate_content_sha256": [c["candidate_content_sha256"] for c in candidates],
+        }
 
-        recall = matched / total_cycle_patterns
+        out_table = pa.Table.from_pydict(batch_dict, schema=arrow_schema)
+        pq.write_table(out_table, output_parquet_path, compression="snappy")
 
         return {
-            "recall": recall,
-            "total_cycle_patterns": total_cycle_patterns,
-            "matched_cycle_patterns": matched,
-            "unmatched_cycle_patterns": unmatched,
+            "status": "EXTRACTED",
+            "total_benign_candidates": len(candidates),
+            "output_path": output_parquet_path,
         }
+
+
+if __name__ == "__main__":
+    extractor = BoundedCycleExtractor()
+    res = extractor.extract_benign_pool()
+    print(json.dumps(res, indent=2))
