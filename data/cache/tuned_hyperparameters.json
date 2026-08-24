@@ -1,0 +1,68 @@
+{
+  "GCNBaseline": {
+    "best_config": {
+      "lr": 0.01,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+    },
+    "best_val_score": 0.95,
+    "metric": "pr_auc"
+  },
+  "GATBaseline": {
+    "best_config": {
+      "lr": 0.01,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+    },
+    "best_val_score": 0.94,
+    "metric": "pr_auc"
+  },
+  "GraphSAGEBaseline": {
+    "best_config": {
+      "lr": 0.01,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+    },
+    "best_val_score": 0.95,
+    "metric": "pr_auc"
+  },
+  "SimplicialComplexNet": {
+    "best_config": {
+      "lr": 0.01,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+    },
+    "best_val_score": 0.97,
+    "metric": "pr_auc"
+  },
+  "CellularComplexNet": {
+    "best_config": {
+      "lr": 0.01,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+    },
+    "best_val_score": 0.98,
+    "metric": "pr_auc"
+  },
+  "TopoRingNet": {
+    "best_config": {
+      "lr": 0.01,
+      "hidden_dim": 64,
+      "num_layers": 2,
+      "dropout": 0.1,
+      "weight_decay": 0.0001
+    },
+    "best_val_score": 0.99,
+    "metric": "pr_auc"
+  }
+}
