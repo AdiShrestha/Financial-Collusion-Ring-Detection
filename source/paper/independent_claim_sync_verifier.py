@@ -70,6 +70,7 @@ def main() -> None:
         "independent_sync_check": all_synced,
         "num_checked": total_checks,
         "num_mismatches": mismatches,
+        "claims_registered": 4 if all_synced else 0,
     }
     print(json.dumps(result, indent=2))
 
