@@ -17,5 +17,252 @@
     44,
     45,
     46
+  ],
+  "runs": [
+    {
+      "model_name": "gcn",
+      "seed": 42,
+      "best_epoch": 11,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gcn_seed42.pt"
+    },
+    {
+      "model_name": "gcn",
+      "seed": 43,
+      "best_epoch": 18,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gcn_seed43.pt"
+    },
+    {
+      "model_name": "gcn",
+      "seed": 44,
+      "best_epoch": 4,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gcn_seed44.pt"
+    },
+    {
+      "model_name": "gcn",
+      "seed": 45,
+      "best_epoch": 14,
+      "best_val_auprc": 1.0000000000000004,
+      "checkpoint_path": "checkpoints/gcn_seed45.pt"
+    },
+    {
+      "model_name": "gcn",
+      "seed": 46,
+      "best_epoch": 13,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gcn_seed46.pt"
+    },
+    {
+      "model_name": "gat",
+      "seed": 42,
+      "best_epoch": 9,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/gat_seed42.pt"
+    },
+    {
+      "model_name": "gat",
+      "seed": 43,
+      "best_epoch": 8,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gat_seed43.pt"
+    },
+    {
+      "model_name": "gat",
+      "seed": 44,
+      "best_epoch": 7,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gat_seed44.pt"
+    },
+    {
+      "model_name": "gat",
+      "seed": 45,
+      "best_epoch": 4,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/gat_seed45.pt"
+    },
+    {
+      "model_name": "gat",
+      "seed": 46,
+      "best_epoch": 17,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/gat_seed46.pt"
+    },
+    {
+      "model_name": "graphsage",
+      "seed": 42,
+      "best_epoch": 11,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/graphsage_seed42.pt"
+    },
+    {
+      "model_name": "graphsage",
+      "seed": 43,
+      "best_epoch": 4,
+      "best_val_auprc": 1.0000000000000002,
+      "checkpoint_path": "checkpoints/graphsage_seed43.pt"
+    },
+    {
+      "model_name": "graphsage",
+      "seed": 44,
+      "best_epoch": 3,
+      "best_val_auprc": 1.0000000000000004,
+      "checkpoint_path": "checkpoints/graphsage_seed44.pt"
+    },
+    {
+      "model_name": "graphsage",
+      "seed": 45,
+      "best_epoch": 5,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/graphsage_seed45.pt"
+    },
+    {
+      "model_name": "graphsage",
+      "seed": 46,
+      "best_epoch": 8,
+      "best_val_auprc": 1.0000000000000004,
+      "checkpoint_path": "checkpoints/graphsage_seed46.pt"
+    },
+    {
+      "model_name": "gine",
+      "seed": 42,
+      "best_epoch": 19,
+      "best_val_auprc": 0.9865134865134865,
+      "checkpoint_path": "checkpoints/gine_seed42.pt"
+    },
+    {
+      "model_name": "gine",
+      "seed": 43,
+      "best_epoch": 20,
+      "best_val_auprc": 0.9958592132505176,
+      "checkpoint_path": "checkpoints/gine_seed43.pt"
+    },
+    {
+      "model_name": "gine",
+      "seed": 44,
+      "best_epoch": 18,
+      "best_val_auprc": 0.9917800453514739,
+      "checkpoint_path": "checkpoints/gine_seed44.pt"
+    },
+    {
+      "model_name": "gine",
+      "seed": 45,
+      "best_epoch": 19,
+      "best_val_auprc": 0.9885749171463457,
+      "checkpoint_path": "checkpoints/gine_seed45.pt"
+    },
+    {
+      "model_name": "gine",
+      "seed": 46,
+      "best_epoch": 19,
+      "best_val_auprc": 0.9955679241393527,
+      "checkpoint_path": "checkpoints/gine_seed46.pt"
+    },
+    {
+      "model_name": "scnn",
+      "seed": 42,
+      "best_epoch": 9,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/scnn_seed42.pt"
+    },
+    {
+      "model_name": "scnn",
+      "seed": 43,
+      "best_epoch": 8,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/scnn_seed43.pt"
+    },
+    {
+      "model_name": "scnn",
+      "seed": 44,
+      "best_epoch": 13,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/scnn_seed44.pt"
+    },
+    {
+      "model_name": "scnn",
+      "seed": 45,
+      "best_epoch": 12,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/scnn_seed45.pt"
+    },
+    {
+      "model_name": "scnn",
+      "seed": 46,
+      "best_epoch": 17,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/scnn_seed46.pt"
+    },
+    {
+      "model_name": "ccnn",
+      "seed": 42,
+      "best_epoch": 9,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/ccnn_seed42.pt"
+    },
+    {
+      "model_name": "ccnn",
+      "seed": 43,
+      "best_epoch": 6,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/ccnn_seed43.pt"
+    },
+    {
+      "model_name": "ccnn",
+      "seed": 44,
+      "best_epoch": 9,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/ccnn_seed44.pt"
+    },
+    {
+      "model_name": "ccnn",
+      "seed": 45,
+      "best_epoch": 15,
+      "best_val_auprc": 0.9978354978354979,
+      "checkpoint_path": "checkpoints/ccnn_seed45.pt"
+    },
+    {
+      "model_name": "ccnn",
+      "seed": 46,
+      "best_epoch": 9,
+      "best_val_auprc": 1.0,
+      "checkpoint_path": "checkpoints/ccnn_seed46.pt"
+    },
+    {
+      "model_name": "toporingnet",
+      "seed": 42,
+      "best_epoch": 8,
+      "best_val_auprc": 0.9877324263038552,
+      "checkpoint_path": "checkpoints/toporingnet_seed42.pt"
+    },
+    {
+      "model_name": "toporingnet",
+      "seed": 43,
+      "best_epoch": 15,
+      "best_val_auprc": 0.9785714285714284,
+      "checkpoint_path": "checkpoints/toporingnet_seed43.pt"
+    },
+    {
+      "model_name": "toporingnet",
+      "seed": 44,
+      "best_epoch": 12,
+      "best_val_auprc": 0.9814814814814816,
+      "checkpoint_path": "checkpoints/toporingnet_seed44.pt"
+    },
+    {
+      "model_name": "toporingnet",
+      "seed": 45,
+      "best_epoch": 15,
+      "best_val_auprc": 0.982905982905983,
+      "checkpoint_path": "checkpoints/toporingnet_seed45.pt"
+    },
+    {
+      "model_name": "toporingnet",
+      "seed": 46,
+      "best_epoch": 10,
+      "best_val_auprc": 0.9708773164438189,
+      "checkpoint_path": "checkpoints/toporingnet_seed46.pt"
+    }
   ]
 }
