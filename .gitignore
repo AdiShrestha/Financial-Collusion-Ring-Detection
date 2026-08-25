@@ -34,6 +34,7 @@ htmlcov/
 
 # Data & LaTeX Build Artifacts
 data/raw/
+artifacts/raw/
 paper/*.aux
 paper/*.log
 paper/*.out
