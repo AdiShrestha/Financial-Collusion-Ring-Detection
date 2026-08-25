@@ -21,6 +21,8 @@ def test_release_packager_manifest_assembly():
         readme = f.read()
     assert "Quick Start" in readme
     assert "Reproduction" in readme or "reproduction" in readme
-    assert "TopoRingNet" in readme
+    assert "Pattern-Grounded AML Cycle Classification" in readme
+    assert "TopoRingNet" not in readme
+    assert "not a clean-room reproduction" in readme.lower()
 
     assert result["file_count"] >= 3

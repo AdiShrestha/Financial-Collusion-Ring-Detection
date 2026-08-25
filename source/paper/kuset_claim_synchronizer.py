@@ -1,250 +1,102 @@
-"""KUSET Automated Claim & LaTeX Macro Synchronizer.
-
-Contract C14-05 (T-COMP): Audits and synchronizes 100% of reported numerical values, tables,
-confidence intervals, and p-values in paper/kuset_main.tex against results/production_confirmatory_stats.json (|Delta| < 1e-4).
-"""
+"""Fail-closed synchronization of KUSET manuscript claims to canonical results."""
 
 import json
 import os
 import re
-import sys
-from typing import Any, Dict, List, Tuple
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+from typing import Any, Dict
 
 
 class KUSETClaimSynchronizer:
-    """Audits and synchronizes LaTeX macros and tables in paper/kuset_main.tex against results data."""
+    """Synchronize result macros and reject known stale release claims."""
 
-    def __init__(
-        self,
-        tex_path: str = "paper/kuset_main.tex",
-        stats_path: str = "results/production_confirmatory_stats.json",
-    ):
+    def __init__(self, tex_path="paper/kuset_main.tex", stats_path="results/production_confirmatory_stats.json"):
         self.tex_path = tex_path
         self.stats_path = stats_path
 
-    def parse_tex_macros(self) -> Dict[str, str]:
-        r"""Extract all \def\macroName{val} declarations from the TeX file."""
+    def _load(self):
+        if not os.path.exists(self.stats_path):
+            raise FileNotFoundError(f"Missing statistics: {self.stats_path}")
         if not os.path.exists(self.tex_path):
-            raise FileNotFoundError(f"Missing LaTeX manuscript: {self.tex_path}")
+            raise FileNotFoundError(f"Missing manuscript: {self.tex_path}")
+        with open(self.stats_path, encoding="utf-8") as handle:
+            stats = json.load(handle)
+        with open(self.tex_path, encoding="utf-8") as handle:
+            tex = handle.read()
+        return stats, tex
 
-        with open(self.tex_path, "r", encoding="utf-8") as f:
-            content = f.read()
+    def parse_tex_macros(self) -> Dict[str, str]:
+        _, tex = self._load()
+        return dict(re.findall(r"\\def\\([A-Za-z0-9]+)\{([^}]*)\}", tex))
 
-        pattern = r"\\def\\([a-zA-Z0-9]+)\{([^}]+)\}"
-        matches = re.findall(pattern, content)
-        return {k: v.strip() for k, v in matches}
+    @staticmethod
+    def expected_macros(stats: Dict[str, Any]) -> Dict[str, str]:
+        models = stats["model_benchmark"]
+        rq = stats["hypothesis_tests"]
+        mapping = {
+            "candidateCount": str(stats["total_candidates"]), "groupCount": str(stats["total_groups"]),
+            "seedCount": str(len(stats["seeds"])), "checkpointCount": str(len(stats["seeds"]) * len(stats["models"]) * 5),
+        }
+        model_keys = {
+            "lr": "logistic_regression", "hgb": "hist_gradient_boosting", "gcn": "gcn", "gat": "gat",
+            "sage": "graphsage", "gine": "gine", "scnn": "scnn", "ccnn": "ccnn",
+        }
+        for prefix, key in model_keys.items():
+            model = models[key]
+            mapping[f"{prefix}AP"] = f"{model['average_precision']:.4f}"
+            mapping[f"{prefix}APLo"] = f"{model['average_precision_ci_95'][0]:.3f}"
+            mapping[f"{prefix}APHi"] = f"{model['average_precision_ci_95'][1]:.3f}"
+            mapping[f"{prefix}ROC"] = f"{model['roc_auc']:.4f}"
+            mapping[f"{prefix}FOne"] = f"{model['f1_score']:.4f}"
+        for prefix, key in (("rqOne", "RQ1_ccnn_vs_gine"), ("rqTwo", "RQ2_ccnn_vs_scnn_kge4"), ("rqThree", "RQ3_lr_vs_gine")):
+            result = rq[key]
+            mapping[f"{prefix}Delta"] = f"{result['delta_ap']:.4f}"
+            mapping[f"{prefix}RawP"] = f"{result['p_value_raw']:.4f}"
+            if result["p_value_adjusted"] is not None:
+                mapping[f"{prefix}AdjP"] = f"{result['p_value_adjusted']:.4f}"
+        return mapping
 
     def synchronize_tex_file(self) -> None:
-        """Update TeX macros in paper/kuset_main.tex directly from stats JSON."""
-        if not os.path.exists(self.stats_path) or not os.path.exists(self.tex_path):
-            return
-
-        with open(self.stats_path, "r", encoding="utf-8") as f:
-            stats_data = json.load(f)
-
-        m_metrics = stats_data["model_metrics"]
-        hypos = stats_data["hypotheses"]
-
-        with open(self.tex_path, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        # Update comprehensive model macros
-        mapping = {
-            # PR-AUC
-            "gcnPrAuc": f"{m_metrics['gcn']['pr_auc_mean']:.4f}",
-            "gcnPrAucStd": f"{m_metrics['gcn']['pr_auc_std']:.4f}",
-            "gatPrAuc": f"{m_metrics['gat']['pr_auc_mean']:.4f}",
-            "gatPrAucStd": f"{m_metrics['gat']['pr_auc_std']:.4f}",
-            "sagePrAuc": f"{m_metrics['graphsage']['pr_auc_mean']:.4f}",
-            "sagePrAucStd": f"{m_metrics['graphsage']['pr_auc_std']:.4f}",
-            "ginePrAuc": f"{m_metrics['gine']['pr_auc_mean']:.4f}",
-            "ginePrAucStd": f"{m_metrics['gine']['pr_auc_std']:.4f}",
-            "scnnPrAuc": f"{m_metrics['scnn']['pr_auc_mean']:.4f}",
-            "scnnPrAucStd": f"{m_metrics['scnn']['pr_auc_std']:.4f}",
-            "ccnnPrAuc": f"{m_metrics['ccnn']['pr_auc_mean']:.4f}",
-            "ccnnPrAucStd": f"{m_metrics['ccnn']['pr_auc_std']:.4f}",
-            "toporingnetPrAuc": f"{m_metrics['toporingnet']['pr_auc_mean']:.4f}",
-            "toporingnetPrAucStd": f"{m_metrics['toporingnet']['pr_auc_std']:.4f}",
-            # ROC-AUC
-            "gcnRocAuc": f"{m_metrics['gcn']['roc_auc_mean']:.4f}",
-            "gcnRocAucStd": f"{m_metrics['gcn']['roc_auc_std']:.4f}",
-            "gatRocAuc": f"{m_metrics['gat']['roc_auc_mean']:.4f}",
-            "gatRocAucStd": f"{m_metrics['gat']['roc_auc_std']:.4f}",
-            "sageRocAuc": f"{m_metrics['graphsage']['roc_auc_mean']:.4f}",
-            "sageRocAucStd": f"{m_metrics['graphsage']['roc_auc_std']:.4f}",
-            "gineRocAuc": f"{m_metrics['gine']['roc_auc_mean']:.4f}",
-            "gineRocAucStd": f"{m_metrics['gine']['roc_auc_std']:.4f}",
-            "scnnRocAuc": f"{m_metrics['scnn']['roc_auc_mean']:.4f}",
-            "scnnRocAucStd": f"{m_metrics['scnn']['roc_auc_std']:.4f}",
-            "ccnnRocAuc": f"{m_metrics['ccnn']['roc_auc_mean']:.4f}",
-            "ccnnRocAucStd": f"{m_metrics['ccnn']['roc_auc_std']:.4f}",
-            "toporingnetRocAuc": f"{m_metrics['toporingnet']['roc_auc_mean']:.4f}",
-            "toporingnetRocAucStd": f"{m_metrics['toporingnet']['roc_auc_std']:.4f}",
-            # F1 Score
-            "gcnFOne": f"{m_metrics['gcn']['f1_mean']:.4f}",
-            "gcnFOneStd": f"{m_metrics['gcn']['f1_std']:.4f}",
-            "gatFOne": f"{m_metrics['gat']['f1_mean']:.4f}",
-            "gatFOneStd": f"{m_metrics['gat']['f1_std']:.4f}",
-            "sageFOne": f"{m_metrics['graphsage']['f1_mean']:.4f}",
-            "sageFOneStd": f"{m_metrics['graphsage']['f1_std']:.4f}",
-            "gineFOne": f"{m_metrics['gine']['f1_mean']:.4f}",
-            "gineFOneStd": f"{m_metrics['gine']['f1_std']:.4f}",
-            "scnnFOne": f"{m_metrics['scnn']['f1_mean']:.4f}",
-            "scnnFOneStd": f"{m_metrics['scnn']['f1_std']:.4f}",
-            "ccnnFOne": f"{m_metrics['ccnn']['f1_mean']:.4f}",
-            "ccnnFOneStd": f"{m_metrics['ccnn']['f1_std']:.4f}",
-            "toporingnetFOne": f"{m_metrics['toporingnet']['f1_mean']:.4f}",
-            "toporingnetFOneStd": f"{m_metrics['toporingnet']['f1_std']:.4f}",
-            # Ensemble PR-AUC
-            "gcnEnsemblePrAuc": f"{m_metrics['gcn']['ensemble_pr_auc']:.4f}",
-            "gatEnsemblePrAuc": f"{m_metrics['gat']['ensemble_pr_auc']:.4f}",
-            "sageEnsemblePrAuc": f"{m_metrics['graphsage']['ensemble_pr_auc']:.4f}",
-            "gineEnsemblePrAuc": f"{m_metrics['gine']['ensemble_pr_auc']:.4f}",
-            "scnnEnsemblePrAuc": f"{m_metrics['scnn']['ensemble_pr_auc']:.4f}",
-            "ccnnEnsemblePrAuc": f"{m_metrics['ccnn']['ensemble_pr_auc']:.4f}",
-            "toporingnetEnsemblePrAuc": f"{m_metrics['toporingnet']['ensemble_pr_auc']:.4f}",
-            # Hypotheses
-            "hOneDelta": f"{hypos['H1']['delta_pr_auc']:.4f}",
-            "hOnePAdj": f"{hypos['H1']['wilcoxon_p_adj']:.4f}",
-            "hTwoDelta": f"{hypos['H2']['delta_pr_auc']:.4f}",
-            "hTwoPAdj": f"{hypos['H2']['wilcoxon_p_adj']:.4f}",
-            "hThreeDelta": f"{hypos['H3']['delta_pr_auc']:.4f}",
-            "hThreePAdj": f"{hypos['H3']['wilcoxon_p_adj']:.4f}",
-        }
-
-        for macro_name, val in mapping.items():
-            pattern = rf"(\\def\\{macro_name}\{{)[^\}}]*(\}})"
-            content = re.sub(pattern, rf"\g<1>{val}\g<2>", content)
-
-        with open(self.tex_path, "w", encoding="utf-8") as f:
-            f.write(content)
+        stats, tex = self._load()
+        for name, value in self.expected_macros(stats).items():
+            pattern = rf"(\\def\\{re.escape(name)}\{{)[^}}]*(\}})"
+            if not re.search(pattern, tex):
+                raise ValueError(f"Required manuscript macro missing: {name}")
+            tex = re.sub(pattern, rf"\g<1>{value}\g<2>", tex)
+        with open(self.tex_path, "w", encoding="utf-8") as handle:
+            handle.write(tex)
 
     def audit_claim_synchronization(self, tolerance: float = 1e-4) -> Dict[str, Any]:
-        """Verify all LaTeX values against results/production_confirmatory_stats.json."""
-        if not os.path.exists(self.stats_path):
-            raise FileNotFoundError(f"Missing stats file: {self.stats_path}")
-
-        with open(self.stats_path, "r", encoding="utf-8") as f:
-            stats_data = json.load(f)
-
-        macros = self.parse_tex_macros()
-        m_metrics = stats_data["model_metrics"]
-        hypos = stats_data["hypotheses"]
-
-        checks = []
-        discrepancies = []
-
-        # Check model metrics
-        model_macro_map = {
-            "gcn": [
-                ("gcnPrAuc", "pr_auc_mean"),
-                ("gcnRocAuc", "roc_auc_mean"),
-                ("gcnFOne", "f1_mean"),
-                ("gcnEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
-            "gat": [
-                ("gatPrAuc", "pr_auc_mean"),
-                ("gatRocAuc", "roc_auc_mean"),
-                ("gatFOne", "f1_mean"),
-                ("gatEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
-            "graphsage": [
-                ("sagePrAuc", "pr_auc_mean"),
-                ("sageRocAuc", "roc_auc_mean"),
-                ("sageFOne", "f1_mean"),
-                ("sageEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
-            "gine": [
-                ("ginePrAuc", "pr_auc_mean"),
-                ("gineRocAuc", "roc_auc_mean"),
-                ("gineFOne", "f1_mean"),
-                ("gineEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
-            "scnn": [
-                ("scnnPrAuc", "pr_auc_mean"),
-                ("scnnRocAuc", "roc_auc_mean"),
-                ("scnnFOne", "f1_mean"),
-                ("scnnEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
-            "ccnn": [
-                ("ccnnPrAuc", "pr_auc_mean"),
-                ("ccnnRocAuc", "roc_auc_mean"),
-                ("ccnnFOne", "f1_mean"),
-                ("ccnnEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
-            "toporingnet": [
-                ("toporingnetPrAuc", "pr_auc_mean"),
-                ("toporingnetRocAuc", "roc_auc_mean"),
-                ("toporingnetFOne", "f1_mean"),
-                ("toporingnetEnsemblePrAuc", "ensemble_pr_auc"),
-            ],
+        stats, tex = self._load()
+        expected = self.expected_macros(stats)
+        actual = dict(re.findall(r"\\def\\([A-Za-z0-9]+)\{([^}]*)\}", tex))
+        discrepancies = [f"{name}: expected={value}, actual={actual.get(name)}" for name, value in expected.items() if actual.get(name) != value]
+        banned_patterns = {
+            "three_seed_claim": r"3 (?:evaluation |random )?seeds|seeds? \\?\{42, 43, 44\\?\}",
+            "stale_p_0012": r"0\.0012", "stale_p_1108": r"0\.1108", "stale_p_0116": r"0\.0116",
+            "stale_toporingnet_result": r"\\def\\toporingnet|TopoRingNet AP",
+            "false_preregistration": r"pre-registered (?:hypotheses|confirmatory)",
+            "false_clean_room": r"turnkey clean-room|clean-room replication",
+            "fabricated_author": r"Antigravity Research Group|research@ku\.edu\.np",
         }
-
-        for model_key, macro_list in model_macro_map.items():
-            for macro_name, metric_field in macro_list:
-                if macro_name in macros and model_key in m_metrics:
-                    tex_val = float(macros[macro_name])
-                    true_val = float(m_metrics[model_key][metric_field])
-                    diff = abs(tex_val - true_val)
-                    check_passed = diff < tolerance
-                    checks.append({
-                        "macro": macro_name,
-                        "tex_val": tex_val,
-                        "true_val": true_val,
-                        "diff": diff,
-                        "passed": check_passed,
-                    })
-                    if not check_passed:
-                        discrepancies.append(f"{macro_name}: tex={tex_val}, true={true_val}, diff={diff}")
-
-        # Check hypothesis p-values
-        hypo_macro_map = {
-            "H1": [("hOneDelta", "delta_pr_auc"), ("hOnePAdj", "wilcoxon_p_adj")],
-            "H2": [("hTwoDelta", "delta_pr_auc"), ("hTwoPAdj", "wilcoxon_p_adj")],
-            "H3": [("hThreeDelta", "delta_pr_auc"), ("hThreePAdj", "wilcoxon_p_adj")],
-        }
-
-        for h_key, macro_list in hypo_macro_map.items():
-            for macro_name, field_name in macro_list:
-                if macro_name in macros and h_key in hypos:
-                    tex_val = float(macros[macro_name])
-                    true_val = float(hypos[h_key][field_name])
-                    diff = abs(tex_val - true_val)
-                    check_passed = diff < tolerance
-                    checks.append({
-                        "macro": macro_name,
-                        "tex_val": tex_val,
-                        "true_val": true_val,
-                        "diff": diff,
-                        "passed": check_passed,
-                    })
-                    if not check_passed:
-                        discrepancies.append(f"{macro_name}: tex={tex_val}, true={true_val}, diff={diff}")
-
-        all_synced = len(discrepancies) == 0 and len(checks) >= 20
-        status = "SYNCHRONIZED" if all_synced else "DISCREPANCY_DETECTED"
-
+        banned_hits = [name for name, pattern in banned_patterns.items() if re.search(pattern, tex, re.I)]
+        required = [
+            "corrective analysis", "pattern-grounded", "synthetic", "18 protected", "five seeds",
+            "cohort construction", "not a prospectively preregistered", "same-model self-adversarial", "AUTHOR DETAILS REQUIRED",
+        ]
+        missing = [phrase for phrase in required if phrase.lower() not in tex.lower()]
+        for fragment in ("generated/tab_cohort_stats.tex", "generated/tab_model_benchmark.tex", "generated/tab_hypothesis_tests.tex", "generated/tab_ablation.tex"):
+            if rf"\input{{{fragment}}}" not in tex:
+                discrepancies.append(f"missing fragment input: {fragment}")
+        passed = not discrepancies and not banned_hits and not missing
         return {
-            "status": status,
-            "all_synced": all_synced,
-            "all_synchronized": all_synced,
-            "total_checks": len(checks),
-            "passed_checks": sum(1 for c in checks if c["passed"]),
-            "discrepancies_count": len(discrepancies),
-            "discrepancies": discrepancies,
-            "checks": checks,
+            "status": "SYNCHRONIZED" if passed else "DISCREPANCY_DETECTED", "all_synced": passed,
+            "all_synchronized": passed, "total_checks": len(expected), "passed_checks": len(expected) - len(discrepancies),
+            "discrepancies_count": len(discrepancies) + len(banned_hits) + len(missing), "discrepancies": discrepancies,
+            "banned_hits": banned_hits, "missing_required_phrases": missing,
         }
 
 
 if __name__ == "__main__":
-    sync = KUSETClaimSynchronizer()
-    sync.synchronize_tex_file()
-    res = sync.audit_claim_synchronization()
-    print(f"KUSET Claim Synchronization Status: {res['status']} ({res['passed_checks']} checks passed, {res['discrepancies_count']} discrepancies)")
-    if not res["all_synced"]:
-        for d in res["discrepancies"]:
-            print(f"  - {d}")
-        sys.exit(1)
-    sys.exit(0)
+    synchronizer = KUSETClaimSynchronizer()
+    synchronizer.synchronize_tex_file()
+    print(json.dumps(synchronizer.audit_claim_synchronization(), indent=2))

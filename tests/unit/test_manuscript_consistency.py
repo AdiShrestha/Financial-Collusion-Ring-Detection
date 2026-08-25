@@ -7,6 +7,7 @@ import sys
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+from source.paper.kuset_claim_synchronizer import KUSETClaimSynchronizer
 
 
 def test_manuscript_fragments_and_figures_exist():
@@ -48,3 +49,8 @@ def test_manuscript_numerical_consistency_with_stats():
     assert "515,080" in tex_content
     assert "155" in tex_content
     assert "B_1 B_2 = 0" in tex_content or r"\mathbf{B}_1 \mathbf{B}_2 = \mathbf{0}" in tex_content
+
+
+def test_exhaustive_claim_synchronizer_passes():
+    audit = KUSETClaimSynchronizer().audit_claim_synchronization()
+    assert audit["all_synchronized"], audit

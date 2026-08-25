@@ -3,12 +3,14 @@
 import json
 import os
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from source.data.candidate_extractor import CandidateExample
 from source.models.cell_net import CellularComplexNet
 from source.models.gnn_baselines import GATBaseline, GCNBaseline, GraphSAGEBaseline
@@ -236,3 +238,10 @@ class GateCVerifier:
             json.dump(report, f, indent=2)
 
         return report
+
+
+if __name__ == "__main__":
+    v = GateCVerifier(output_report_path="project/gate_c_report.json")
+    batch = generate_gate_c_synthetic_batch(size=10)
+    rep = v.run_memorization_smoke_test(batch_items=batch, max_epochs=100, lr=0.02)
+    print(f"Gate C status: {rep['gate_c_status']}")

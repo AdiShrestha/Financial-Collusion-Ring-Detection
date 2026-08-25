@@ -2,10 +2,12 @@
 
 import json
 import os
+import sys
 import time
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from source.evidence.protocol_lock import ProtocolLock
 
 
@@ -168,3 +170,9 @@ class GateEVerifier:
             json.dump(report, f, indent=2)
 
         return report
+
+
+if __name__ == "__main__":
+    v = GateEVerifier()
+    res = v.verify_gate_e("project/gate_e_report.json")
+    print(f"Gate E status: {res['gate_e_status']}")

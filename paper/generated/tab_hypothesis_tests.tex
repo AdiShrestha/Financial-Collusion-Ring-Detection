@@ -1,14 +1,13 @@
 \begin{table}[htbp]
 \centering
-\caption{Confirmatory Group-Blocked Permutation Hypothesis Tests (10,000 Permutations)}
+\caption{Corrective Group-Blocked Permutation Comparisons (10,000 permutations)}
 \label{tab:hypothesis_tests}
 \begin{tabular}{llcccc}
 \hline
-\textbf{Research Question} & \textbf{Comparison} & \textbf{Observed $\Delta$AP} & \textbf{Raw $p$-value} & \textbf{Adjusted $p$-value} & \textbf{Significant?} \\
+\textbf{Role} & \textbf{Comparison} & \textbf{$\Delta$AP (95\% CI)} & \textbf{Raw $p$} & \textbf{Holm $p$} & \textbf{Interpretation} \\
 \hline
-RQ3_LR_vs_GINE & LOGISTIC_REGRESSION vs GINE & +0.3850 & 0.0021 & 0.0063 & Yes ($p < 0.05$) \\
-RQ1_CCNN_vs_GINE & CCNN vs GINE & +0.2791 & 0.0348 & 0.0696 & No \\
-RQ2_CCNN_vs_SCNN_k_ge_4 & CCNN vs SCNN & -0.1116 & 0.9960 & 0.9960 & No \\
+RQ1: Cellular vs GNN & CCNN vs GINE & +0.3838 & 0.0881 & 0.1762 & Not significant \\
+RQ2: Cellular vs Simplicial ($k \ge 4$) & CCNN vs SCNN & -0.0025 & 0.5324 & 0.5324 & Not significant \\
 \hline
 \end{tabular}
 \end{table}

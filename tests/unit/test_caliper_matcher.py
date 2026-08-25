@@ -9,30 +9,35 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from source.data.negative_cycle_sampler import match_and_assemble_candidates
 
 
-def test_caliper_matching_and_relational_dataset_assembly():
+def test_caliper_matching_and_relational_dataset_assembly(tmp_path):
     """Verify caliper matching builds consistent relational Parquet tables with zero leakage."""
+    out_cands = str(tmp_path / "candidates.parquet")
+    out_txs = str(tmp_path / "candidate_transactions.parquet")
+    out_lbls = str(tmp_path / "labels.parquet")
+    out_bal = str(tmp_path / "covariate_balance.json")
+
     res = match_and_assemble_candidates(
         pos_parquet_path="artifacts/candidates/positive_candidates.parquet",
         ben_parquet_path="artifacts/candidates/benign_pool.parquet",
-        output_candidates_path="artifacts/candidates/candidates.parquet",
-        output_candidate_txs_path="artifacts/candidates/candidate_transactions.parquet",
-        output_labels_path="artifacts/candidates/labels.parquet",
-        output_balance_path="artifacts/candidates/covariate_balance.json",
+        output_candidates_path=out_cands,
+        output_candidate_txs_path=out_txs,
+        output_labels_path=out_lbls,
+        output_balance_path=out_bal,
         match_ratio=3,
     )
 
     assert res["status"] == "ASSEMBLED"
     assert res["total_positive"] == 40
     assert res["total_negative"] >= 40
-    assert os.path.exists("artifacts/candidates/candidates.parquet")
-    assert os.path.exists("artifacts/candidates/candidate_transactions.parquet")
-    assert os.path.exists("artifacts/candidates/labels.parquet")
-    assert os.path.exists("artifacts/candidates/covariate_balance.json")
+    assert os.path.exists(out_cands)
+    assert os.path.exists(out_txs)
+    assert os.path.exists(out_lbls)
+    assert os.path.exists(out_bal)
 
     # Relational consistency check
-    cand_tbl = pq.read_table("artifacts/candidates/candidates.parquet")
-    tx_tbl = pq.read_table("artifacts/candidates/candidate_transactions.parquet")
-    lbl_tbl = pq.read_table("artifacts/candidates/labels.parquet")
+    cand_tbl = pq.read_table(out_cands)
+    tx_tbl = pq.read_table(out_txs)
+    lbl_tbl = pq.read_table(out_lbls)
 
     assert cand_tbl.num_rows == res["total_candidates"]
     assert lbl_tbl.num_rows == res["total_candidates"]

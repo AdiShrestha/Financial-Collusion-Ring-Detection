@@ -1,170 +1,110 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,amsfonts,amsthm}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{cite}
-\usepackage{hyperref}
-\usepackage{microtype}
-\usepackage{authblk}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,booktabs,cite,hyperref,microtype,authblk,lineno,times}
+\linenumbers
 
-\title{\textbf{Benchmarking Graph and Cellular-Complex Models for Pattern-Grounded Money-Laundering Cycle Classification on IBM AMLworld HI-Small}}
+% Machine-synchronized empirical macros. Prose must use these rather than literals.
+\def\candidateCount{155}\def\groupCount{18}\def\seedCount{5}\def\checkpointCount{200}
+\def\lrAP{0.8534}\def\lrAPLo{0.700}\def\lrAPHi{0.970}\def\lrROC{0.9433}\def\lrFOne{0.7532}
+\def\hgbAP{0.8225}\def\hgbAPLo{0.623}\def\hgbAPHi{0.954}\def\hgbROC{0.9211}\def\hgbFOne{0.6667}
+\def\gcnAP{0.2868}\def\gcnAPLo{0.265}\def\gcnAPHi{0.376}\def\gcnROC{0.5088}\def\gcnFOne{0.3704}
+\def\gatAP{0.3628}\def\gatAPLo{0.331}\def\gatAPHi{0.616}\def\gatROC{0.6183}\def\gatFOne{0.3738}
+\def\sageAP{0.2816}\def\sageAPLo{0.278}\def\sageAPHi{0.384}\def\sageROC{0.5215}\def\sageFOne{0.3952}
+\def\gineAP{0.3392}\def\gineAPLo{0.292}\def\gineAPHi{0.604}\def\gineROC{0.6591}\def\gineFOne{0.3529}
+\def\scnnAP{0.7384}\def\scnnAPLo{0.555}\def\scnnAPHi{0.941}\def\scnnROC{0.9097}\def\scnnFOne{0.7160}
+\def\ccnnAP{0.7229}\def\ccnnAPLo{0.491}\def\ccnnAPHi{0.969}\def\ccnnROC{0.9061}\def\ccnnFOne{0.7059}
+\def\rqOneDelta{0.3838}\def\rqOneRawP{0.0881}\def\rqOneAdjP{0.1762}
+\def\rqTwoDelta{-0.0025}\def\rqTwoRawP{0.5324}\def\rqTwoAdjP{0.5324}
+\def\rqThreeDelta{0.5142}\def\rqThreeRawP{0.0047}
 
-\author[1]{\textbf{Research Team}}
-\author[1]{\textbf{Department of Computer Science and Engineering}}
-\affil[1]{Kathmandu University, Dhulikhel, Kavre, Nepal}
-\date{\today}
+\title{Benchmarking Graph and Cellular-Complex Models for Pattern-Grounded Money-Laundering Cycle Classification}
+\author{\textbf{[AUTHOR DETAILS REQUIRED BEFORE SUBMISSION]}}
+\affil{[Affiliation and corresponding-author email required]}
+\date{}
 
 \begin{document}
-
 \maketitle
 
 \begin{abstract}
-Detecting circular money-laundering schemes (collusion rings and smurfing cycles) in financial multigraphs is a critical challenge in anti-money laundering (AML) surveillance. While standard Graph Neural Networks (GNNs) operate predominantly on 1-skeletons (pairwise node-edge transfers), higher-order Topological Deep Learning (TDL) architectures—such as Simplicial Complex Neural Networks (SCNN) and Cellular Complex Neural Networks (CCNN)—theoretically capture multi-hop cycle flow conservation and 2-cell boundary structures through combinatorial Laplacians ($B_1 B_2 = 0$). In this study, we present a pre-registered, leak-free empirical benchmark comparing tabular feature baselines (Logistic Regression, HistGradientBoosting), standard spatial GNNs (GCN, GAT, GraphSAGE), edge-aware GNNs (GINE), and higher-order topological cellular architectures across all directed cycle patterns ($k \in [3..12]$) in the official synthetic IBM AMLworld \texttt{HI-Small} dataset (5,078,345 transactions, 515,080 active accounts). Under a strict 5-fold outer stratified group cross-validation with 0.0\% cross-fold account leakage, our empirical results show that global monetary flow models (Logistic Regression AP: 0.8534, 95\% CI [0.734, 0.984]) and topological cellular architectures (SCNN AP: 0.8557, 95\% CI [0.715, 0.980]; CCNN AP: 0.7475, 95\% CI [0.672, 0.958]) significantly outperform local 1-skeleton message-passing baselines (GINE AP: 0.4684; GAT AP: 0.4089; GCN AP: 0.3064). A group-blocked model-swap permutation test (10,000 permutations) confirms that global flow features provide statistically significant discrimination over standard edge-conditioned GNNs ($\Delta\text{AP} = +0.3850, p_{\text{adj}} = 0.0063$). We release turnkey reproduction scripts, certified boundary audits, and trained checkpoint bundles.
+We compare tabular, graph-neural, simplicial, and cellular models for pattern-grounded classification of directed transaction cycles in the synthetic IBM AMLworld HI-Small benchmark. The cohort contains \candidateCount{} candidates assigned to \groupCount{} protected account-connected groups. Five-fold outer group cross-validation and three inner group folds prevent account overlap and select decision thresholds; fixed model configurations are repeated over five seeds and predictions are averaged per candidate. Logistic Regression obtains average precision (AP) \lrAP{} (95\% group-bootstrap CI [\lrAPLo{}, \lrAPHi{}]); SCNN obtains \scnnAP{} [\scnnAPLo{}, \scnnAPHi{}], CCNN \ccnnAP{} [\ccnnAPLo{}, \ccnnAPHi{}], and GINE \gineAP{} [\gineAPLo{}, \gineAPHi{}]. In the two-comparison primary family, CCNN exceeds GINE by \rqOneDelta{} AP, but the group-blocked permutation result is not significant after Holm correction ($p_{\mathrm{adj}}=\rqOneAdjP{}$). On cycles of length at least four, CCNN and SCNN are nearly indistinguishable ($\Delta\mathrm{AP}=\rqTwoDelta{}$, $p_{\mathrm{adj}}=\rqTwoAdjP{}$). An exploratory LR--GINE comparison favors LR ($\Delta\mathrm{AP}=\rqThreeDelta{}$, unadjusted $p=\rqThreeRawP{}$). These results support the usefulness of global and higher-order representations on this candidate cohort, but not cellular superiority over the tested alternatives.
 \end{abstract}
 
-\vspace{0.5em}
-\noindent\textbf{Keywords:} Anti-Money Laundering, Topological Deep Learning, Cellular Complexes, Graph Neural Networks, Boundary Nilpotency, Cycle Detection, AMLworld.
+\noindent\textbf{Keywords:} anti-money laundering; cellular complex; graph neural network; transaction cycle; synthetic benchmark
 
-\section{Introduction}
-Financial fraud, capital flight, and illicit fund laundering frequently exploit circular transaction topologies to obscure fund provenance and frustrate conventional rules-based monitoring systems \cite{altman2023realistic}. In a typical laundering cycle, illicit funds are divided across intermediate layering accounts, transferred through sequences of $k$ distinct bank entities, and returned to a designated beneficiary account to simulate legitimate commercial revenue.
+\section{INTRODUCTION}
+Circular transaction patterns are a common synthetic anti-money-laundering (AML) typology, but a closed walk is a global structure that ordinary one-hop aggregation does not encode directly. Graph neural networks (GNNs) model pairwise transactions \cite{kipf2016semi,velickovic2018graph,hamilton2017inductive}; simplicial and cellular networks extend message passing to higher-order objects \cite{bodnar2021weisfeiler,bodnar2021cellular}. We ask a deliberately narrow question: how do these representations compare after a cycle candidate has already been defined?
 
-Recent machine learning approaches have applied Graph Neural Networks (GNNs) \cite{kipf2016semi, velickovic2018graph, hamilton2017inductive} to transaction graphs. However, standard 1-skeleton message passing aggregates features exclusively over immediate node neighborhoods. Consequently, spatial 1-skeleton GNNs struggle to distinguish closed topological cycles from acyclic multi-hop paths without specialized edge attributes or higher-order boundary representations.
+This is a pattern-grounded candidate-classification study, not unconstrained whole-network laundering discovery. Its contributions are an account-grouped comparison of eight model families, an algebraically checked distinction between triangulated simplicial and native polygonal cellular representations, and a corrective statistical analysis whose evidence lineage is explicit.
 
-To overcome these structural limitations, Topological Deep Learning (TDL) has emerged as a principled mathematical framework extending graph convolutions to simplicial complexes \cite{bodnar2021weisfeiler} and cellular (CW) complexes \cite{bodnar2021cellular}. By representing closed polygons as 2-cells and enforcing the fundamental boundary nilpotency operator ($\mathbf{B}_1 \mathbf{B}_2 = \mathbf{0}$), cellular neural networks naturally model circular flow conservation and cycle-level features.
-
-In this paper, we conduct a rigorous, leak-free empirical evaluation on the canonical IBM AMLworld \texttt{HI-Small} benchmark across a total cohort of 155 candidates. We formulate cycle detection as a candidate subgraph classification problem across cycle lengths $k \in [3..12]$. Our contributions are:
-\begin{enumerate}
-    \item \textbf{Exact Relational Cohort Extraction:} We extract 100\% of genuine laundering cycle patterns ($N=40$) from \texttt{HI-Small} and match them with caliper-controlled benign cycles ($N=115$) across a total of 155 candidate graphs on exact cycle length $k \in [3..12]$, duration, and total transfer volume.
-    \item \textbf{Rigorous Leak-Free Group Cross-Validation:} We construct a 5-fold outer stratified cross-validation split using Union-Find component clustering, guaranteeing 0.0\% cross-fold account or transaction leakage (\textit{INV-006}). All feature scalers and models are fitted strictly on outer-training partitions.
-    \item \textbf{Comprehensive Architectural Benchmark:} We benchmark 8 model families across 3 random seeds (120 checkpoints total), spanning Tabular baselines (LR, HGB), GNN baselines (GCN, GAT, GraphSAGE), Edge-Aware GNNs (GINE), and Cellular Architectures (SCNN, CCNN).
-    \item \textbf{Confirmatory Statistical Hypothesis Testing:} We evaluate performance using Average Precision (AP) with 10,000 paired group bootstrap resamples for 95\% confidence intervals and 10,000 group-blocked model-swap permutation tests with Holm-Bonferroni correction.
-\end{enumerate}
-
-\section{Mathematical Foundations}
-\subsection{Graph Representation and 1-Skeleton Message Passing}
-Let $G = (V, E)$ denote a directed multigraph where vertices $v \in V$ represent bank accounts and directed edges $e = (u, v) \in E$ represent financial transactions. Each edge is associated with an attribute vector $\mathbf{x}_e \in \mathbb{R}^{d_1}$ encoding transaction amount, relative timestamp, payment format, and bank indicators.
-
-In a standard spatial GNN, node representations are updated iteratively:
-\begin{equation}
-\mathbf{h}_v^{(l+1)} = \sigma \left( \mathbf{W}_0 \mathbf{h}_v^{(l)} + \sum_{u \in \mathcal{N}(v)} \phi(\mathbf{h}_u^{(l)}, \mathbf{x}_{(u,v)}) \right)
-\end{equation}
-In edge-aware GINE \cite{hu2020strategies}, edge features are linearly projected and added directly to sender node representations:
-\begin{equation}
-\mathbf{h}_v^{(l+1)} = \text{MLP} \left( (1 + \epsilon)\mathbf{h}_v^{(l)} + \sum_{u \in \mathcal{N}(v)} \text{ReLU}(\mathbf{h}_u^{(l)} + \mathbf{W}_e \mathbf{x}_{(u,v)}) \right)
-\end{equation}
-
-\subsection{Cell Complexes and Boundary Nilpotency}
-A regular 2-cell complex $\mathcal{X} = (V, E, C)$ augments the graph 1-skeleton with 2-cells $c \in C$ corresponding to closed polygon cycles $(v_0, v_1, \dots, v_{k-1}, v_0)$. The structural topology is governed by signed boundary incidence matrices:
-\begin{itemize}
-    \item $\mathbf{B}_1 \in \{-1, 0, 1\}^{|V| \times |E|}$: vertex-to-edge incidence matrix where $B_{1}(v, e) = +1$ if $v$ is the target of $e$, $-1$ if $v$ is the source, and $0$ otherwise.
-    \item $\mathbf{B}_2 \in \{-1, 0, 1\}^{|E| \times |C|}$: edge-to-cell incidence matrix where $B_{2}(e, c) = +1$ if edge $e$ is oriented consistently with the cycle boundary $c$.
-\end{itemize}
-
-A fundamental algebraic invariant of all valid cellular complexes is boundary nilpotency:
-\begin{equation}
-\mathbf{B}_1 \mathbf{B}_2 = \mathbf{0}
-\end{equation}
-This condition guarantees that the boundary of a cycle has no boundary vertices, mathematically encoding the circular closure of money-laundering rings.
-
-\section{Experimental Methodology}
-\subsection{Data Cohort and Ingestion}
-We evaluate our methods on the official synthetic IBM AMLworld \texttt{HI-Small} dataset. We parse the full transaction ledger and pattern descriptions, yielding the cohort properties summarized in Table~\ref{tab:cohort_stats}.
+\section{MATERIALS AND METHODS}
+\subsection{Dataset and cohort construction}
+IBM AMLworld HI-Small is a synthetic multi-agent financial benchmark \cite{altman2023realistic}. The observed ledger contains 5,078,345 transactions among 515,080 active accounts. Cohort construction is asymmetric by design and must be considered when interpreting accuracy: 40 positive candidates are reconstructed from official \texttt{CYCLE} pattern blocks, whereas 115 negative cycles are extracted from background transactions, screened against pattern accounts, and matched on cycle length and transaction-level covariates. Consequently, the experiment evaluates labels within an already selected candidate population; it does not measure candidate-extraction recall in an unseen network.
 
 \input{generated/tab_cohort_stats.tex}
 
-\subsection{Caliper Matching of Benign Controls}
-To avoid trivial classification shortcuts based purely on cycle length, each genuine laundering cycle is matched against benign background cycles extracted via bounded depth-first search (DFS) on strongly connected components. All accounts associated with any pattern block in \texttt{HI-Small\_Patterns.txt} are strictly blacklisted from the benign control pool. Controls are matched on exact length $k \in [3..12]$, duration, and transaction amounts.
+\subsection{Representations and models}
+For a candidate graph $G=(V,E)$, spatial models receive node and directed edge attributes. GINE incorporates edge features \cite{hu2020strategies}. SCNN represents a $k\ge4$ polygon using a fan triangulation with artificial chords and multiple triangular 2-simplices. CCNN attaches the same boundary as one polygonal 2-cell. With signed incidence operators $B_1$ and $B_2$, every constructed complex is required to satisfy
+\begin{equation}
+  \mathbf{B}_1 \mathbf{B}_2 = \mathbf{0},
+\end{equation}
+the boundary-of-boundary identity. Cell features are aggregated from boundary-edge features; neither topological model receives the target label as an input feature.
 
-\subsection{Stratified Group Splitting and Fold Isolation}
-To prevent data leakage, we compute connected components across all candidate transactions, accounts, and pattern blocks using Union-Find. We construct a 5-fold outer stratified group cross-validation split where all transactions and accounts of any component belong exclusively to a single fold (\textit{INV-006}). All feature preprocessors are fitted strictly on outer-training folds.
+Eight families are evaluated: Logistic Regression, HistGradientBoosting, GCN, GAT, GraphSAGE, GINE, SCNN, and CCNN. Model configurations are fixed symmetrically. The three inner group folds select only an F1 decision threshold from a fixed grid; this study does not claim a hyperparameter search.
 
-\section{Empirical Results and Discussion}
+\subsection{Evaluation and corrective analysis}
+All candidates sharing accounts belong to one of 18 protected account-connected groups. Five outer folds partition these groups without account or transaction overlap. Each model is fitted with seeds 42--46, producing \checkpointCount{} checkpoints. For ranking metrics, the five seed predictions are averaged for each candidate before evaluation; seeds are repeated optimizations, not independent statistical samples.
 
-\subsection{Overall Benchmark Comparison}
-We evaluate 8 distinct model architectures across all 5 outer folds and 3 evaluation seeds ($S \in \{42, 43, 44\}$). Table~\ref{tab:model_benchmark} presents the out-of-fold performance metrics including Average Precision (AP), ROC-AUC, and F1 score with 95\% group bootstrap confidence intervals.
+The primary metric is average precision. Model intervals use 10,000 whole-group bootstrap resamples. Directional model-swap permutation tests use 10,000 permutations and the plus-one Monte Carlo correction. Holm correction covers the declared primary family: CCNN versus GINE over the full cohort (RQ1), and CCNN versus SCNN for $k\ge4$ (RQ2). LR versus GINE (RQ3) is exploratory and its $p$-value is not multiplicity-adjusted.
 
+The analysis is a corrective analysis locked after Chunk 18 artifact inconsistencies were found. It is not a prospectively preregistered test: an older registration described different models, a single test partition, Wilcoxon tests, and four hypotheses. We disclose this deviation rather than retroactively rewriting the older document.
+
+\section{RESULTS}
 \input{generated/tab_model_benchmark.tex}
 
-As shown in Table~\ref{tab:model_benchmark}, the tabular baselines and topological cellular complex models demonstrate strong performance:
-\begin{itemize}
-    \item \textbf{Global Feature Conservation:} Logistic Regression achieves the highest overall Average Precision of 0.8534 (95\% CI [0.734, 0.984]), demonstrating that global monetary flow variance, duration, and cross-bank transfer statistics provide powerful discriminative signals.
-    \item \textbf{Higher-Order Topological Modeling:} SimplicialNet (SCNN) and CellularComplexNet (CCNN) achieve AP scores of 0.8557 and 0.7475 respectively, significantly outperforming standard spatial GNN baselines.
-    \item \textbf{Spatial GNN Bottleneck:} Standard 1-skeleton GNNs (GCN AP: 0.3064; GAT AP: 0.4089; GraphSAGE AP: 0.4792) struggle on candidate cycle classification because local neighborhood aggregation cannot effectively capture global conservation constraints along multi-hop closed loops.
-\end{itemize}
-
-Figure~\ref{fig:pr_curves} displays the Precision-Recall curves across all benchmarked model families.
+LR has the largest point AP (\lrAP{}), followed by HGB (\hgbAP{}), SCNN (\scnnAP{}), and CCNN (\ccnnAP{}). These rankings are descriptive; overlapping group-bootstrap intervals and the protected-group count limit precision. The spatial models obtain lower point APs: GAT \gatAP{}, GINE \gineAP{}, GCN \gcnAP{}, and GraphSAGE \sageAP{}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/fig_pr_curves.png}
-\caption{Precision-Recall curves across benchmarked model architectures on out-of-fold test candidates.}
+\includegraphics[width=0.78\textwidth]{figures/fig_pr_curves.png}
+\caption{Precision--recall curves from five-seed mean out-of-fold predictions.}
 \label{fig:pr_curves}
 \end{figure}
 
-\subsection{Confirmatory Hypothesis Testing}
-Table~\ref{tab:hypothesis_tests} reports the confirmatory group-blocked model-swap permutation test results (10,000 permutations) across 38 disjoint connected component groups with Holm-Bonferroni multi-hypothesis correction.
-
 \input{generated/tab_hypothesis_tests.tex}
 
-The statistical hypothesis test confirms that global flow features in Logistic Regression significantly outperform edge-aware GNNs (RQ3: $\Delta\text{AP} = +0.3850, p_{\text{raw}} = 0.0021, p_{\text{adj}} = 0.0063$). Cellular Complex Networks also demonstrate a substantial positive gain over GINE (RQ1: $\Delta\text{AP} = +0.2791, p_{\text{raw}} = 0.0348$).
-
-\subsection{Cycle Length Stratification}
-Table~\ref{tab:cycle_ablation} and Figure~\ref{fig:k_ablation} present the distribution of laundering patterns and benign controls across cycle lengths $k \in [3..12]$.
+RQ1 has a positive point difference ($\Delta\mathrm{AP}=\rqOneDelta{}$) but does not reject the directional null after Holm correction ($p_{\mathrm{adj}}=\rqOneAdjP{}$). RQ2 is close to zero ($\Delta\mathrm{AP}=\rqTwoDelta{}$, $p_{\mathrm{adj}}=\rqTwoAdjP{}$), providing no evidence that the native cellular polygon outperforms the triangulated simplicial view in this stratum. The exploratory LR--GINE comparison is larger ($\Delta\mathrm{AP}=\rqThreeDelta{}$, unadjusted $p=\rqThreeRawP{}$), but it is not part of the primary corrected family.
 
 \input{generated/tab_ablation.tex}
-
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/fig_k_ablation.png}
-\caption{Candidate cohort distribution by cycle length ($k \in [3..12]$).}
+\includegraphics[width=0.75\textwidth]{figures/fig_k_ablation.png}
+\caption{Candidate cohort composition by cycle length.}
 \label{fig:k_ablation}
 \end{figure}
 
-\section{Synthetic Benchmark Disclosure}
-In compliance with reproducible scientific standards, we disclose that the experimental evaluations in this study were conducted on the official synthetic IBM AMLworld \texttt{HI-Small} dataset generated by the multi-agent simulator described in \cite{altman2023realistic}. No proprietary or personally identifiable customer banking records were used. All transaction graphs, pattern block identifiers, and model parameters are fully reproducible using the provided release replication scripts.
+\section{DISCUSSION}
+The tabular and topological models show strong ranking performance on this selected synthetic cohort, while the ordinary spatial baselines are weaker. This difference should not be read as proof of an intrinsic architectural advantage: global flow summaries may align closely with the matching and official-pattern construction process, and the positive and negative candidates come from different selection paths. The experiment establishes comparative behavior within the cohort, not operational AML effectiveness.
 
-\section{Conclusion}
-In this study, we conducted a rigorous, pre-registered empirical benchmark evaluating Graph Neural Networks, Tabular Baselines, and Higher-Order Topological Cellular Architectures for pattern-grounded money-laundering cycle classification on IBM AMLworld \texttt{HI-Small}. Our results demonstrate that global monetary flow features and cellular complex representations capturing boundary nilpotency ($\mathbf{B}_1 \mathbf{B}_2 = \mathbf{0}$) significantly outperform conventional 1-skeleton message-passing models. All code, data pipelines, and checkpoints are packaged for turnkey replication.
+The primary cellular comparisons remain inconclusive. RQ1's positive interval is wide and its corrected permutation test is not significant; RQ2 provides neither superiority nor equivalence. A non-significant result is not evidence that the architectures are equivalent.
 
-\bibliographystyle{plain}
+\subsection{Limitations}
+The data are synthetic, the cohort is small (\candidateCount{} candidates in \groupCount{} protected groups), and group-bootstrap uncertainty is correspondingly broad. Positive candidates are official-pattern reconstructions while negatives are extracted controls. Configurations are fixed rather than extensively tuned, so the comparison does not establish each architecture's best attainable performance. Results may not generalize to natural banking networks, other AML typologies, or unconstrained candidate discovery. The Factory methodology review was a same-model self-adversarial review rather than an independent cross-model or human statistical review. Finally, the corrective plan followed discovery of prior artifact inconsistencies and is not prospective preregistration.
+
+\section{CONCLUSION}
+On this pattern-grounded AMLworld cohort, LR, SCNN, and CCNN have high point AP, but the primary tests do not establish CCNN superiority over GINE or SCNN. The most defensible contribution is therefore a reproducible controlled benchmark and a documented negative result for the stronger cellular-superiority claim. The release verifier audits existing artifacts and fails closed on inconsistency; it does not independently recreate the raw dataset from an external source.
+
+\section*{AUTHOR AND DATA-AVAILABILITY NOTE}
+\textbf{AUTHOR DETAILS REQUIRED BEFORE SUBMISSION.} Real author names, affiliations, contribution statements, conflicts, funding, and a corresponding-author email must be supplied by the human authors. The benchmark is synthetic; redistribution and repository-location details must be completed according to the source dataset's terms and the selected archival repository.
+
+\bibliographystyle{unsrt}
 \begin{thebibliography}{10}
-
-\bibitem{altman2023realistic}
-E.~Altman et~al.
-\newblock Realistic synthetic financial transactions for anti-money laundering models.
-\newblock {\em Advances in Neural Information Processing Systems (NeurIPS)}, 36:58924--58941, 2023.
-
-\bibitem{bodnar2021weisfeiler}
-C.~Bodnar, F.~Frasca, Y.~G. Wang, N.~Otter, G.~F. Montufar, P.~Li{\`o}, and M.~Bronstein.
-\newblock Weisfeiler and {Lehman} go topological: Message passing simplicial networks.
-\newblock In {\em International Conference on Machine Learning (ICML)}, pages 1024--1034. PMLR, 2021.
-
-\bibitem{bodnar2021cellular}
-C.~Bodnar, F.~Frasca, N.~Otter, Y.~G. Wang, P.~Li{\`o}, G.~F. Montufar, and M.~Bronstein.
-\newblock Weisfeiler and {Lehman} go cellular: {CW} networks.
-\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}, 34:2625--2640, 2021.
-
-\bibitem{hamilton2017inductive}
-W.~Hamilton, Z.~Ying, and J.~Leskovec.
-\newblock Inductive representation learning on large graphs.
-\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}, pages 1024--1034, 2017.
-
-\bibitem{hu2020strategies}
-W.~Hu et~al.
-\newblock Strategies for pre-training graph neural networks.
-\newblock In {\em International Conference on Learning Representations (ICLR)}, 2020.
-
-\bibitem{kipf2016semi}
-T.~N. Kipf and M.~Welling.
-\newblock Semi-supervised classification with graph convolutional networks.
-\newblock In {\em International Conference on Learning Representations (ICLR)}, 2017.
-
-\bibitem{velickovic2018graph}
-P.~Veli{\v{c}}kovi{\v{c}} et~al.
-\newblock Graph attention networks.
-\newblock In {\em International Conference on Learning Representations (ICLR)}, 2018.
-
+\bibitem{altman2023realistic} E. Altman et al. Realistic synthetic data for anti-money laundering (AMLworld). NeurIPS Datasets and Benchmarks, 2023.
+\bibitem{kipf2016semi} T. N. Kipf and M. Welling. Semi-supervised classification with graph convolutional networks. ICLR, 2017.
+\bibitem{velickovic2018graph} P. Veli\v{c}kovi\'c et al. Graph attention networks. ICLR, 2018.
+\bibitem{hamilton2017inductive} W. Hamilton, Z. Ying, and J. Leskovec. Inductive representation learning on large graphs. NeurIPS, 2017.
+\bibitem{hu2020strategies} W. Hu et al. Strategies for pre-training graph neural networks. ICLR, 2020.
+\bibitem{bodnar2021weisfeiler} C. Bodnar et al. Weisfeiler and Lehman go topological: Message passing simplicial networks. ICML, 2021.
+\bibitem{bodnar2021cellular} C. Bodnar et al. Weisfeiler and Lehman go cellular: CW networks. NeurIPS, 2021.
 \end{thebibliography}
-
 \end{document}

@@ -1,8 +1,9 @@
-"""Real topological cell complex and graph candidate encoder.
+"""Topological Cell and Simplicial Complex Feature Encoder.
 
-Contract C17-02 (T-COMP): Converts candidate transaction subgraphs into node (X0),
-edge (X1), and 2-cell (X2) feature tensors, with oriented boundary matrices B1 in {-1,0,1}^(|V|x|E|)
-and B2 in {-1,0,1}^(|E|x|C|) satisfying exact nilpotency B1 B2 = 0 (INV-004). Serializes fold tensor bundles.
+Contract C17-02 & Scientific Remediation:
+- Cellular Complexes (CWN): Encodes polygonal k-gons (k in [3..12]) as native 2-cells with exact signed incidence matrices (B1 in {-1,0,1}^{|V|x|E|}, B2 in {-1,0,1}^{|E|x|C|}, B1 @ B2 == 0).
+- Simplicial Complexes (MPSN): Encodes cycles via simplicial complexes (triangulated 2-simplices for k >= 4, or pure 3-clique 2-simplices for k=3).
+- Information-Fairness: 2-cell features (X2) are derived strictly from boundary aggregation of constituent edge features (X2 = |B2|^T X1 / k), avoiding privileged tabular statistics.
 """
 
 import json
@@ -16,77 +17,77 @@ import pyarrow.parquet as pq
 import torch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-from source.topology.incidence import compute_boundary_matrix_b1, compute_boundary_matrix_b2
 
 
-class CellComplexCandidateEncoder:
-    """Encodes transaction cycle subgraphs into cell complexes and native PyTorch tensor dictionaries."""
+class CandidateCellComplexEncoder:
+    """Encodes candidate transaction subgraphs into mathematically exact cell and simplicial complexes."""
 
-    FORMAT_VOCAB = ["ACH", "Wire", "Cheque", "Credit Card", "Reinvestment", "Cash"]
+    FORMAT_VOCAB = ["ACH", "WIRE", "CHECK", "CREDIT_CARD", "CASH", "INTERNAL"]
+    BANK_VOCAB = [0, 1, 2]
+
+    def __init__(self, node_feat_dim: int = 6, edge_feat_dim: int = 9, cell_feat_dim: int = 9):
+        self.node_feat_dim = node_feat_dim
+        self.edge_feat_dim = edge_feat_dim
+        self.cell_feat_dim = cell_feat_dim
 
     def encode_candidate(
         self,
         candidate_record: Dict[str, Any],
         transactions: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
-        """Encode a single candidate into verified cell complex and graph tensor representation."""
-        ordered_accs = candidate_record["ordered_cycle_accounts"]
-        k = len(ordered_accs)
-        acc_to_idx = {acc: i for i, acc in enumerate(ordered_accs)}
+        """Encode candidate subgraph into both Cellular and Simplicial complex representations."""
+        k = len(candidate_record["ordered_cycle_accounts"])
+        accounts = candidate_record["ordered_cycle_accounts"]
+        acc_to_idx = {acc: i for i, acc in enumerate(accounts)}
+        num_nodes = k
 
         # 1. Build Node Features (X0)
-        # Features: in_degree, out_degree, total_amount_in, total_amount_out, bank_id_mod
-        in_amt = defaultdict(float)
-        out_amt = defaultdict(float)
-        in_deg = defaultdict(int)
-        out_deg = defaultdict(int)
+        epochs = [tx.get("timestamp_epoch", 0.0) for tx in transactions if "timestamp_epoch" in tx]
+        min_epoch = min(epochs) if epochs else 0.0
+
+        node_flow = defaultdict(float)
+        node_in_deg = defaultdict(int)
+        node_out_deg = defaultdict(int)
         node_banks = {}
 
         for tx in transactions:
-            u = tx["from_account"]
-            v = tx["to_account"]
+            u, v = tx["from_account"], tx["to_account"]
             amt = float(tx.get("amount_paid", 0.0))
-            out_amt[u] += amt
-            in_amt[v] += amt
-            out_deg[u] += 1
-            in_deg[v] += 1
-            node_banks[u] = float(tx.get("from_bank", 0)) % 100.0
-            node_banks[v] = float(tx.get("to_bank", 0)) % 100.0
+            node_flow[u] += amt
+            node_flow[v] += amt
+            node_out_deg[u] += 1
+            node_in_deg[v] += 1
+            if u in acc_to_idx:
+                node_banks[u] = tx.get("from_bank", 0)
+            if v in acc_to_idx:
+                node_banks[v] = tx.get("to_bank", 0)
 
         node_feats = []
-        for acc in ordered_accs:
-            node_feats.append([
-                float(in_deg[acc]),
-                float(out_deg[acc]),
-                math.log1p(max(0.0, in_amt[acc])),
-                math.log1p(max(0.0, out_amt[acc])),
-                node_banks.get(acc, 0.0) / 100.0,
-            ])
+        for acc in accounts:
+            flow_val = math.log1p(max(0.0, node_flow[acc]))
+            in_d = float(node_in_deg[acc])
+            out_d = float(node_out_deg[acc])
+            b_id = node_banks.get(acc, 0)
+            b_onehot = [1.0 if b_id == b else 0.0 for b in self.BANK_VOCAB]
+            node_feats.append([flow_val, in_d, out_d] + b_onehot)
+
         X0 = torch.tensor(node_feats, dtype=torch.float32)
 
-        # 2. Build Edge Index, Edge Features (X1) & Boundary Matrix B1
-        # Edges sorted by cycle step: e_i = (u_i, u_{i+1})
+        # 2. Build 1-Cell / Edge Features (X1) & 1-Boundary Matrix (B1)
+        num_edges = len(transactions)
+        B1 = np.zeros((num_nodes, num_edges), dtype=np.int64)
         edge_src = []
         edge_dst = []
         edge_feats = []
-        num_edges = len(transactions)
-
-        # B1 matrix: |V| x |E|
-        B1 = np.zeros((k, num_edges), dtype=np.int64)
-
-        epochs = [tx["timestamp_epoch"] for tx in transactions if "timestamp_epoch" in tx]
-        min_epoch = min(epochs) if epochs else 0.0
 
         for e_idx, tx in enumerate(transactions):
-            u = tx["from_account"]
-            v = tx["to_account"]
-            u_idx = acc_to_idx.get(u, 0)
-            v_idx = acc_to_idx.get(v, (u_idx + 1) % k)
-
+            u, v = tx["from_account"], tx["to_account"]
+            u_idx = acc_to_idx[u]
+            v_idx = acc_to_idx[v]
             edge_src.append(u_idx)
             edge_dst.append(v_idx)
 
-            # Oriented boundary: head (+1), tail (-1)
+            # B1: target is +1, source is -1
             B1[v_idx, e_idx] = 1
             B1[u_idx, e_idx] = -1
 
@@ -97,7 +98,6 @@ class CellComplexCandidateEncoder:
             tb = tx.get("to_bank", 0)
             cross_bank = 1.0 if fb != tb else 0.0
 
-            # One-hot format
             fmt = tx.get("payment_format", "ACH")
             fmt_onehot = [1.0 if fmt == f else 0.0 for f in self.FORMAT_VOCAB]
 
@@ -106,27 +106,89 @@ class CellComplexCandidateEncoder:
         edge_index = torch.tensor([edge_src, edge_dst], dtype=torch.long)
         X1 = torch.tensor(edge_feats, dtype=torch.float32)
 
-        # 3. Build 2-Cell Features (X2) & Boundary Matrix B2
-        # Single 2-cell representing the closed cycle polygon (boundary = all backbone edges with +1)
-        B2 = np.ones((num_edges, 1), dtype=np.int64)
-        
-        # Verify boundary nilpotency: B1 @ B2 must equal 0 (|V| x 1 vector of zeros)
-        B1_B2 = np.dot(B1, B2)
+        # 3. Cellular Complex Encoding (CCNN / CWN)
+        # Single native polygonal 2-cell over all k boundary edges
+        B2_cell = np.ones((num_edges, 1), dtype=np.int64)
+
+        # Verify boundary nilpotency: B1 @ B2 == 0
+        B1_B2 = np.dot(B1, B2_cell)
         if not np.all(B1_B2 == 0):
-            raise ValueError(f"Boundary nilpotency violation (INV-004) on candidate {candidate_record['candidate_id']}: B1 @ B2 = {B1_B2.flatten()}")
+            raise ValueError(f"Cellular boundary nilpotency violation (INV-004) on candidate {candidate_record['candidate_id']}")
 
-        # 2-cell features: cycle length, log duration, median amount, min/max amount ratio
-        duration = max(epochs) - min(epochs) if len(epochs) > 1 else 0.0
-        amounts = [float(tx.get("amount_paid", 0.0)) for tx in transactions]
-        med_amt = float(np.median(amounts)) if amounts else 0.0
-        amt_ratio = (min(amounts) / (max(amounts) + 1e-9)) if amounts else 1.0
+        # Information-fair 2-cell feature: mean-pooled boundary edge features
+        X2_cell = (torch.tensor(np.abs(B2_cell).T, dtype=torch.float32) @ X1) / float(k)
 
-        X2 = torch.tensor([[
-            float(k),
-            math.log1p(max(0.0, duration)),
-            math.log1p(max(0.0, med_amt)),
-            amt_ratio,
-        ]], dtype=torch.float32)
+        # 4. Simplicial Complex Encoding (SCNN / MPSN)
+        # For k=3: identical triangle 2-simplex
+        # For k>=4: triangulated simplicial complex via fan triangulation from vertex 0
+        if k == 3:
+            B1_simp = B1.copy()
+            B2_simp = B2_cell.copy()
+            X1_simp = X1.clone()
+            X2_simp = X2_cell.clone()
+        else:
+            # Triangulate polygon (v0..vk-1) into (k-2) 2-simplices
+            # Add (k-3) chord edges: (v0 -> v2), (v0 -> v3), ..., (v0 -> vk-2)
+            n_chords = k - 3
+            n_simp_edges = num_edges + n_chords
+            n_2simplices = k - 2
+
+            B1_simp = np.zeros((num_nodes, n_simp_edges), dtype=np.int64)
+            B1_simp[:, :num_edges] = B1
+
+            chord_feats = []
+            chord_src = []
+            chord_dst = []
+
+            for c_idx in range(n_chords):
+                e_id = num_edges + c_idx
+                u_i = 0
+                v_i = c_idx + 2
+                B1_simp[v_i, e_id] = 1
+                B1_simp[u_i, e_id] = -1
+                chord_src.append(u_i)
+                chord_dst.append(v_i)
+                # Chord feature interpolated from endpoint node features
+                mean_edge_feat = (X0[u_i] + X0[v_i]) / 2.0
+                # Pad to edge_feat_dim
+                chord_feat = list(mean_edge_feat[:3].numpy()) + [0.0] * (self.edge_feat_dim - 3)
+                chord_feats.append(chord_feat)
+
+            if chord_feats:
+                X1_simp = torch.cat([X1, torch.tensor(chord_feats, dtype=torch.float32)], dim=0)
+            else:
+                X1_simp = X1.clone()
+
+            # Build simplicial B2: each 2-simplex has 3 oriented boundary edges
+            B2_simp = np.zeros((n_simp_edges, n_2simplices), dtype=np.int64)
+            # Triangles: (v0, v1, v2), (v0, v2, v3), ..., (v0, vk-2, vk-1)
+            for t_idx in range(n_2simplices):
+                if t_idx == 0:
+                    # (v0->v1): edge 0, (v1->v2): edge 1, (v0->v2): chord 0
+                    B2_simp[0, 0] = 1
+                    B2_simp[1, 0] = 1
+                    B2_simp[num_edges, 0] = -1
+                elif t_idx == n_2simplices - 1:
+                    # (v0->vk-2): last chord, (vk-2->vk-1): edge k-2, (vk-1->v0): edge k-1
+                    last_chord = num_edges + n_chords - 1
+                    B2_simp[last_chord, t_idx] = 1
+                    B2_simp[k - 2, t_idx] = 1
+                    B2_simp[k - 1, t_idx] = 1
+                else:
+                    # (v0->vi): chord i-2, (vi->vi+1): edge i, (v0->vi+1): chord i-1
+                    c_in = num_edges + t_idx - 1
+                    c_out = num_edges + t_idx
+                    edge_i = t_idx + 1
+                    B2_simp[c_in, t_idx] = 1
+                    B2_simp[edge_i, t_idx] = 1
+                    B2_simp[c_out, t_idx] = -1
+
+            # Verify simplicial nilpotency
+            B1_simp_B2_simp = np.dot(B1_simp, B2_simp)
+            if not np.all(B1_simp_B2_simp == 0):
+                raise ValueError(f"Simplicial boundary nilpotency violation on candidate {candidate_record['candidate_id']}")
+
+            X2_simp = (torch.tensor(np.abs(B2_simp).T, dtype=torch.float32) @ X1_simp) / 3.0
 
         label = int(candidate_record["label"])
         y = torch.tensor([label], dtype=torch.long)
@@ -136,15 +198,23 @@ class CellComplexCandidateEncoder:
             "label": label,
             "cycle_length": k,
             "num_nodes": k,
+            # GNN representation
             "x": X0,
             "edge_index": edge_index,
             "edge_attr": X1,
-            "y": y,
+            # Cellular representation (CCNN)
             "X0": X0,
             "X1": X1,
-            "X2": X2,
+            "X2": X2_cell,
             "B1": torch.tensor(B1, dtype=torch.float32),
-            "B2": torch.tensor(B2, dtype=torch.float32),
+            "B2": torch.tensor(B2_cell, dtype=torch.float32),
+            # Simplicial representation (SCNN)
+            "X0_simp": X0,
+            "X1_simp": X1_simp,
+            "X2_simp": X2_simp,
+            "B1_simp": torch.tensor(B1_simp, dtype=torch.float32),
+            "B2_simp": torch.tensor(B2_simp, dtype=torch.float32),
+            "y": y,
         }
 
 
@@ -154,65 +224,67 @@ def encode_and_serialize_fold_tensors(
     fold_manifest_path: str = "artifacts/splits/fold_manifest.json",
     output_dir: str = "artifacts/features",
 ) -> Dict[str, Any]:
-    """Encode all candidates and serialize tensor bundles per fold."""
-    if not os.path.exists(candidates_parquet_path):
-        raise FileNotFoundError(f"Missing candidates: {candidates_parquet_path}")
-    if not os.path.exists(candidate_txs_parquet_path):
-        raise FileNotFoundError(f"Missing candidate txs: {candidate_txs_parquet_path}")
-    if not os.path.exists(fold_manifest_path):
-        raise FileNotFoundError(f"Missing fold manifest: {fold_manifest_path}")
+    """Encode all candidates and serialize fold tensor bundles."""
+    os.makedirs(output_dir, exist_ok=True)
+    c_tbl = pq.read_table(candidates_parquet_path)
+    candidates = c_tbl.to_pylist()
 
-    c_table = pq.read_table(candidates_parquet_path)
-    tx_table = pq.read_table(candidate_txs_parquet_path)
-
-    candidates = c_table.to_pylist()
-    tx_records = tx_table.to_pylist()
-
-    cand_by_id = {c["candidate_id"]: c for c in candidates}
-    txs_by_cand: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for tx in tx_records:
-        txs_by_cand[tx["candidate_id"]].append(tx)
-
-    encoder = CellComplexCandidateEncoder()
-    encoded_all: Dict[str, Dict[str, Any]] = {}
-
-    for c in candidates:
-        cid = c["candidate_id"]
-        txs = txs_by_cand[cid]
-        encoded = encoder.encode_candidate(c, txs)
-        encoded_all[cid] = encoded
+    tx_tbl = pq.read_table(candidate_txs_parquet_path)
+    txs = tx_tbl.to_pylist()
+    txs_by_cid = defaultdict(list)
+    for t in txs:
+        txs_by_cid[t["candidate_id"]].append(t)
 
     with open(fold_manifest_path, "r", encoding="utf-8") as f:
-        manifest = json.load(f)
+        mf = json.load(f)
 
-    os.makedirs(output_dir, exist_ok=True)
-    results = {}
+    cand_by_id = {c["candidate_id"]: c for c in candidates}
+    encoder = CandidateCellComplexEncoder()
 
-    for of in manifest["outer_folds"]:
-        f_id = of["outer_fold_id"]
-        train_ids = of["train_candidate_ids"]
-        test_ids = of["test_candidate_ids"]
+    # Pre-encode all candidates
+    encoded_all = {}
+    nilpotent_count = 0
+    for c in candidates:
+        cid = c["candidate_id"]
+        c_txs = txs_by_cid[cid]
+        enc = encoder.encode_candidate(c, c_txs)
+        encoded_all[cid] = enc
+        nilpotent_count += 1
 
-        bundle = {
-            "fold_id": f_id,
-            "train_candidates": [encoded_all[cid] for cid in train_ids],
-            "test_candidates": [encoded_all[cid] for cid in test_ids],
+    fold_summaries = {}
+    for fold_idx in range(mf["n_outer_folds"]):
+        of_spec = mf["outer_folds"][fold_idx]
+        train_cids = of_spec["train_candidate_ids"]
+        test_cids = of_spec["test_candidate_ids"]
+
+        train_bundle = [encoded_all[cid] for cid in train_cids]
+        test_bundle = [encoded_all[cid] for cid in test_cids]
+
+        fold_data = {
+            "outer_fold_id": fold_idx,
+            "train_candidates": train_bundle,
+            "test_candidates": test_bundle,
+            "inner_folds": of_spec.get("inner_folds", []),
         }
 
-        out_path = os.path.join(output_dir, f"fold_{f_id}_tensors.pt")
-        torch.save(bundle, out_path)
-
-        results[f"fold_{f_id}"] = {
-            "tensor_path": out_path,
-            "train_count": len(train_ids),
-            "test_count": len(test_ids),
+        save_path = os.path.join(output_dir, f"fold_{fold_idx}_tensors.pt")
+        torch.save(fold_data, save_path)
+        fold_summaries[f"fold_{fold_idx}"] = {
+            "train_count": len(train_bundle),
+            "test_count": len(test_bundle),
+            "file_size": os.path.getsize(save_path),
         }
 
     return {
         "status": "TENSORS_ENCODED",
-        "total_encoded_candidates": len(encoded_all),
-        "folds": results,
+        "total_candidates": len(candidates),
+        "total_encoded_candidates": len(candidates),
+        "nilpotency_verified_count": nilpotent_count,
+        "folds": fold_summaries,
     }
+
+
+CellComplexCandidateEncoder = CandidateCellComplexEncoder
 
 
 if __name__ == "__main__":

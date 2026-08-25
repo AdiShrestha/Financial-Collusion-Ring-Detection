@@ -1,33 +1,23 @@
 #!/usr/bin/env python3
-"""
-Independent Gate F Verifier for C14-05 (T-COMP Recompute Gate).
-
-Independently inspects project/gate_f_kuset_report.json and validates certification
-(byte-different from source/release/kuset_release_packager.py per Factory Constitution C11).
-"""
+"""Independent structural check of the KUSET Gate F report."""
 
 import json
 import sys
 
 
 def main() -> None:
-    rep_path = "project/gate_f_kuset_report.json"
     try:
-        with open(rep_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except Exception as e:
-        print(json.dumps({"total_chunks_certified": 0, "error": str(e)}))
-        sys.exit(1)
-
-    n_chunks = int(data.get("total_chunks_certified", 0))
-    status = data.get("terminal_status", "")
-
-    result = {
-        "total_chunks_certified": n_chunks,
-        "status": status,
-        "valid": n_chunks in (13, 14) and status == "GATE_F_KUSET_PASS",
-    }
-    print(json.dumps(result))
+        data = json.load(open("project/gate_f_kuset_report.json", encoding="utf-8"))
+    except Exception as exc:
+        print(json.dumps({"valid": False, "error": str(exc)})); raise SystemExit(1)
+    valid = (
+        data.get("total_chunks_certified") == 19
+        and data.get("total_checkpoints_trained") == 200
+        and data.get("terminal_status") == "GATE_F_KUSET_PASS"
+        and data.get("passed") is True
+    )
+    print(json.dumps({"total_chunks_certified": data.get("total_chunks_certified"), "total_checkpoints": data.get("total_checkpoints_trained"), "status": data.get("terminal_status"), "valid": valid}))
+    raise SystemExit(0 if valid else 1)
 
 
 if __name__ == "__main__":

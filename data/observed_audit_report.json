@@ -2,8 +2,8 @@
   "audit_version": "2.2.0",
   "dataset_name": "IBM AMLworld HI-Small",
   "dataset_type": "Synthetic Multi-Agent Financial Benchmark",
-  "audit_timestamp": "2026-08-24T12:09:02.653624+00:00",
-  "git_commit": "2783ea35fead2d9779b5322f824ab76b5dbc44ff",
+  "audit_timestamp": "2026-08-25T01:05:40.963050+00:00",
+  "git_commit": "75cdd5ff08e485adf1eb0f424b19e8a1e8f2c3e6",
   "files": {
     "transactions_csv": {
       "path": "data/raw/HI-Small_Trans.csv",
@@ -27,6 +27,7 @@
     "laundering_rate_pct": 0.10194266045335636
   },
   "cycle_typology_breakdown": {
+    "total_cycles": 54,
     "total_cycles_all_lengths": 54,
     "total_cycles_length_3_to_12": 40,
     "length_distribution": {
@@ -47,6 +48,11 @@
       "min_duration_seconds": 6960.0,
       "max_duration_seconds": 344220.0
     }
+  },
+  "cluster_independence": {
+    "independent_components": 38,
+    "largest_cluster_size": 1,
+    "independent_groups_count": 38
   },
   "cluster_overlap_analysis": {
     "independent_components": 38,

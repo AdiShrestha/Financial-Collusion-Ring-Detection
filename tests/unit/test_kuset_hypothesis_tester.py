@@ -26,7 +26,7 @@ def test_holm_bonferroni_monotonicity():
 
 
 def test_production_confirmatory_stats_artifact():
-    """Verify results/production_confirmatory_stats.json exists and has valid hypotheses."""
+    """Verify canonical statistics encode the locked RQ roles and intervals."""
     stats_path = "results/production_confirmatory_stats.json"
     assert os.path.exists(stats_path), "Missing production_confirmatory_stats.json"
 
@@ -34,15 +34,11 @@ def test_production_confirmatory_stats_artifact():
         data = json.load(f)
 
     assert "model_metrics" in data
-    assert "hypotheses" in data
-    assert "H1" in data["hypotheses"]
-    assert "H2" in data["hypotheses"]
-    assert "H3" in data["hypotheses"]
-
-    for h_id in ("H1", "H2", "H3"):
-        h_data = data["hypotheses"][h_id]
-        assert h_data["verdict"] in ("SUPPORTED", "FALSIFIED", "INCONCLUSIVE")
-        assert "delta_pr_auc" in h_data
-        assert "ci_95_lower" in h_data
-        assert "ci_95_upper" in h_data
-        assert "wilcoxon_p_adj" in h_data
+    tests = data["hypothesis_tests"]
+    for key in ("RQ1_ccnn_vs_gine", "RQ2_ccnn_vs_scnn_kge4", "RQ3_lr_vs_gine"):
+        assert key in tests
+        assert len(tests[key]["delta_ap_ci_95"]) == 2
+        assert "p_value_raw" in tests[key]
+    assert tests["RQ1_ccnn_vs_gine"]["p_value_adjusted"] is not None
+    assert tests["RQ2_ccnn_vs_scnn_kge4"]["p_value_adjusted"] is not None
+    assert tests["RQ3_lr_vs_gine"]["p_value_adjusted"] is None

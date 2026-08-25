@@ -18,22 +18,17 @@ def test_model_factory_instantiations():
         assert inst is not None
 
 
-def test_run_cross_validation_training_execution():
-    """Verify cross-validation training executes across all 5 folds, saves checkpoints, and outputs history."""
-    test_hist_path = "artifacts/training/test_training_history.json"
-    res = run_5fold_multi_seed_training(
-        models=["logistic_regression", "gine", "ccnn"],
-        seeds=[42],
-        epochs=5,
-        output_history_path=test_hist_path,
-    )
+def test_run_cross_validation_training_execution(tmp_path):
+    """Verify a partial one-seed/model run cannot be labelled confirmatory."""
+    with pytest.raises(ValueError, match="requires seeds"):
+        run_5fold_multi_seed_training(
+            models=["logistic_regression", "gine", "ccnn"],
+            seeds=[42],
+            epochs=5,
+            output_history_path=str(tmp_path / "must_not_exist.json"),
+        )
 
-    assert res["status"] == "TRAINING_COMPLETE"
-    assert os.path.exists(test_hist_path)
-
-    with open(test_hist_path, "r", encoding="utf-8") as f:
+    with open("artifacts/training/training_history.json", "r", encoding="utf-8") as f:
         data = json.load(f)
-
-    assert "oof_predictions" in data
-    assert "gine" in data["oof_predictions"]
-    assert len(data["oof_predictions"]["gine"]["42"]) == 155
+    assert data["seeds"] == [42, 43, 44, 45, 46]
+    assert len(data["models"]) * len(data["seeds"]) * data["n_outer_folds"] == 200

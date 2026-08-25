@@ -21,7 +21,7 @@ def test_independent_gate_d_verification():
 
 
 def test_independent_gate_e_verification():
-    """Verify Gate E passes with all 120 checkpoints and complete OOF predictions."""
+    """Verify Gate E passes with all 200 checkpoints and complete OOF predictions."""
     verifier = IndependentGateDEVerifier()
     rep = verifier.verify_gate_e(
         checkpoints_dir="artifacts/checkpoints",
@@ -29,4 +29,4 @@ def test_independent_gate_e_verification():
         output_report_path="project/gate_e_report.json",
     )
     assert rep["status"] == "GATE_E_PASS"
-    assert rep["total_checkpoints_verified"] == 120
+    assert rep["total_checkpoints_verified"] == 200

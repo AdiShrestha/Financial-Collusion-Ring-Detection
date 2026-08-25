@@ -20,8 +20,8 @@ def test_gate_f_kuset_report_exists_and_certified():
     assert data["gate"] == "Gate F-KUSET"
     assert data["terminal_status"] == "GATE_F_KUSET_PASS"
     assert data["passed"] is True
-    assert data["total_chunks_certified"] in (13, 14)
-    assert data["total_checkpoints_trained"] == 35
+    assert data["total_chunks_certified"] == 19
+    assert data["total_checkpoints_trained"] == 200
 
     invs = data["invariant_verifications"]
     for inv_id in ("INV-001", "INV-002", "INV-003", "INV-004", "INV-005", "INV-006", "INV-007", "INV-008"):

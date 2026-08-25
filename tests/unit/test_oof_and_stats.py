@@ -21,7 +21,10 @@ def test_export_oof_prediction_ledger():
 
     assert res["status"] == "OOF_LEDGER_EXPORTED"
     assert os.path.exists("artifacts/predictions/oof_predictions.parquet")
-    assert res["total_records"] == 155 * 8 * 3  # 155 candidates * 8 models * 3 seeds = 3720 records
+    assert res["total_records"] == 155 * 8 * 5
+    assert res["candidate_count"] == 155
+    assert res["group_count"] == 18
+    assert res["seeds"] == [42, 43, 44, 45, 46]
 
 
 def test_kuset_hypothesis_tester_execution():
@@ -35,6 +38,9 @@ def test_kuset_hypothesis_tester_execution():
     assert "hypothesis_tests" in stats
     assert "RQ1_CCNN_vs_GINE" in stats["hypothesis_tests"]
     assert "raw_p_value" in stats["hypothesis_tests"]["RQ1_CCNN_vs_GINE"]
-    assert stats["hypothesis_tests"]["RQ1_CCNN_vs_GINE"]["observed_delta_ap"] > 0.2
+    assert stats["total_groups"] == 18
+    assert stats["seeds"] == [42, 43, 44, 45, 46]
+    assert stats["hypothesis_tests"]["RQ1_CCNN_vs_GINE"]["monte_carlo_plus_one"] is True
     assert "RQ3_LR_vs_GINE" in stats["hypothesis_tests"]
-    assert stats["hypothesis_tests"]["RQ3_LR_vs_GINE"]["statistically_significant"] is True
+    assert stats["hypothesis_tests"]["RQ3_LR_vs_GINE"]["analysis_role"] == "exploratory"
+    assert stats["hypothesis_tests"]["RQ3_LR_vs_GINE"]["p_value_adjusted"] is None

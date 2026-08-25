@@ -1,9 +1,8 @@
-# TopoRingNet Replication Package
+# Pattern-Grounded AML Cycle Classification Artifact Package
 
 ## Overview
-This package contains all code, data, and artifacts needed to reproduce the
-results reported in the TopoRingNet paper on topological deep learning for
-anti-money laundering detection.
+This package verifies the existing artifacts used by the KUSET manuscript.
+It does not reacquire the raw dataset and is not a clean-room reproduction.
 
 ## Quick Start
 
@@ -16,15 +15,11 @@ pip install -r requirements.txt
 
 ### 2. One-Command Reproduction
 ```bash
-python3 release/replicate.py
+python3 release/replicate.py --verify-only
 ```
 
-This script will:
-1. Verify the test split checksum (INV-006).
-2. Run confirmatory predictions across all 6 models and 5 locked seeds.
-3. Execute hypothesis testing with Holm-Bonferroni correction.
-4. Generate the claim registry.
-5. Verify all claims against the paper manuscript.
+This read-only command checks cohort/manifest identity, five-seed and eight-model
+ledger cardinality, 200 checkpoints, the Gate A--F chain, and manuscript claims.
 
 ### 3. Verify Results
 ```bash
@@ -35,7 +30,7 @@ python3 -m pytest tests/ -v
 ```
 ├── source/          # All source modules
 │   ├── topology/    # Incidence matrices, oracles, persistent homology
-│   ├── models/      # GCN, GAT, GraphSAGE, Simplicial, Cellular, TopoRingNet
+│   ├── models/      # LR, HGB, spatial GNN, simplicial, and cellular models
 │   ├── experiments/ # Confirmatory runner
 │   ├── evidence/    # Hypothesis tester, claim registry, gate verifiers
 │   ├── paper/       # Compiler, plot generator, claim synchronizer
@@ -47,14 +42,9 @@ python3 -m pytest tests/ -v
 └── release/         # This replication package
 ```
 
-## Pre-Registered Hypotheses
-- H1: TopoRingNet vs strongest GNN (PR-AUC)
-- H2: CellularComplexNet vs SimplicialComplexNet on k>=4 cycles (F1-Macro)
-- H3: TopoRingNet vs CellularComplexNet structural ablation (PR-AUC)
-- H4: TopoRingNet cross-track superiority (PR-AUC)
-
-All hypotheses used paired Wilcoxon signed-rank tests with Cliff's delta
-effect sizes, corrected via Holm-Bonferroni step-down at alpha=0.05.
+## Analysis status
+Chunk 19 is a disclosed corrective analysis, not a prospective preregistration.
+RQ1 and RQ2 form the Holm-adjusted primary family; LR-versus-GINE is exploratory.
 
 ## Factory Invariants
 - INV-001: True empirical data — no fabricated constants

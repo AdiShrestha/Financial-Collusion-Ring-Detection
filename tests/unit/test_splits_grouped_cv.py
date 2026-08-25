@@ -10,22 +10,23 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from source.data.splits import generate_grouped_nested_splits
 
 
-def test_grouped_nested_splits_generation_and_zero_leakage():
+def test_grouped_nested_splits_generation_and_zero_leakage(tmp_path):
     """Verify 5-fold outer / 3-fold inner split generation enforces strict 0.0% account leakage."""
+    out_manifest = str(tmp_path / "fold_manifest.json")
     res = generate_grouped_nested_splits(
         candidates_parquet_path="artifacts/candidates/candidates.parquet",
         candidate_txs_parquet_path="artifacts/candidates/candidate_transactions.parquet",
         covariate_balance_path="artifacts/candidates/covariate_balance.json",
-        output_manifest_path="artifacts/splits/fold_manifest.json",
+        output_manifest_path=out_manifest,
         n_outer_folds=5,
         n_inner_folds=3,
         random_seed=42,
     )
 
     assert res["status"] == "SPLITS_GENERATED"
-    assert os.path.exists("artifacts/splits/fold_manifest.json")
+    assert os.path.exists(out_manifest)
 
-    with open("artifacts/splits/fold_manifest.json", "r", encoding="utf-8") as f:
+    with open(out_manifest, "r", encoding="utf-8") as f:
         manifest = json.load(f)
 
     assert manifest["n_outer_folds"] == 5

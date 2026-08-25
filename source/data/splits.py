@@ -53,7 +53,7 @@ def generate_grouped_nested_splits(
     # 1. Edge between candidates sharing accounts
     acc_to_cands: Dict[str, List[str]] = defaultdict(list)
     for c in candidates:
-        for acc in c["ordered_cycle_accounts"]:
+        for acc in c.get("ordered_cycle_accounts", c.get("nodes", c.get("participants", []))):
             acc_to_cands[acc].append(c["candidate_id"])
     for acc, c_list in acc_to_cands.items():
         for i in range(len(c_list)):
@@ -63,138 +63,130 @@ def generate_grouped_nested_splits(
     # 2. Edge between candidates sharing transactions
     tx_to_cands: Dict[str, List[str]] = defaultdict(list)
     for c in candidates:
-        for txid in c["cycle_transaction_ids"]:
-            tx_to_cands[txid].append(c["candidate_id"])
-    for txid, c_list in tx_to_cands.items():
+        for tid in c.get("transaction_ids", c.get("cycle_transaction_ids", [])):
+            tx_to_cands[tid].append(c["candidate_id"])
+    for tid, c_list in tx_to_cands.items():
         for i in range(len(c_list)):
             for j in range(i + 1, len(c_list)):
                 G.add_edge(c_list[i], c_list[j])
 
-    # 3. Edge between candidates sharing pattern ID (if > 0)
-    pat_to_cands: Dict[int, List[str]] = defaultdict(list)
-    for c in candidates:
-        pid = c.get("pattern_id", -1)
-        if pid > 0:
-            pat_to_cands[pid].append(c["candidate_id"])
-    for pid, c_list in pat_to_cands.items():
-        for i in range(len(c_list)):
-            for j in range(i + 1, len(c_list)):
-                G.add_edge(c_list[i], c_list[j])
-
-    # 4. Edge between matched positive-negative sets
+    # 3. Edge between matched pairs
     mset_to_cands: Dict[int, List[str]] = defaultdict(list)
     for cid, s_idx in matched_group_map.items():
         mset_to_cands[s_idx].append(cid)
     for s_idx, c_list in mset_to_cands.items():
         for i in range(len(c_list)):
             for j in range(i + 1, len(c_list)):
-                G.add_edge(c_list[i], c_list[j])
+                if G.has_node(c_list[i]) and G.has_node(c_list[j]):
+                    G.add_edge(c_list[i], c_list[j])
 
-    # Extract connected components (Groups)
+    # Extract connected components (disjoint groups)
     components = list(nx.connected_components(G))
-    # Sort deterministically by sorted candidate IDs
-    components.sort(key=lambda comp: sorted(list(comp))[0])
-
     group_records = []
-    cand_to_group = {}
+    cand_to_group: Dict[str, str] = {}
     cand_by_id = {c["candidate_id"]: c for c in candidates}
 
-    for g_idx, comp in enumerate(components):
-        g_id = f"group_{g_idx:04d}"
-        comp_cands = [cand_by_id[cid] for cid in comp]
-        pos_cnt = sum(c["label"] for c in comp_cands)
-        neg_cnt = len(comp_cands) - pos_cnt
-        all_accs = set()
-        for c in comp_cands:
-            all_accs.update(c["ordered_cycle_accounts"])
-        
-        for cid in comp:
-            cand_to_group[cid] = g_id
-
+    for g_idx, comp in enumerate(sorted(components, key=lambda s: (-len(s), sorted(list(s))[0]))):
+        grp_id = f"group_{g_idx:02d}"
+        c_list = sorted(list(comp))
+        n_pos = sum(1 for cid in c_list if cand_by_id[cid]["label"] == 1)
+        n_neg = sum(1 for cid in c_list if cand_by_id[cid]["label"] == 0)
         group_records.append({
-            "group_id": g_id,
-            "candidate_ids": sorted(list(comp)),
-            "positive_count": pos_cnt,
-            "negative_count": neg_cnt,
-            "total_count": len(comp),
-            "accounts": sorted(list(all_accs)),
+            "group_id": grp_id,
+            "candidate_ids": c_list,
+            "total_candidates": len(c_list),
+            "positive_count": n_pos,
+            "negative_count": n_neg,
+            "lengths": sorted(list(set(cand_by_id[cid]["cycle_length"] for cid in c_list))),
         })
+        for cid in c_list:
+            cand_to_group[cid] = grp_id
 
-    # Stratified partition of group components across n_outer_folds
+    # Stratified Outer 5-fold assignment over groups
+    # Greedily assign groups to outer folds balanced by positive count and candidate count
     rng = random.Random(random_seed)
-    # Sort groups by (pos_cnt > 0, total_count) descending, then shuffle with seed
-    sorted_groups = sorted(group_records, key=lambda g: (g["positive_count"], g["total_count"]), reverse=True)
-    
-    outer_fold_groups: List[List[Dict[str, Any]]] = [[] for _ in range(n_outer_folds)]
-    outer_fold_pos = [0] * n_outer_folds
-    outer_fold_tot = [0] * n_outer_folds
+    # Sort groups deterministically: primary by pos_count desc, secondary by size desc, tertiary by group_id
+    sorted_groups = sorted(group_records, key=lambda g: (-g["positive_count"], -g["total_candidates"], g["group_id"]))
 
-    for g in sorted_groups:
-        # Assign to fold with lowest positive count (or lowest total count)
-        best_fold = min(range(n_outer_folds), key=lambda f: (outer_fold_pos[f], outer_fold_tot[f]))
-        outer_fold_groups[best_fold].append(g)
-        outer_fold_pos[best_fold] += g["positive_count"]
-        outer_fold_tot[best_fold] += g["total_count"]
+    outer_folds: List[Dict[str, Any]] = [
+        {"fold_idx": f, "group_ids": [], "candidate_ids": [], "pos_count": 0, "neg_count": 0, "total": 0}
+        for f in range(n_outer_folds)
+    ]
 
-    # Assign outer_fold to each candidate
+    for grp in sorted_groups:
+        # Pick the fold with the lowest pos_count, break ties with lowest total
+        best_fold = min(outer_folds, key=lambda f: (f["pos_count"], f["total"], f["fold_idx"]))
+        best_fold["group_ids"].append(grp["group_id"])
+        best_fold["candidate_ids"].extend(grp["candidate_ids"])
+        best_fold["pos_count"] += grp["positive_count"]
+        best_fold["neg_count"] += grp["negative_count"]
+        best_fold["total"] += grp["total_candidates"]
+
     cand_outer_fold: Dict[str, int] = {}
-    for f_idx, g_list in enumerate(outer_fold_groups):
-        for g in g_list:
-            for cid in g["candidate_ids"]:
-                cand_outer_fold[cid] = f_idx
+    for f in outer_folds:
+        for cid in f["candidate_ids"]:
+            cand_outer_fold[cid] = f["fold_idx"]
 
-    # Build 3 inner folds for each outer fold
+    # Verify 0.0% account leakage across outer folds
+    fold_accounts: Dict[int, Set[str]] = defaultdict(set)
+    for cid, f_idx in cand_outer_fold.items():
+        for acc in cand_by_id[cid]["ordered_cycle_accounts"]:
+            fold_accounts[f_idx].add(acc)
+
+    for f1 in range(n_outer_folds):
+        for f2 in range(f1 + 1, n_outer_folds):
+            overlap = fold_accounts[f1] & fold_accounts[f2]
+            if overlap:
+                raise ValueError(f"FATAL: Account leakage detected between outer fold {f1} and fold {f2}: {overlap}")
+
+    # Build 3-fold inner splits for each outer fold
     outer_folds_spec = []
-    for test_fold in range(n_outer_folds):
-        train_groups = []
-        for f_idx in range(n_outer_folds):
-            if f_idx != test_fold:
-                train_groups.extend(outer_fold_groups[f_idx])
+    for f_idx in range(n_outer_folds):
+        test_cids = sorted(outer_folds[f_idx]["candidate_ids"])
+        train_groups = [g for g in group_records if g["group_id"] not in outer_folds[f_idx]["group_ids"]]
+        train_cids = [cid for g in train_groups for cid in g["candidate_ids"]]
 
-        # Partition train_groups into n_inner_folds
-        inner_fold_groups: List[List[Dict[str, Any]]] = [[] for _ in range(n_inner_folds)]
-        inner_pos = [0] * n_inner_folds
-        inner_tot = [0] * n_inner_folds
+        # Sort train groups for inner fold assignment
+        inner_sorted_groups = sorted(train_groups, key=lambda g: (-g["positive_count"], -g["total_candidates"], g["group_id"]))
+        inner_folds: List[Dict[str, Any]] = [
+            {"inner_fold_idx": i, "group_ids": [], "candidate_ids": [], "pos_count": 0, "total": 0}
+            for i in range(n_inner_folds)
+        ]
+        for grp in inner_sorted_groups:
+            best_inner = min(inner_folds, key=lambda inf: (inf["pos_count"], inf["total"], inf["inner_fold_idx"]))
+            best_inner["group_ids"].append(grp["group_id"])
+            best_inner["candidate_ids"].extend(grp["candidate_ids"])
+            best_inner["pos_count"] += grp["positive_count"]
+            best_inner["total"] += grp["total_candidates"]
 
-        for g in train_groups:
-            best_inner = min(range(n_inner_folds), key=lambda i: (inner_pos[i], inner_tot[i]))
-            inner_fold_groups[best_inner].append(g)
-            inner_pos[best_inner] += g["positive_count"]
-            inner_tot[best_inner] += g["total_count"]
-
-        inner_spec = []
-        for val_inner in range(n_inner_folds):
-            val_cands = []
-            for g in inner_fold_groups[val_inner]:
-                val_cands.extend(g["candidate_ids"])
-
-            train_inner_cands = []
-            for i_idx in range(n_inner_folds):
-                if i_idx != val_inner:
-                    for g in inner_fold_groups[i_idx]:
-                        train_inner_cands.extend(g["candidate_ids"])
-
-            inner_spec.append({
-                "inner_fold_id": val_inner,
-                "train_candidate_ids": sorted(train_inner_cands),
-                "val_candidate_ids": sorted(val_cands),
+        inner_splits_spec = []
+        for i_idx in range(n_inner_folds):
+            inner_val_cids = sorted(inner_folds[i_idx]["candidate_ids"])
+            inner_train_cids = sorted([cid for inf in inner_folds if inf["inner_fold_idx"] != i_idx for cid in inf["candidate_ids"]])
+            inner_splits_spec.append({
+                "inner_fold": i_idx,
+                "inner_fold_id": i_idx,
+                "train_candidate_ids": inner_train_cids,
+                "val_candidate_ids": inner_val_cids,
+                "test_candidate_ids": inner_val_cids,
+                "inner_train_candidate_ids": inner_train_cids,
+                "inner_val_candidate_ids": inner_val_cids,
+                "inner_train_count": len(inner_train_cids),
+                "inner_val_count": len(inner_val_cids),
             })
 
-        test_cands = []
-        for g in outer_fold_groups[test_fold]:
-            test_cands.extend(g["candidate_ids"])
-
-        train_outer_cands = []
-        for f_idx in range(n_outer_folds):
-            if f_idx != test_fold:
-                for g in outer_fold_groups[f_idx]:
-                    train_outer_cands.extend(g["candidate_ids"])
-
         outer_folds_spec.append({
-            "outer_fold_id": test_fold,
-            "train_candidate_ids": sorted(train_outer_cands),
-            "test_candidate_ids": sorted(test_cands),
-            "inner_folds": inner_spec,
+            "fold_idx": f_idx,
+            "outer_fold_id": f_idx,
+            "test_groups": outer_folds[f_idx]["group_ids"],
+            "test_candidate_ids": test_cids,
+            "train_candidate_ids": sorted(train_cids),
+            "test_pos_count": outer_folds[f_idx]["pos_count"],
+            "test_neg_count": outer_folds[f_idx]["neg_count"],
+            "test_total": outer_folds[f_idx]["total"],
+            "train_total": len(train_cids),
+            "inner_folds": inner_splits_spec,
+            "inner_splits": inner_splits_spec,
         })
 
     manifest = {
@@ -243,52 +235,123 @@ def generate_grouped_nested_splits(
     }
 
 
-build_grouped_cross_validation_splits = generate_grouped_nested_splits
+def verify_split_disjointness(*partitions: Any) -> Dict[str, Any]:
+    """Verify 0.0% overlap in participant accounts between partitions."""
+    part_accs = []
+    for p in partitions:
+        accs = set()
+        for c in p:
+            c_accs = getattr(c, "participant_ids", None)
+            if c_accs is None and isinstance(c, dict):
+                c_accs = c.get("participant_ids", c.get("ordered_cycle_accounts", []))
+            if c_accs:
+                accs.update(c_accs)
+        part_accs.append(accs)
+
+    train_val_overlap = list(part_accs[0] & part_accs[1]) if len(part_accs) > 1 else []
+    train_test_overlap = list(part_accs[0] & part_accs[2]) if len(part_accs) > 2 else []
+    val_test_overlap = list(part_accs[1] & part_accs[2]) if len(part_accs) > 2 else []
+
+    is_disjoint = (len(train_val_overlap) == 0) and (len(train_test_overlap) == 0) and (len(val_test_overlap) == 0)
+    return {
+        "is_disjoint": is_disjoint,
+        "train_val_overlap": train_val_overlap,
+        "train_test_overlap": train_test_overlap,
+        "val_test_overlap": val_test_overlap,
+        "leakage_detected": not is_disjoint,
+    }
 
 
 class GroupSafeSplitter:
-    """Group-safe cross-validation splitter guaranteeing zero participant account leakage."""
+    """Group-safe dataset splitter guaranteeing zero participant account leakage."""
 
-    def __init__(self, n_splits: int = 5, random_state: int = 42):
+    def __init__(
+        self,
+        train_ratio: float = 0.70,
+        val_ratio: float = 0.15,
+        test_ratio: float = 0.15,
+        seed: int = 42,
+        n_splits: Optional[int] = None,
+        random_state: Optional[int] = None,
+        **kwargs,
+    ):
+        self.train_ratio = train_ratio
+        self.val_ratio = val_ratio
+        self.test_ratio = test_ratio
+        self.seed = random_state if random_state is not None else seed
         self.n_splits = n_splits
-        self.random_state = random_state
 
-    def split(self, candidates: List[Any], groups: Optional[List[str]] = None) -> List[Tuple[List[int], List[int]]]:
-        """Generate train/test split indices without group leakage."""
-        if groups is None:
-            groups = [c.group_id if hasattr(c, "group_id") else f"group_{i}" for i, c in enumerate(candidates)]
-        
-        unique_groups = sorted(list(set(groups)))
-        random.seed(self.random_state)
-        random.shuffle(unique_groups)
+    def split(self, candidates: List[Any], groups: Optional[List[str]] = None) -> Any:
+        """Generate train/val/test splits or cross-validation fold indices."""
+        if self.n_splits is not None:
+            if groups is None:
+                groups = [c.group_id if hasattr(c, "group_id") else f"group_{i}" for i, c in enumerate(candidates)]
+            unique_groups = sorted(list(set(groups)))
+            rng = random.Random(self.seed)
+            rng.shuffle(unique_groups)
+            fold_groups = [[] for _ in range(self.n_splits)]
+            for i, g in enumerate(unique_groups):
+                fold_groups[i % self.n_splits].append(g)
+            splits = []
+            for f_idx in range(self.n_splits):
+                test_grps = set(fold_groups[f_idx])
+                train_idx = [i for i, g in enumerate(groups) if g not in test_grps]
+                test_idx = [i for i, g in enumerate(groups) if g in test_grps]
+                splits.append((train_idx, test_idx))
+            return splits
+        else:
+            group_to_cands = defaultdict(list)
+            for c in candidates:
+                gid = getattr(c, "group_id", c.get("group_id", "default") if isinstance(c, dict) else "default")
+                group_to_cands[gid].append(c)
 
-        fold_groups = [[] for _ in range(self.n_splits)]
-        for i, g in enumerate(unique_groups):
-            fold_groups[i % self.n_splits].append(g)
+            unique_groups = sorted(list(group_to_cands.keys()))
+            rng = random.Random(self.seed)
+            rng.shuffle(unique_groups)
 
-        splits = []
-        for f_idx in range(self.n_splits):
-            test_grps = set(fold_groups[f_idx])
-            train_idx = [i for i, g in enumerate(groups) if g not in test_grps]
-            test_idx = [i for i, g in enumerate(groups) if g in test_grps]
-            splits.append((train_idx, test_idx))
+            n_total = len(unique_groups)
+            n_train = max(1, int(round(n_total * self.train_ratio)))
+            n_val = max(1, int(round(n_total * self.val_ratio)))
+            train_grps = set(unique_groups[:n_train])
+            val_grps = set(unique_groups[n_train:n_train + n_val])
+            test_grps = set(unique_groups[n_train + n_val:])
+            if len(test_grps) == 0 and len(val_grps) > 1:
+                t_grp = list(val_grps)[-1]
+                test_grps.add(t_grp)
+                val_grps.remove(t_grp)
 
-        return splits
+            train_cands = [c for g, c_list in group_to_cands.items() if g in train_grps for c in c_list]
+            val_cands = [c for g, c_list in group_to_cands.items() if g in val_grps for c in c_list]
+            test_cands = [c for g, c_list in group_to_cands.items() if g in test_grps for c in c_list]
+            return train_cands, val_cands, test_cands
+
+    def generate_and_save_split_manifest(self, train: List[Any], val: List[Any], test: List[Any], output_path: str) -> Dict[str, Any]:
+        """Generate manifest JSON with split checksums and disjointness audit."""
+        audit = verify_split_disjointness(train, val, test)
+        manifest = {
+            "disjointness_audit": audit,
+            "splits": {
+                "train": {
+                    "count": len(train),
+                    "sha256_checksum": hashlib.sha256(json.dumps([getattr(c, "candidate_id", str(c)) for c in train]).encode()).hexdigest(),
+                },
+                "validation": {
+                    "count": len(val),
+                    "sha256_checksum": hashlib.sha256(json.dumps([getattr(c, "candidate_id", str(c)) for c in val]).encode()).hexdigest(),
+                },
+                "test": {
+                    "count": len(test),
+                    "sha256_checksum": hashlib.sha256(json.dumps([getattr(c, "candidate_id", str(c)) for c in test]).encode()).hexdigest(),
+                },
+            }
+        }
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+        return manifest
 
 
-def verify_split_disjointness(train_candidates: List[Any], test_candidates: List[Any]) -> bool:
-    """Verify 0.0% overlap in participant accounts between train and test sets."""
-    train_accs = set()
-    for c in train_candidates:
-        accs = c.participant_ids if hasattr(c, "participant_ids") else c.get("ordered_cycle_accounts", [])
-        train_accs.update(accs)
-
-    for c in test_candidates:
-        accs = c.participant_ids if hasattr(c, "participant_ids") else c.get("ordered_cycle_accounts", [])
-        if any(a in train_accs for a in accs):
-            return False
-
-    return True
+build_grouped_cross_validation_splits = generate_grouped_nested_splits
 
 
 if __name__ == "__main__":

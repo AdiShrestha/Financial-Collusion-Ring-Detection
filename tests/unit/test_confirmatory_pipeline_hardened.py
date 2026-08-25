@@ -21,7 +21,7 @@ def test_confirmatory_predictions_ledger():
 
 
 def test_production_confirmatory_stats_hypotheses():
-    """Verify results/production_confirmatory_stats.json contains H1-H3 with valid verdicts."""
+    """Verify the corrective RQ family and exploratory comparison are explicit."""
     stats_path = "results/production_confirmatory_stats.json"
     assert os.path.exists(stats_path), "Missing production_confirmatory_stats.json"
 
@@ -29,13 +29,11 @@ def test_production_confirmatory_stats_hypotheses():
         data = json.load(f)
 
     assert "model_metrics" in data
-    assert "hypotheses" in data
-    for h_id in ("H1", "H2", "H3"):
-        assert h_id in data["hypotheses"]
-        h_data = data["hypotheses"][h_id]
-        assert h_data["verdict"] in ("SUPPORTED", "FALSIFIED", "INCONCLUSIVE")
-        assert "delta_pr_auc" in h_data
-        assert "wilcoxon_p_adj" in h_data
+    tests = data["confirmatory_hypothesis_tests"]
+    assert tests["RQ1_ccnn_vs_gine"]["analysis_role"] == "primary_confirmatory_family"
+    assert tests["RQ2_ccnn_vs_scnn_kge4"]["analysis_role"] == "primary_confirmatory_family"
+    assert tests["RQ3_lr_vs_gine"]["analysis_role"] == "exploratory"
+    assert tests["RQ3_lr_vs_gine"]["p_value_adjusted"] is None
 
 
 def test_publication_figures_exist():

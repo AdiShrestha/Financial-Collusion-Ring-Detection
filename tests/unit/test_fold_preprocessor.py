@@ -26,20 +26,21 @@ def test_aml_feature_builder_fit_transform_isolation():
     assert X_test_scaled.shape == (1, 2)
 
 
-def test_build_fold_preprocessors_across_5_folds():
+def test_build_fold_preprocessors_across_5_folds(tmp_path):
     """Verify preprocessors are built and serialized cleanly for all 5 outer folds."""
+    out_dir = str(tmp_path / "preprocessors")
     res = build_fold_preprocessors(
         candidates_parquet_path="artifacts/candidates/candidates.parquet",
         candidate_txs_parquet_path="artifacts/candidates/candidate_transactions.parquet",
         fold_manifest_path="artifacts/splits/fold_manifest.json",
-        output_dir="artifacts/preprocessors",
+        output_dir=out_dir,
     )
 
     assert res["status"] == "PREPROCESSORS_BUILT"
     assert res["n_outer_folds"] == 5
 
     for f_id in range(5):
-        pkl_path = f"artifacts/preprocessors/fold_{f_id}_preprocessor.pkl"
+        pkl_path = os.path.join(out_dir, f"fold_{f_id}_preprocessor.pkl")
         assert os.path.exists(pkl_path)
 
         with open(pkl_path, "rb") as f:

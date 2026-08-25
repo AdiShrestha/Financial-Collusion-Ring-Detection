@@ -280,9 +280,10 @@ assemble_caliper_matched_cohort = match_and_assemble_candidates
 class NegativeCycleSampler:
     """Samples and filters negative cycles for matched control datasets."""
 
-    def __init__(self, caliper_std: float = 0.5, random_state: int = 42):
+    def __init__(self, caliper_std: float = 0.5, random_state: int = 42, negative_ratio: float = 1.0, **kwargs):
         self.caliper_std = caliper_std
         self.random_state = random_state
+        self.negative_ratio = negative_ratio
 
     def filter_benign_candidates(
         self,
@@ -313,6 +314,56 @@ class NegativeCycleSampler:
             valid.append(c)
 
         return valid
+
+    def sample_matched_negatives(
+        self,
+        positives: List[Dict[str, Any]],
+        all_candidates: List[Dict[str, Any]],
+        forbidden_accounts: Optional[Set[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Sample matched negative controls preserving exact cycle length."""
+        benign_pool = self.filter_benign_candidates(all_candidates, forbidden_accounts=forbidden_accounts)
+        benign_by_k = defaultdict(list)
+        for b in benign_pool:
+            k = b.get("cycle_length", len(b.get("nodes", b.get("participants", []))))
+            benign_by_k[k].append(b)
+
+        pos_by_k = defaultdict(list)
+        for p in positives:
+            k = p.get("cycle_length", len(p.get("nodes", p.get("participants", []))))
+            pos_by_k[k].append(p)
+
+        sampled_negatives = []
+        self.pos_counts = {k: len(p_list) for k, p_list in pos_by_k.items()}
+        self.neg_counts = {}
+
+        for k, p_list in pos_by_k.items():
+            n_needed = int(round(len(p_list) * self.negative_ratio))
+            available = benign_by_k.get(k, [])
+            selected = available[:n_needed]
+            for s in selected:
+                s_copy = dict(s)
+                s_copy["label"] = 0
+                s_copy["is_laundering"] = 0
+                s_copy["cycle_length"] = k
+                sampled_negatives.append(s_copy)
+            self.neg_counts[k] = len(selected)
+
+        self.last_positives_count = len(positives)
+        self.last_sampled_count = len(sampled_negatives)
+        return sampled_negatives
+
+    def get_sampling_report(self) -> Dict[str, Any]:
+        """Return diagnostic metrics on sampled negatives."""
+        return {
+            "total_positives": getattr(self, "last_positives_count", 0),
+            "total_sampled_negatives": getattr(self, "last_sampled_count", 0),
+            "positive_counts_by_length": getattr(self, "pos_counts", {}),
+            "negative_counts_by_length": getattr(self, "neg_counts", {}),
+        }
+
+
+assemble_caliper_matched_cohort = match_and_assemble_candidates
 
 
 if __name__ == "__main__":

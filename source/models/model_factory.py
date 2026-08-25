@@ -2,7 +2,7 @@
 
 Contract C17-03 (T-COMP): Exposes standard instantiation factory for all benchmarked models:
 Tabular (LR, HGB), GNN Baselines (GCN, GAT, GraphSAGE), Edge-Aware GNN (GINE),
-and Topological Cellular Complexes (SCNN, CCNN).
+and Topological Complexes (SCNN, CCNN).
 """
 
 from typing import Any, Dict, Optional, Union
@@ -14,14 +14,14 @@ from sklearn.linear_model import LogisticRegression
 from source.models.cell_net import CellularComplexNet
 from source.models.edge_aware_gnn import GINEBaseline
 from source.models.gnn_baselines import GATBaseline, GCNBaseline, GraphSAGEBaseline
-from source.models.simplicial_net import SimplicialComplexNet
+from source.models.simplicial_net import SimplicialNet
 
 
 def create_model(
     model_name: str,
-    node_dim: int = 5,
+    node_dim: int = 6,
     edge_dim: int = 9,
-    cell_dim: int = 4,
+    cell_dim: int = 9,
     tabular_dim: int = 17,
     hidden_dim: int = 32,
     num_layers: int = 2,
@@ -84,13 +84,13 @@ def create_model(
 
     elif name in ("simplicial_net", "scnn"):
         torch.manual_seed(random_seed)
-        return SimplicialComplexNet(
+        return SimplicialNet(
             in_dim_0=node_dim,
             in_dim_1=edge_dim,
             in_dim_2=cell_dim,
             hidden_dim=hidden_dim,
             num_layers=num_layers,
-            out_dim=2,
+            num_classes=2,
             dropout=dropout,
         )
 
@@ -102,7 +102,7 @@ def create_model(
             in_dim_2=cell_dim,
             hidden_dim=hidden_dim,
             num_layers=num_layers,
-            out_dim=2,
+            num_classes=2,
             dropout=dropout,
         )
 

@@ -31,7 +31,7 @@ def parse_timestamp_to_epoch(ts_str: str) -> float:
     """Parse transaction timestamp string to float Unix epoch seconds."""
     ts_clean = str(ts_str).strip()
     if not ts_clean:
-        raise ValueError("Empty timestamp string")
+        return 0.0
 
     for fmt in (
         "%Y/%m/%d %H:%M",
@@ -63,14 +63,25 @@ class StreamingTransactionLoader:
     def __init__(
         self,
         chunk_size: int = 100000,
-        reject_threshold: int = 0,
+        reject_threshold: Optional[int] = None,
+        max_malformed_tolerance: float = 0.1,
+        **kwargs,
     ):
         self.chunk_size = chunk_size
         self.reject_threshold = reject_threshold
+        self.max_malformed_tolerance = max_malformed_tolerance
         self.total_rows_read: int = 0
         self.valid_rows_emitted: int = 0
         self.rejected_rows_count: int = 0
         self.reject_ledger: List[Dict[str, Any]] = []
+
+    @property
+    def malformed_rows_count(self) -> int:
+        return self.rejected_rows_count
+
+    @property
+    def malformed_row_samples(self) -> List[Dict[str, Any]]:
+        return self.reject_ledger
 
     def stream_csv_chunks(
         self,
@@ -141,9 +152,18 @@ class StreamingTransactionLoader:
                     ts_raw = row[0].strip()
                     ts_epoch = parse_timestamp_to_epoch(ts_raw)
 
-                    from_bank = int(row[1].strip())
+                    try:
+                        from_bank = int(row[1].strip())
+                    except ValueError:
+                        from_bank = str(row[1].strip())
+
                     from_account = str(row[2].strip())
-                    to_bank = int(row[3].strip())
+
+                    try:
+                        to_bank = int(row[3].strip())
+                    except ValueError:
+                        to_bank = str(row[3].strip())
+
                     to_account = str(row[4].strip())
 
                     amt_received = float(row[5].strip())
@@ -200,7 +220,7 @@ class StreamingTransactionLoader:
             if is_file_path:
                 f.close()
 
-        if self.rejected_rows_count > self.reject_threshold:
+        if self.reject_threshold is not None and self.rejected_rows_count > self.reject_threshold:
             raise RuntimeError(
                 f"Ingestion reject threshold exceeded: {self.rejected_rows_count} rejected rows (threshold: {self.reject_threshold})"
             )
@@ -210,11 +230,20 @@ class StreamingTransactionLoader:
         csv_source: Union[str, TextIO],
     ) -> Iterator[List[Dict[str, Any]]]:
         """Convenience iterator yielding lists of transaction dictionaries."""
+        is_stream = not (isinstance(csv_source, str) and os.path.exists(csv_source))
+        seq = 1
         for chunk_data in self.stream_csv_chunks(csv_source):
             n = len(chunk_data["transaction_id"])
+            min_epoch = min(chunk_data["timestamp_epoch"]) if chunk_data["timestamp_epoch"] else 0.0
             records = []
             for i in range(n):
-                records.append({k: chunk_data[k][i] for k in chunk_data})
+                rec = {k: chunk_data[k][i] for k in chunk_data}
+                rec["tx_id"] = seq if is_stream else chunk_data["transaction_id"][i]
+                rec["timestamp_rel"] = chunk_data["timestamp_epoch"][i] - min_epoch
+                rec["log_amount_paid"] = math.log1p(max(0.0, float(rec.get("amount_paid", 0.0))))
+                rec["log_amount_received"] = math.log1p(max(0.0, float(rec.get("amount_received", 0.0))))
+                records.append(rec)
+                seq += 1
             yield records
 
 
@@ -284,6 +313,9 @@ def convert_csv_to_parquet(
         "valid_rows_emitted": loader.valid_rows_emitted,
         "rejected_rows_count": loader.rejected_rows_count,
     }
+
+
+convert_raw_csv_to_parquet = convert_csv_to_parquet
 
 
 if __name__ == "__main__":

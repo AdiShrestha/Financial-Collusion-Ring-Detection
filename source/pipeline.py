@@ -62,7 +62,7 @@ def run_pipeline(stage: str = "all") -> None:
         encode_and_serialize_fold_tensors()
 
     if stage in ("all", "train"):
-        print("9. Training 8 model families across 5 folds and 3 seeds...")
+        print("9. Training 8 model families across 5 folds and 5 seeds...")
         run_5fold_multi_seed_training()
 
     if stage in ("all", "evaluate"):

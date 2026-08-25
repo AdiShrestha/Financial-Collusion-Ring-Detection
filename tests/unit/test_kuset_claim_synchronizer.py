@@ -18,12 +18,12 @@ def test_kuset_manuscript_exists_and_sections_present():
 
     required_sections = [
         "\\begin{abstract}",
-        "\\section{Introduction}",
-        "\\section{Materials and Methods}",
-        "\\section{Experimental Protocol \\& Pre-Registered Hypotheses}",
-        "\\section{Empirical Results}",
-        "\\section{Discussion and Limitations}",
-        "\\section{Conclusion and Code Availability}",
+        "\\section{INTRODUCTION}",
+        "\\section{MATERIALS AND METHODS}",
+        "\\section{RESULTS}",
+        "\\section{DISCUSSION}",
+        "\\section{CONCLUSION}",
+        "\\section*{AUTHOR AND DATA-AVAILABILITY NOTE}",
     ]
 
     for sec in required_sections:

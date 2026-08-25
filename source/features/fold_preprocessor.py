@@ -107,6 +107,25 @@ class AMLFeatureBuilder:
         """Fit scaler and transform training features."""
         return self.fit(X_train).transform(X_train)
 
+    def extract_and_transform_candidates(
+        self,
+        candidate_ids: Sequence[str],
+        cand_by_id: Dict[str, Any],
+        txs_by_cand: Dict[str, List[Dict[str, Any]]],
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Extract and transform tabular features for candidate IDs."""
+        raw_feats = []
+        labels = []
+        for cid in candidate_ids:
+            c = cand_by_id[cid]
+            txs = txs_by_cand[cid]
+            f = self.extract_raw_candidate_features(c, txs)
+            raw_feats.append(f)
+            labels.append(int(c["label"]))
+        X_scaled = self.transform(np.array(raw_feats, dtype=np.float32))
+        y = np.array(labels, dtype=np.int64)
+        return X_scaled, y
+
 
 def build_fold_preprocessors(
     candidates_parquet_path: str = "artifacts/candidates/candidates.parquet",

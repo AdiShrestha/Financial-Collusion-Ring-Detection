@@ -1,11 +1,43 @@
+# Factory and Private Staging
 factory/
 project/
 bootstrap.sh
 DROP_HERE/
 TAKE_THIS/
+
+# Python & Environment
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS & Editor
 .DS_Store
 **/.DS_Store
-.pytest_cache/
+.idea/
+.vscode/
+*.swp
+*~
+
+# Data & LaTeX Build Artifacts
 data/raw/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.bbl
+paper/*.blg
+paper/*.toc

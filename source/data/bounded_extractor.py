@@ -217,6 +217,79 @@ class BoundedCycleExtractor:
             "output_path": output_parquet_path,
         }
 
+    def extract_candidates(self, transactions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Extract bounded simple directed cycles from a list of transaction dictionaries."""
+        G = nx.DiGraph()
+        tx_edge_map = defaultdict(list)
+
+        for tx in transactions:
+            u, v = tx["from_account"], tx["to_account"]
+            G.add_edge(u, v)
+            tx_edge_map[(u, v)].append(tx)
+
+        extracted = []
+        seen_cycles = set()
+
+        for cycle in nx.simple_cycles(G):
+            k = len(cycle)
+            if not (self.min_cycle_len <= k <= self.max_cycle_len):
+                continue
+
+            can = canonical_cycle(cycle)
+            if can in seen_cycles:
+                continue
+            seen_cycles.add(can)
+
+            # Collect edge transactions
+            cycle_txs = []
+            for i in range(k):
+                u = cycle[i]
+                v = cycle[(i + 1) % k]
+                if (u, v) in tx_edge_map and tx_edge_map[(u, v)]:
+                    cycle_txs.append(tx_edge_map[(u, v)][0])
+
+            is_laundering = 1 if any(tx.get("is_laundering", 0) == 1 for tx in cycle_txs) else 0
+            timestamps = [tx["timestamp_epoch"] for tx in cycle_txs if "timestamp_epoch" in tx]
+            duration = (max(timestamps) - min(timestamps)) if len(timestamps) > 1 else 0.0
+
+            extracted.append({
+                "candidate_id": f"cand_test_{len(extracted):04d}",
+                "cycle_length": k,
+                "nodes": list(cycle),
+                "participants": list(cycle),
+                "ordered_cycle_accounts": list(cycle),
+                "is_laundering": is_laundering,
+                "duration_seconds": duration,
+                "transactions": cycle_txs,
+            })
+
+        return extracted
+
+    def evaluate_pattern_recall(self, candidates: List[Dict[str, Any]], patterns: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Evaluate extraction recall against ground truth pattern blocks."""
+        cycle_patterns = [p for p in patterns if p.get("typology") == "CYCLE" or p.get("pattern_type") == "CYCLE"]
+        cand_node_sets = [set(c.get("nodes", c.get("participants", []))) for c in candidates]
+
+        matched = 0
+        for p in cycle_patterns:
+            p_nodes = set(p.get("participants", []))
+            if any(p_nodes == c_set for c_set in cand_node_sets):
+                matched += 1
+
+        total = len(cycle_patterns)
+        recall = (matched / total) if total > 0 else 1.0
+
+        return {
+            "recall": recall,
+            "total_cycle_patterns": total,
+            "matched_cycle_patterns": matched,
+        }
+
+
+def extract_benign_candidate_pool(**kwargs) -> Dict[str, Any]:
+    extractor = BoundedCycleExtractor()
+    return extractor.extract_benign_pool(**kwargs)
+
 
 if __name__ == "__main__":
     extractor = BoundedCycleExtractor()

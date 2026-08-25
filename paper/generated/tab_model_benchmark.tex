@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering
-\caption{Multi-Seed 5-Fold Out-of-Fold Performance Benchmark (155 Candidates)}
+\caption{Five-Seed, Five-Fold Out-of-Fold Performance (seed-averaged predictions)}
 \label{tab:model_benchmark}
 \begin{tabular}{llccc}
 \hline
 \textbf{Model Architecture} & \textbf{Model Family} & \textbf{Average Precision (95\% CI)} & \textbf{ROC-AUC (95\% CI)} & \textbf{F1 Score} \\
 \hline
-Logistic Regression (LR) & Tabular Baseline & 0.8534 [0.734, 0.984] & 0.9433 [0.888, 0.994] & 0.7654 \\
-HistGradientBoosting (HGB) & Tabular Baseline & 0.8328 [0.691, 0.954] & 0.9239 [0.849, 0.981] & 0.6889 \\
-GCN & GNN Baseline & 0.3064 [0.302, 0.563] & 0.5383 [0.519, 0.691] & 0.0000 \\
-GAT & GNN Baseline & 0.4089 [0.388, 0.593] & 0.6924 [0.637, 0.825] & 0.0000 \\
-GraphSAGE & GNN Baseline & 0.4792 [0.479, 0.689] & 0.7652 [0.715, 0.887] & 0.0000 \\
-GINE & Edge-Aware GNN & 0.4684 [0.426, 0.610] & 0.7839 [0.709, 0.865] & 0.1961 \\
-SimplicialNet (SCNN) & Cell Complex TDL & 0.8557 [0.715, 0.980] & 0.9454 [0.875, 0.992] & 0.7778 \\
-CellularComplexNet (CCNN) & Cell Complex TDL & 0.7475 [0.672, 0.958] & 0.9037 [0.847, 0.978] & 0.7200 \\
+Logistic Regression (LR) & Tabular Baseline & 0.8534 [0.700, 0.970] & 0.9433 [0.863, 0.989] & 0.7532 \\
+HistGradientBoosting (HGB) & Tabular Baseline & 0.8225 [0.623, 0.954] & 0.9211 [0.813, 0.982] & 0.6667 \\
+SimplicialNet (SCNN) & Simplicial Complex TDL & 0.7384 [0.555, 0.941] & 0.9097 [0.831, 0.972] & 0.7160 \\
+CellularComplexNet (CCNN) & Cellular Complex TDL & 0.7229 [0.491, 0.969] & 0.9061 [0.781, 0.986] & 0.7059 \\
+GINE & Edge-Aware GNN & 0.3392 [0.292, 0.604] & 0.6591 [0.570, 0.823] & 0.3529 \\
+GAT & Spatial GNN Baseline & 0.3628 [0.331, 0.616] & 0.6183 [0.559, 0.754] & 0.3738 \\
+GCN & Spatial GNN Baseline & 0.2868 [0.265, 0.376] & 0.5088 [0.475, 0.564] & 0.3704 \\
+GraphSAGE & Spatial GNN Baseline & 0.2816 [0.278, 0.384] & 0.5215 [0.469, 0.626] & 0.3952 \\
 \hline
 \end{tabular}
 \end{table}
