@@ -157,17 +157,26 @@ To run the algebraic integrity oracles, leak-free split tests, and gate verifica
 pytest tests/ -v
 ```
 
+## 8. Author & Affiliation
+
+- **Author:** Aditya Shrestha
+- **Affiliation:** Department of Computer Science and Engineering, Kathmandu University, Dhulikhel, Nepal
+- **Role:** Final Year Computer Engineering Student
+- **Email:** [adityashrestha39@gmail.com](mailto:adityashrestha39@gmail.com)
+- **GitHub:** [@AdiShrestha](https://github.com/AdiShrestha)
+
 ---
 
-## 8. Citation
+## 9. Citation
 
 If you build upon this benchmark, representations, or methodology, please cite:
 
 ```bibtex
-@article{toporing2026,
+@article{shrestha2026toporing,
   title={Benchmarking Graph and Cellular-Complex Models for Pattern-Grounded Money-Laundering Cycle Classification},
-  author={[Author Details Pending]},
-  journal={Preprint},
-  year={2026}
+  author={Shrestha, Aditya},
+  journal={Preprint, Kathmandu University},
+  year={2026},
+  url={https://github.com/AdiShrestha/Financial-Collusion-Ring-Detection}
 }
 ```

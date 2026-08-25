@@ -81,7 +81,7 @@ class KUSETClaimSynchronizer:
         banned_hits = [name for name, pattern in banned_patterns.items() if re.search(pattern, tex, re.I)]
         required = [
             "corrective analysis", "pattern-grounded", "synthetic", "18 protected", "five seeds",
-            "cohort construction", "not a prospectively preregistered", "same-model self-adversarial", "AUTHOR DETAILS REQUIRED",
+            "cohort construction", "not a prospectively preregistered", "same-model self-adversarial", "Aditya Shrestha",
         ]
         missing = [phrase for phrase in required if phrase.lower() not in tex.lower()]
         for fragment in ("generated/tab_cohort_stats.tex", "generated/tab_model_benchmark.tex", "generated/tab_hypothesis_tests.tex", "generated/tab_ablation.tex"):
