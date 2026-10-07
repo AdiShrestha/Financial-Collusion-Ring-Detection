@@ -2,7 +2,7 @@
 
 Toporing studies whether graph, cellular, simplicial and persistence-based representations help recover transaction cycles. The current work focuses on exact membership in the supplied IBM AMLworld CYCLE annotations, using directed multigraphs that preserve individual transfers.
 
-The study is exploratory. Candidate identities and several exact structural diagnostics have been verified, while independent evaluation, sufficient statistical precision and transaction-level model inputs remain under development. No current trained-model superiority, real-world laundering efficacy or confirmatory result is claimed. Earlier repository results belong to the historical `old` tag and should not be interpreted as results of this study.
+The study is exploratory. Candidate identities, transaction-preserving observations and several exact structural diagnostics have been verified. Independent evaluation, sufficient statistical precision and model qualification remain under development. No current trained-model superiority, real-world laundering efficacy or confirmatory result is claimed. Earlier repository results belong to the historical `old` tag and should not be interpreted as results of this study.
 
 The repository contains the project implementation, small regression fixtures, scientific methods and a development summary. Large source datasets, credentials and operational working files are kept outside the published files.
 

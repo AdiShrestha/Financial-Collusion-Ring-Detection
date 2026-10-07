@@ -253,5 +253,104 @@
   "nonmembership_interpretation": "not in supplied annotation set; not established licit activity",
   "trained_model_comparison": null,
   "uncertainty_interpretation": "finite-frame exact counts/diagnostics; no independent-source inference",
-  "out_of_frame_instances_retained_in_denominator": 2
+  "out_of_frame_instances_retained_in_denominator": 2,
+  "transaction_preserving_observation": {
+    "context_rule": "all full-period source transfers incident to a central cycle account; peripheral-only edges excluded",
+    "family_contexts": 5810,
+    "unique_cached_source_rows": 261838,
+    "family_row_memberships": 372017,
+    "shared_cache_bytes": 134021120,
+    "context_distributions_nearest_rank": {
+      "nodes": {
+        "min": 3,
+        "max": 1428,
+        "median_nearest_rank": 8,
+        "p90_nearest_rank": 26,
+        "p99_nearest_rank": 77
+      },
+      "transfers": {
+        "min": 5,
+        "max": 16431,
+        "median_nearest_rank": 39,
+        "p90_nearest_rank": 102,
+        "p99_nearest_rank": 450
+      },
+      "directed_pairs": {
+        "min": 4,
+        "max": 1429,
+        "median_nearest_rank": 12,
+        "p90_nearest_rank": 56,
+        "p99_nearest_rank": 233
+      },
+      "self_loops": {
+        "min": 0,
+        "max": 73,
+        "median_nearest_rank": 3,
+        "p90_nearest_rank": 4,
+        "p99_nearest_rank": 23
+      }
+    },
+    "largest_context_counts": {
+      "directed_pairs": 1429,
+      "nodes": 1428,
+      "parallel_multiplicities": {
+        "1": 72,
+        "10": 57,
+        "11": 1,
+        "12": 4,
+        "13": 3,
+        "14": 293,
+        "15": 3,
+        "16": 6,
+        "17": 6,
+        "18": 7,
+        "2": 224,
+        "20": 183,
+        "21": 107,
+        "22": 5,
+        "23": 6,
+        "24": 7,
+        "27": 3,
+        "28": 5,
+        "3": 132,
+        "30": 63,
+        "31": 1,
+        "33": 2,
+        "34": 6,
+        "35": 3,
+        "36": 1,
+        "4": 81,
+        "41": 3,
+        "42": 1,
+        "44": 1,
+        "6": 35,
+        "7": 107,
+        "8": 1
+      },
+      "self_loops": 22,
+      "transfers": 16431
+    },
+    "dependence_component_counts": {
+      "central_accounts": 4356,
+      "context_accounts": 3020,
+      "context_rows": 4190
+    },
+    "dependence_interpretation": "shared account/row components within this source; not independent worlds",
+    "fixed_engineering_probe_ranks": 7981,
+    "original_probe_mapping_records": 19060,
+    "probe_scope": "fixed engineering identities, not a probability sample or evaluation cohort"
+  },
+  "within_arc_observable_resolution": {
+    "scope": "label-conditioned exposed development; fixed central arcs; identical permitted attributes under selected-edge permutation",
+    "positive_containing_families": 10,
+    "tuples_exhaustively_checked": 162,
+    "supplied_members_checked": 10,
+    "observable_identical_nonmember_choices": 0,
+    "raw_arc_rows_verified": 75,
+    "arbitrary_graph_isomorphism_checked": false,
+    "learned_separability_established": false,
+    "predictive_performance_established": false,
+    "complete_supplied_instance_denominator": 12,
+    "length13_out_of_frame": 2
+  }
 }
