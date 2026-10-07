@@ -352,5 +352,41 @@
     "predictive_performance_established": false,
     "complete_supplied_instance_denominator": 12,
     "length13_out_of_frame": 2
+  },
+  "finite_population_inference_fixtures": {
+    "AP_bias_magnitude_goal": "1/500",
+    "AP_halfwidth_goal": "1/100",
+    "all_joint_cell_intervals_full_feasible": true,
+    "allocations_with_AP_bias_goal_failure": 22,
+    "allocations_with_AP_halfwidth_goal_failure": 47,
+    "exhaustive_sample_outcomes": 849,
+    "input_kind": "declared engineering score/count fixtures, not empirical model results",
+    "joint_allocation_conditions": 55,
+    "joint_cell_records": 9688,
+    "joint_coverage": "1",
+    "large_count_cases": 128,
+    "large_count_completed_and_verified": 92,
+    "large_count_timeouts": 36,
+    "limitations": [
+      "Broad count ranges explain coverage of one; useful precision is not established",
+      "Unbiased count estimates do not establish unbiased AP ratio plug-ins",
+      "Timeouts describe this exact implementation and cap, not all possible algorithms",
+      "No empirical predictive sampling, trained model or independent evaluation qualification",
+      "Independent arithmetic and preserved evidence are local; complete source-free reproduction package is not yet included publicly"
+    ],
+    "minimum_scalar_coverage": "20/21",
+    "rare_high_score_n1": {
+      "AP": "1/2",
+      "bias": "7/18",
+      "max_interval_width": "7/8",
+      "mean_interval_width": "469/576",
+      "mean_plugin": "8/9"
+    },
+    "same_example_for_both_fixed_scorers": true,
+    "scalar_coverage_conditions": 2457,
+    "scalar_endpoints": 1365,
+    "scalar_tail_records": 1820,
+    "stage_wall_cap_seconds": 15,
+    "status": "small-frame arithmetic qualified; large-count computation partial"
   }
 }
