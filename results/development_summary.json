@@ -1,0 +1,257 @@
+{
+  "study": "exact supplied AMLworld CYCLE-instance recovery",
+  "source_release": "IBM AMLworld LI-Small v8",
+  "scope": "exposed synthetic development; retrospective static length-2\u201312 frame",
+  "source_records": 6924049,
+  "structural_families": 5810,
+  "implicit_tuple_capacity": "96361568254",
+  "supplied_member_count_in_frame": "10",
+  "supplied_nonmember_count_in_frame": "96361568244",
+  "complete_supplied_instance_denominator": 12,
+  "extraction_coverage": {
+    "numerator": "5",
+    "denominator": "6"
+  },
+  "conditional_index_coverage": {
+    "numerator": "1",
+    "denominator": "1"
+  },
+  "prevalence": {
+    "numerator": "5",
+    "denominator": "48180784127",
+    "decimal": "1.0377581209181801326311154080815360574797811654553E-10"
+  },
+  "exact_structural_diagnostics": [
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "1893444984784495039317199354042324994365941672541171",
+        "denominator": "30882161570882595268045569011839477934291627766307464872864400",
+        "decimal": "6.1311931823118863969319687344486578751347163574329E-11"
+      },
+      "AUROC": {
+        "numerator": "449257559",
+        "denominator": "64241045496",
+        "decimal": "0.0069933102042676631222801417901755750092937435153850"
+      },
+      "column": "length_increasing",
+      "blocks": 11
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "631519655273746603662089687381",
+        "denominator": "2037922622355846433905695357792250",
+        "decimal": "0.00030988402029891961232390649174660576205459347767864"
+      },
+      "AUROC": {
+        "numerator": "63791787937",
+        "denominator": "64241045496",
+        "decimal": "0.99300668979573233687771985820982442499070625648462"
+      },
+      "column": "length_decreasing",
+      "blocks": 11
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "471724254398600763042655117988053266563738136919586051",
+        "denominator": "7331627093248067475567560182177587814375453189402500712073738520",
+        "decimal": "6.4341004854574080339536001990305578254752372230039E-11"
+      },
+      "AUROC": {
+        "numerator": "24697",
+        "denominator": "481807841220",
+        "decimal": "5.1259024629952036379189088366410376786270933907488E-8"
+      },
+      "column": "capacity_increasing",
+      "blocks": 98
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "69088357210766741",
+        "denominator": "69610890490326743250",
+        "decimal": "0.00099249351249668879855932606225333938383022172952487"
+      },
+      "AUROC": {
+        "numerator": "481807816523",
+        "denominator": "481807841220",
+        "decimal": "0.99999994874097537004796362081091163358962321372907"
+      },
+      "column": "capacity_decreasing",
+      "blocks": 98
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "69013374174204717631401737471471577860723399267401732565359697",
+        "denominator": "1127158747192545712608973202111822094012724989914057658321260827295215380",
+        "decimal": "6.1227732425533473023827636281513888469737761715183E-11"
+      },
+      "AUROC": {
+        "numerator": "20831",
+        "denominator": "321205227480",
+        "decimal": "6.4852618257269964154445149193871394835494786263122E-8"
+      },
+      "column": "sum_multiplicity_increasing",
+      "blocks": 77
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "2316009696251961465727",
+        "denominator": "2677189510246841029400400",
+        "decimal": "0.00086508993382333317746270585258732896871650822418789"
+      },
+      "AUROC": {
+        "numerator": "321205206649",
+        "denominator": "321205227480",
+        "decimal": "0.99999993514738174273003584555485080612860516450521"
+      },
+      "column": "sum_multiplicity_decreasing",
+      "blocks": 77
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "23545504197482002755807",
+        "denominator": "319560797222348044383097186763080",
+        "decimal": "7.3680828193388235599124989297928579383109201718414E-11"
+      },
+      "AUROC": {
+        "numerator": "88783",
+        "denominator": "1927231364880",
+        "decimal": "4.6067639629520100071400826339585906002910194812209E-8"
+      },
+      "column": "max_multiplicity_increasing",
+      "blocks": 20
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "62448221",
+        "denominator": "53330314100",
+        "decimal": "0.0011709704331180753349435082363409519090006634706845"
+      },
+      "AUROC": {
+        "numerator": "1927231276097",
+        "denominator": "1927231364880",
+        "decimal": "0.99999995393236037047989992859917366041409399708981"
+      },
+      "column": "max_multiplicity_decreasing",
+      "blocks": 20
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "6134169455020263915063134178135150519342679151265881131242551194716459278263840858813315520166181",
+        "denominator": "88460278985274670159970943616090266754478122656807415019251350250671576423286491004462555751579835258341850",
+        "decimal": "6.9343772429672913833359952628215657890228613536538E-11"
+      },
+      "AUROC": {
+        "numerator": "218948643037",
+        "denominator": "963615682440",
+        "decimal": "0.22721573239924200169288394712440043422338555189859"
+      },
+      "column": "mean_degree_increasing",
+      "blocks": 279
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "37067506848631991100785086929644951147425393124272941648364779199",
+        "denominator": "67772736739993037832661166794554128636740711948407017082671233911000",
+        "decimal": "0.00054693832109569018087287846496639032262853048682915"
+      },
+      "AUROC": {
+        "numerator": "744667039403",
+        "denominator": "963615682440",
+        "decimal": "0.77278426760075799830711605287559956577661444810141"
+      },
+      "column": "mean_degree_decreasing",
+      "blocks": 279
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "142598205381772749217716349301881017027790590269987274363905624147297",
+        "denominator": "5189066039387307560569341681035221807283485512539501673641165718163832065800",
+        "decimal": "2.7480514662829354313497085746473510912223900296143E-8"
+      },
+      "AUROC": {
+        "numerator": "547680752323",
+        "denominator": "1927231364880",
+        "decimal": "0.28418007422637686726687598511143218043951451654210"
+      },
+      "column": "max_degree_increasing",
+      "blocks": 78
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "11467032710489165743123479500208988673868803072997081014127",
+        "denominator": "32822890434485847830756451302582065555387744814121586999957840",
+        "decimal": "0.00034936084417602542501389367260966911618237625095487"
+      },
+      "AUROC": {
+        "numerator": "1379550612557",
+        "denominator": "1927231364880",
+        "decimal": "0.71581992577362313273312401488856781956048548345790"
+      },
+      "column": "max_degree_decreasing",
+      "blocks": 78
+    },
+    {
+      "P": "10",
+      "Q": "96361568244",
+      "N": "96361568254",
+      "AP": {
+        "numerator": "5",
+        "denominator": "48180784127",
+        "decimal": "1.0377581209181801326311154080815360574797811654553E-10"
+      },
+      "AUROC": {
+        "numerator": "1",
+        "denominator": "2",
+        "decimal": "0.5"
+      },
+      "column": "constant",
+      "blocks": 1
+    }
+  ],
+  "family_constant_label_aware_AP_bound": {
+    "numerator": "9553",
+    "denominator": "13770",
+    "decimal": "0.69375453885257806826434277414669571532316630355846"
+  },
+  "information_bound_scope": "label-aware ordered-partition diagnostic; conditional family-constant scorers only; not fitted predictive performance",
+  "nonmembership_interpretation": "not in supplied annotation set; not established licit activity",
+  "trained_model_comparison": null,
+  "uncertainty_interpretation": "finite-frame exact counts/diagnostics; no independent-source inference",
+  "out_of_frame_instances_retained_in_denominator": 2
+}
