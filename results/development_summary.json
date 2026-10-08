@@ -432,5 +432,18 @@
       "Scorer-specific aggregation cannot establish equivalence for arbitrary learned graph/topology models",
       "Independent evaluation and complete learned-scoring feasibility remain unresolved"
     ]
+  },
+  "current_experiment_feasibility": {
+    "status": "no complete confirmatory learned-comparison route currently qualified",
+    "unresolved": [
+      "independent evaluation support",
+      "prospective evaluation access boundaries",
+      "transaction-preserving model-input integration",
+      "measured full-campaign processing cost and resources"
+    ],
+    "alternative_populations_active": false,
+    "new_simulator_study_active": false,
+    "trained_predictive_failure_established": false,
+    "interpretation": "Current design and available-evidence finding; not universal infeasibility or measured model performance"
   }
 }
