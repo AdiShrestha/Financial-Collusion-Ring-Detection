@@ -388,5 +388,49 @@
     "scalar_tail_records": 1820,
     "stage_wall_cap_seconds": 15,
     "status": "small-frame arithmetic qualified; large-count computation partial"
+  },
+  "exact_precision_frontier_fixtures": {
+    "input_kind": "source-free hypothetical negative-stratum scenarios; not empirical model performance",
+    "conditions": 72,
+    "zero_negative_allowance_conditions": 54,
+    "minimum_required_sampling_fraction": "521823/1000000",
+    "maximum_required_sampling_fraction": "3999/4000",
+    "condition": "zero observed sample hits at one fixed threshold, known certainty positives and stated rational cell budget/half-width target",
+    "negative_population_sizes": [
+      1000000,
+      100000000000
+    ],
+    "certainty_positive_counts": [
+      1,
+      2,
+      5,
+      10,
+      30,
+      100
+    ],
+    "precision_halfwidth_scenarios": [
+      "1/100",
+      "1/50"
+    ],
+    "cell_error_scenarios": [
+      "1/20",
+      "1/100",
+      "1/2000"
+    ],
+    "error_interpretation": "separate hypothetical cell-budget cases; not one simultaneous 72-cell family",
+    "cost_scenarios": "one microsecond, 100 microseconds, or one millisecond per scored tuple; assumptions, not measurements",
+    "optimized_arithmetic_panel": {
+      "completed_and_independently_verified": 122,
+      "timeouts_retained": 6,
+      "previously_timed_out_cases_newly_verified": 30,
+      "stage_wall_cap_seconds": 15,
+      "controlled_hardware_speedup_claim": false
+    },
+    "limitations": [
+      "Conditional minima do not promise realized/expected interval widths or general AP precision",
+      "Observed arithmetic timings do not measure learned model scoring",
+      "Scorer-specific aggregation cannot establish equivalence for arbitrary learned graph/topology models",
+      "Independent evaluation and complete learned-scoring feasibility remain unresolved"
+    ]
   }
 }
