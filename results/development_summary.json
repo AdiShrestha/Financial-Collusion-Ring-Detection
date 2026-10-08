@@ -445,5 +445,17 @@
     "new_simulator_study_active": false,
     "trained_predictive_failure_established": false,
     "interpretation": "Current design and available-evidence finding; not universal infeasibility or measured model performance"
+  },
+  "controlled_simulation_redesign": {
+    "status": "planning only",
+    "source_under_design": "AMLSim",
+    "target_under_design": "exact recovery of complete realized CYCLE-alert transaction instances, SAR and non-SAR",
+    "candidate_approach_under_design": "complete census within small bounded worlds",
+    "original_AMLworld_findings_preserved": true,
+    "worlds_generated": 0,
+    "models_trained": 0,
+    "protocol_qualified": false,
+    "execution_authorized": false,
+    "claim_boundary": "specified simulation population only"
   }
 }
