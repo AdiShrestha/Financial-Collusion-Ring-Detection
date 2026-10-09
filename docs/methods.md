@@ -34,4 +34,28 @@ Static inspection found that existing model-input paths require integration work
 
 The current full-frame and bounded-population alternatives lack a jointly qualified independent-evaluation, prospective-access, model-input and affordable campaign design. Candidate restrictions change the population and require scientific justification and complete supplied-instance coverage accounting. A separately defined simulator study would change the target/source and still require its own realized-event truth and evaluation qualification. No alternative population or simulation study has been activated. Campaign count, storage-layout and hypothetical throughput scenarios do not establish universal resource minima or measured learned-model cost.
 
-A separate controlled simulation redesign is now being planned for exact recovery of complete realized AMLSim CYCLE-alert transaction instances, including SAR and non-SAR instances. The design aims to use small independently initialized worlds, a complete candidate census, lossless realized-event accounting and equal observed information for cellular, simple and graph comparators. Original AMLworld development findings remain separate and unchanged. Source configuration, event truth, evaluation access, model integration, uncertainty and measured campaign affordability still require qualification; no worlds have been generated and no model experiment has started. Claims would be limited to the specified simulated population.
+A planning snapshot dated 8 October 2026 described a controlled AMLSim simulation design before any worlds had been generated. The follow-up below reports what the later development-only work actually completed; the two targets remain separate.
+
+## Controlled simulation development follow-up — 9 October 2026
+
+The separate target is exact recovery of complete realized AMLSim CYCLE-alert transaction instances, including SAR and non-SAR instances. Six separately initialized development worlds used one fixed, disclosed generator mechanism and 32 accounts over 120 steps. Each produced 77 persisted noncash transfer rows, six complete and in-frame CYCLE instances, and the full 78-tuple candidate frame: six supplied-instance members and 72 nonmembers. These are controlled simulation outcomes, not financial records, real-world prevalence estimates, or evidence that a nonmember is licit activity. The six worlds are development realizations conditional on the specified generator; seed numbers alone do not establish independent institutions or an IID population.
+
+A same-seed replay of the first world matched all 22 checked scientific artifacts: generated input CSVs, unmodified and instrumented native transaction rows, observation sidecars, candidate identities and labels, graph identity, and incidence operators. Only the absolute topology-file path and timing metadata were excluded from comparison. The replay is not an additional world or population unit.
+
+Four fixed, untrained shortcut rankings were reported separately by world. Across the six worlds, cycle length had AP 0.1429 and tie-aware AUROC 0.7500 in every world. Minimum selected log amount ranged from AP 0.0657–0.0922 and AUROC 0.3495–0.5590; negative log-amount span ranged from AP 0.0605–0.0756 and AUROC 0.3079–0.4456; negative time span ranged from AP 0.1271–0.1627 and AUROC 0.6204–0.6921. These are construction diagnostics, not trained-model performance; no ranking was selected or tuned and candidates were not pooled as independent replications.
+
+The matched untrained neural interfaces used 8,390–8,533 trainable parameters, a 1.68% maximum relative spread. Every arm passed finite-gradient, local-feature-use, and scalar basis/permutation checks on each world. The GBDT API smoke used a separate deterministic toy fixture; no model was fit to the simulated candidate labels. No predictive efficacy, convergence, or model qualification is established.
+
+The reference computation found 53 essential H1 classes per world for the unfilled port-expanded graph, matching its internal graph-cycle reference. External persistent-homology backend parity remains unresolved because GUDHI was unavailable in the measured environment.
+
+One 78-candidate forward/backward pass measured about 24–41 ms across the neural arms. The end-to-end world-generation/native execution subprocess took about 0.9–1.1 seconds per world; benchmark-check subprocesses took about 2.6–3.3 seconds. These measurements cover this small simulated frame and interface smoke only. They do not measure convergence, full training, repeated initialization, independent evaluation, storage at larger scale, or total campaign cost. The dense-linear forward FLOP subtotal omits incidence multiplication, aggregation, nonlinearities, loss, and backward work. Future campaign size and epochs remain symbolic.
+
+Reproduce the data-independent mathematical checks with:
+
+```sh
+python3 -s -B -m unittest source.tests.test_s1_benchmark_contract
+```
+
+The benchmark CLI takes ordinary `--world-dir`, `--output-dir`, and `--model-config` arguments. Reproduction of the measured results additionally requires the corresponding locally generated world artifacts and the recorded configuration; those data artifacts are not part of the public source release.
+
+No untouched evaluation worlds were created or inspected. Gate 2 remains unresolved: independent custody, a justified world-level precision plan, external backend parity, and a fully costed predictive campaign remain open. No model training, test split, freeze, or certification was performed.

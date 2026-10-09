@@ -1,0 +1,9 @@
+{
+  "hidden_widths": {
+    "cellular_cwn_style_local": 34,
+    "simplicial_mpsn_style_local": 36,
+    "directed_local_edge_gnn": 36,
+    "cellular_hasse_mechanism_control": 30
+  },
+  "initialization_seed": 11
+}
