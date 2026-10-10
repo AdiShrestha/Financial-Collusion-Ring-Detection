@@ -70,21 +70,27 @@ The separate microfit uses the lexicographically first two exact members and fir
 
 These diagnostics answer limited learning and fitting-capability questions on exposed development data. The label-conditioned subset is not a cohort or evaluation split; microfit success does not imply population learning. The two validation worlds do not support population intervals or superiority claims. Finite stability, full-corpus model qualification, independent-world evaluation, external GUDHI parity, and any topology-mechanism or real-world AML claim remain unresolved.
 
-## Prospective four-world simulator comparison — 10 October 2026
+## Complete simulator evidence package
 
-A separate locked comparison scored 30 previously selected states on four prospectively registered realizations of the fixed simulator: five fixed-summary neural controls, five initializations in each of four graph/complex arms, and five retained fixed-summary GBDT references. Each world contained 78 candidate tuples, six exact generated CYCLE members and 72 nonmembers. The generator performed annotation-aware reconciliation; prediction used the seven-file observation/topology allowlist and did not read labels. Labels were joined only after all 120 model-by-world prediction blocks and their coverage/hash manifest were complete. A separate arithmetic check reproduced every saved metric within the declared 1e-8 tolerance and verified prediction identity coverage.
+The venue-neutral [manuscript](manuscript.md), [data card](s1_benchmark_data_card.md), [dictionary](s1_results_dictionary.md), and [complete numeric tables](../results/s1_benchmark/summary.json) report the bounded retained simulator finding. Whole-world AP means and every predeclared contrast are generated from the saved full panel. The summary neural exception and unresolved learning/support remain visible.
 
-The table reports average precision from raw logits, with equal-score groups admitted together. Each world column averages the five initialization results within that world. The final column is the equal mean over the four worlds. W1–W4 follow the registered world order.
-
-| Frozen arm | W1 | W2 | W3 | W4 | Equal mean |
-|---|---:|---:|---:|---:|---:|
+| Retained arm | W1 | W2 | W3 | W4 | Equal-world mean |
+|---|:---:|:---:|:---:|:---:|:---:|
 | Fixed-summary GBDT | 1.0000 | 0.5093 | 0.9151 | 1.0000 | 0.8561 |
 | Fixed-summary neural control | 0.9095 | 0.7497 | 0.8304 | 0.5092 | 0.7497 |
 | Directed local edge GNN | 0.2254 | 0.1434 | 0.5530 | 0.1955 | 0.2793 |
-| Simplicial local MPSN-style | 0.2230 | 0.2496 | 0.2385 | 0.2675 | 0.2447 |
-| Cellular Hasse mechanism control | 0.2259 | 0.2892 | 0.2194 | 0.2045 | 0.2348 |
-| Cellular local CWN-style | 0.1623 | 0.2879 | 0.2282 | 0.1813 | 0.2149 |
+| Local simplicial MPSN-style | 0.2230 | 0.2496 | 0.2385 | 0.2675 | 0.2447 |
+| Cellular Hasse control | 0.2259 | 0.2892 | 0.2194 | 0.2045 | 0.2348 |
+| Local cellular CWN-style | 0.1623 | 0.2879 | 0.2282 | 0.1813 | 0.2149 |
 
-The five predeclared equal-world neural-minus-GBDT AP contrasts were −0.1064 for the fixed-summary neural control, −0.5768 for the directed edge GNN, −0.6114 for the simplicial arm, −0.6213 for the Hasse control and −0.6411 for the cellular arm. These conditional descriptive differences retain the strong simple baseline and the unfavorable graph-arm results. The fixed-summary neural control exceeded the GBDT reference on one world, while the GBDT had the higher four-world mean. This four-world ordering does not establish qualified superiority or equivalence.
 
-This comparison is development evidence on four simulator realizations, below the 30-world support floor. It does not establish population precision, independent institutional variation, topology mechanism, financial generalization, or a qualified comparative learning result. S1-F finite stability and S1-E comparative learning qualification remain unresolved. The 60 label-conditioned microfit endpoints were not used. No fitting, tuning, replacement world, successful-block rescoring, population interval, p-value, freeze or certification was performed. The frozen weights, generated worlds and execution evidence are not distributed with the public source.
+| Neural arm minus GBDT | W1 | W2 | W3 | W4 | Equal-world mean |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Fixed-summary neural control | -0.0905 | +0.2404 | -0.0847 | -0.4908 | -0.1064 |
+| Directed local edge GNN | -0.7746 | -0.3659 | -0.3621 | -0.8045 | -0.5768 |
+| Local simplicial MPSN-style | -0.7770 | -0.2596 | -0.6766 | -0.7325 | -0.6114 |
+| Cellular Hasse control | -0.7741 | -0.2201 | -0.6957 | -0.7955 | -0.6213 |
+| Local cellular CWN-style | -0.8377 | -0.2214 | -0.6868 | -0.8187 | -0.6411 |
+
+
+Each world column averages every initialization; the final column weights worlds equally. These are finite conditional observations, with no population superiority or financial efficacy inference. Full per-setting secondary metrics/confusions and separate development tables accompany the paper. The measured GBDT policy is staged round 70 from 800-round fitted objects with 7 maximum leaves; learning rate is 0.1, minimum leaf sample count 2, and API early stopping disabled. Its strong result is retained. Current graph/complex learning remains unqualified. No microfit state was deployed.

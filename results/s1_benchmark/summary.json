@@ -1,0 +1,146 @@
+{
+  "aggregation": "mean AP over every initialization within world, then equal mean across worlds",
+  "coverage": {
+    "arms": 6,
+    "initializations_per_arm": 5,
+    "mean_contrasts": 5,
+    "metric_rows": 120,
+    "world_ap_rows": 24,
+    "world_contrast_rows": 20,
+    "worlds": 4
+  },
+  "descriptive_ap_contrast_means": {
+    "cellular_cwn_style_local": -0.6411491932344058,
+    "cellular_hasse_mechanism_control": -0.6213341690611786,
+    "directed_local_edge_gnn": -0.5767617029158555,
+    "fixed20_tabular_neural_control": -0.10640260202760202,
+    "simplicial_mpsn_style_local": -0.6114313021235476
+  },
+  "development_table_rows": {
+    "results/s1_benchmark/development_continuation_metrics.csv": 240,
+    "results/s1_benchmark/development_continuation_status.csv": 106,
+    "results/s1_benchmark/development_initial_trials.csv": 100,
+    "results/s1_benchmark/development_selected_metrics.csv": 100,
+    "results/s1_benchmark/learning_diagnostic_trials.csv": 88
+  },
+  "equal_world_ap_means": {
+    "cellular_cwn_style_local": 0.21493546285025028,
+    "cellular_hasse_mechanism_control": 0.23475048702347756,
+    "directed_local_edge_gnn": 0.27932295316880057,
+    "fixed20_tabular_neural_control": 0.7496820540570541,
+    "gbdt_fixed20": 0.8560846560846561,
+    "simplicial_mpsn_style_local": 0.2446533539611085
+  },
+  "historical_context": "AMLworld/Elliptic/E0 remain separate exploratory studies; historical tag scores not current efficacy",
+  "inference": "descriptive_only",
+  "learning_status": {
+    "continuation_selected_runs": {
+      "cellular_cwn_style_local": {
+        "NOT_ESTABLISHED": 5
+      },
+      "cellular_hasse_mechanism_control": {
+        "NOT_ESTABLISHED": 3,
+        "SUSTAINED_LOCAL_STABILITY_OBSERVED": 2
+      },
+      "directed_local_edge_gnn": {
+        "NOT_ESTABLISHED": 5
+      },
+      "simplicial_mpsn_style_local": {
+        "NOT_ESTABLISHED": 5
+      }
+    },
+    "microfit_endpoint_established": 60,
+    "microfit_scope": "deliberately label-conditioned balanced training subset; not deployed",
+    "summary_control": {
+      "NOT_ESTABLISHED": 15
+    }
+  },
+  "measured_resources": {
+    "continuation_elapsed_seconds": 10610.717448949814,
+    "diagnostic_elapsed_seconds": 315.68295662495075,
+    "diagnostic_self_peak_rss_bytes": 752484352,
+    "final_retained_run_tree_bytes": 10654055,
+    "heldout": {
+      "child_peak_rss_bytes": 771162112,
+      "elapsed_seconds_at_metric_closeout": 12.138715790992137,
+      "new_output_bytes_in_run_root": 10653086,
+      "rss_scope": "separate OS-reported wrapper and maximum child RSS, not their sum or a simultaneous process-tree peak",
+      "wrapper_peak_rss_bytes": 253362176
+    },
+    "initial_development_elapsed_seconds": 4402.061016417021,
+    "outer_launch_and_contract_bytes": 3565
+  },
+  "missing_analyses": [
+    "population precision/intervals",
+    "neural comparative learning qualification",
+    "causal ablations",
+    "sensitivity",
+    "external PH backend parity",
+    "OOD/institutional/financial validation",
+    "externally sealed custody/cold review"
+  ],
+  "public_reproduction": "saved metric export and plotting; empirical inputs/weights withheld",
+  "publication_status": "draft_pending_review_and_final_freeze",
+  "schema": "s1_publication_results_v1",
+  "target": "exact complete persisted generated CYCLE membership, SAR and non-SAR",
+  "world_ap_means": {
+    "cellular_cwn_style_local": {
+      "W1": 0.1623437942371581,
+      "W2": 0.28785251549055735,
+      "W3": 0.22824600346778862,
+      "W4": 0.18129953820549705
+    },
+    "cellular_hasse_mechanism_control": {
+      "W1": 0.2259158932784601,
+      "W2": 0.289162630327491,
+      "W3": 0.21940379044269204,
+      "W4": 0.20451963404526707
+    },
+    "directed_local_edge_gnn": {
+      "W1": 0.22538910678403043,
+      "W2": 0.14339971505807567,
+      "W3": 0.5529831649831649,
+      "W4": 0.1955198258499312
+    },
+    "fixed20_tabular_neural_control": {
+      "W1": 0.9095238095238095,
+      "W2": 0.7496723646723646,
+      "W3": 0.8303571428571429,
+      "W4": 0.5091748991748992
+    },
+    "gbdt_fixed20": {
+      "W1": 1.0,
+      "W2": 0.5092592592592593,
+      "W3": 0.915079365079365,
+      "W4": 1.0
+    },
+    "simplicial_mpsn_style_local": {
+      "W1": 0.2229695111126106,
+      "W2": 0.24961956010201622,
+      "W3": 0.2385048709986834,
+      "W4": 0.2675194736311237
+    }
+  },
+  "world_populations": {
+    "W1": {
+      "exact_members": 6,
+      "full_candidate_census": 78,
+      "physical_events": 77
+    },
+    "W2": {
+      "exact_members": 6,
+      "full_candidate_census": 78,
+      "physical_events": 77
+    },
+    "W3": {
+      "exact_members": 6,
+      "full_candidate_census": 78,
+      "physical_events": 77
+    },
+    "W4": {
+      "exact_members": 6,
+      "full_candidate_census": 78,
+      "physical_events": 77
+    }
+  }
+}

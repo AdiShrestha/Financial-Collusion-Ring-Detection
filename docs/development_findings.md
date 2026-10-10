@@ -31,3 +31,9 @@ One bounded development run used four existing training worlds (312 candidates) 
 The retained fixed20 GBDT development reference remains strong: mean AP 0.9742, AUROC 0.9983, and BCE 0.0293 across ten seed-by-world records. This reference and the S1-F neural measurements are descriptive results on exposed development worlds, not an independent paired evaluation or a population comparison. The neural result does not establish that fixed summaries are inadequate; optimization and generalization remain unresolved.
 
 All 60 unchanged graph/complex microfits met the fitting endpoint on the deliberately label-conditioned, balanced 16-row training subset. This supports fitting capability on those selected rows only. It does not establish full-corpus learning, generalization, representation adequacy, or a topology mechanism. The S1-F outputs remain development evidence; external GUDHI parity is still unresolved, and no independent test performance is reported.
+
+## Complete learning history exports
+
+The original exploratory findings above retain their scope. Complete source-derived exports now distinguish initial trials/selected validation, continuation-selected metrics/terminal endpoints, and summary/microfit diagnostics. See the [dictionary](s1_results_dictionary.md) and [manuscript supplement links](manuscript.md#complete-results). The initial summary-status gaps remain null instead of invented completion statuses. 2 of 20 selected graph continuation runs recorded sustained local stability; none of the 15 summary-control trials did. All 60 label-conditioned microfit endpoints support selected-row fitting capability only.
+
+The prospective fixed-world comparison is reported separately with every arm, world, setting and contrast. It preserves the strong GBDT mean and the summary-neural exception. Development measurements and microfit endpoints are not counted as heldout performance or population support.

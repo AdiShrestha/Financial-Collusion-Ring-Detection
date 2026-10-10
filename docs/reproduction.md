@@ -53,3 +53,18 @@ The development summary publishes exact aggregated findings and metric definitio
 IBM AMLworld's publisher source is [IBM AML-Data](https://github.com/IBM/AML-Data), which links the released data and licensing terms. Use the named v8 LI-Small source under the applicable terms. No source timestamp, amount, identity or negative laundering label may be invented to fill unavailable data. Account-sidecar metadata is unavailable because the literal account-table join failed; that finding is part of the data limitations.
 
 The historical `old` tag preserves the earlier repository. Its checkpoints, manuscript and reported metrics are historical material, not outputs of the current exploratory study. The current repository does not inherit their performance claims.
+
+## Reproduce released metric figures
+
+The complete exported metric CSV is sufficient for the neutral plotting utility. Use the dependencies declared in `source/pyproject.toml`, including matplotlib. From the repository root:
+
+```sh
+python3 -s -B source/scripts/plot_s1_results.py \
+  --metrics-csv results/s1_benchmark/metrics_by_world_initialization.csv \
+  --output-dir /path/to/new-figures
+python3 -s -B -m unittest discover -s source/tests -p test_s1_publication_plot.py
+```
+
+The utility refuses duplicate/incomplete model–world–setting coverage, nonfinite metrics and inconsistent counts, and protects existing figures from overwrite. Optional `--preview-dir` writes local PNG previews. It averages saved AP across settings within worlds and renders every predeclared contrast. It does not load a model, generate a world or compute scores. Null required AP makes the corresponding aggregate unavailable instead of dropping that world.
+
+The manuscript, data card and result dictionary explain target/alias/phase/missingness conventions. Released CSVs contain full aggregate metrics and counts only. Figure reproduction and synthetic fixtures do not reproduce the empirical run: frozen states, raw worlds and candidate-level evidence are not distributed. The benchmark shares a fixed simulator mechanism, and the published draft does not establish population precision, qualified neural learning, financial generalization or external review/custody assurance.
