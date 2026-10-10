@@ -32,7 +32,7 @@ Exact short-tail recurrences and complements improve arithmetic feasibility whil
 
 Static inspection found that existing model-input paths require integration work before they can implement the verified observation reference: selected-transfer masks are missing or replaced by central-endpoint membership, and some lifts aggregate parallel/directed transfers or omit self-loops. These differences must be disclosed or resolved under a common observation contract before comparative claims. This inspection did not execute models or establish a predictive result.
 
-The current full-frame and bounded-population alternatives lack a jointly qualified independent-evaluation, prospective-access, model-input and affordable campaign design. Candidate restrictions change the population and require scientific justification and complete supplied-instance coverage accounting. A separately defined simulator study would change the target/source and still require its own realized-event truth and evaluation qualification. No alternative population or simulation study has been activated. Campaign count, storage-layout and hypothetical throughput scenarios do not establish universal resource minima or measured learned-model cost.
+The current full-frame and bounded-population alternatives lack a jointly qualified independent-evaluation, prospective-access, model-input and affordable campaign design. Candidate restrictions change the population and require scientific justification and complete supplied-instance coverage accounting. A separately defined simulator study changes the target/source and requires its own realized-event truth and evaluation qualification. The bounded simulator comparison below is development evidence for that separate target; it does not resolve the AMLworld population design. Campaign count, storage-layout and hypothetical throughput scenarios do not establish universal resource minima or measured learned-model cost.
 
 A planning snapshot dated 8 October 2026 described a controlled AMLSim simulation design before any worlds had been generated. The follow-up below reports what the later development-only work actually completed; the two targets remain separate.
 
@@ -58,7 +58,7 @@ python3 -s -B -m unittest source.tests.test_s1_benchmark_contract
 
 The benchmark CLI takes ordinary `--world-dir`, `--output-dir`, and `--model-config` arguments. Reproduction of the measured results additionally requires the corresponding locally generated world artifacts and the recorded configuration; those data artifacts are not part of the public source release.
 
-No untouched evaluation worlds were created or inspected. Independent evaluation access, a justified world-level precision plan, external backend parity, and a fully costed predictive campaign remain open. The benchmark qualification described above involved no model fitting; the following development diagnostic added bounded fitting on existing worlds.
+No untouched evaluation worlds were created or inspected for the AMLworld candidate study. Independent evaluation access, a justified world-level precision plan, external backend parity, and a fully costed predictive campaign remain open. The benchmark qualification described above involved no model fitting; the following development diagnostic added bounded fitting on existing worlds.
 
 ## S1-F learning diagnostics
 
@@ -69,3 +69,22 @@ Five initialization seeds are crossed with three learning rates for 15 control t
 The separate microfit uses the lexicographically first two exact members and first two nonmembers in each training world, for 16 label-conditioned training rows. The four previously defined graph/complex paths keep their existing architectures and inputs. Each arm uses five fresh initialization seeds and the same three learning rates. No validation rows are used in microfit. A trial stops only after BCE is at most 0.02 and all 16 rows are classified correctly at logit zero for 20 consecutive post-update evaluations, or at the 1,500-epoch cap.
 
 These diagnostics answer limited learning and fitting-capability questions on exposed development data. The label-conditioned subset is not a cohort or evaluation split; microfit success does not imply population learning. The two validation worlds do not support population intervals or superiority claims. Finite stability, full-corpus model qualification, independent-world evaluation, external GUDHI parity, and any topology-mechanism or real-world AML claim remain unresolved.
+
+## Prospective four-world simulator comparison — 10 October 2026
+
+A separate locked comparison scored 30 previously selected states on four prospectively registered realizations of the fixed simulator: five fixed-summary neural controls, five initializations in each of four graph/complex arms, and five retained fixed-summary GBDT references. Each world contained 78 candidate tuples, six exact generated CYCLE members and 72 nonmembers. The generator performed annotation-aware reconciliation; prediction used the seven-file observation/topology allowlist and did not read labels. Labels were joined only after all 120 model-by-world prediction blocks and their coverage/hash manifest were complete. A separate arithmetic check reproduced every saved metric within the declared 1e-8 tolerance and verified prediction identity coverage.
+
+The table reports average precision from raw logits, with equal-score groups admitted together. Each world column averages the five initialization results within that world. The final column is the equal mean over the four worlds. W1–W4 follow the registered world order.
+
+| Frozen arm | W1 | W2 | W3 | W4 | Equal mean |
+|---|---:|---:|---:|---:|---:|
+| Fixed-summary GBDT | 1.0000 | 0.5093 | 0.9151 | 1.0000 | 0.8561 |
+| Fixed-summary neural control | 0.9095 | 0.7497 | 0.8304 | 0.5092 | 0.7497 |
+| Directed local edge GNN | 0.2254 | 0.1434 | 0.5530 | 0.1955 | 0.2793 |
+| Simplicial local MPSN-style | 0.2230 | 0.2496 | 0.2385 | 0.2675 | 0.2447 |
+| Cellular Hasse mechanism control | 0.2259 | 0.2892 | 0.2194 | 0.2045 | 0.2348 |
+| Cellular local CWN-style | 0.1623 | 0.2879 | 0.2282 | 0.1813 | 0.2149 |
+
+The five predeclared equal-world neural-minus-GBDT AP contrasts were −0.1064 for the fixed-summary neural control, −0.5768 for the directed edge GNN, −0.6114 for the simplicial arm, −0.6213 for the Hasse control and −0.6411 for the cellular arm. These conditional descriptive differences retain the strong simple baseline and the unfavorable graph-arm results. The fixed-summary neural control exceeded the GBDT reference on one world, while the GBDT had the higher four-world mean. This four-world ordering does not establish qualified superiority or equivalence.
+
+This comparison is development evidence on four simulator realizations, below the 30-world support floor. It does not establish population precision, independent institutional variation, topology mechanism, financial generalization, or a qualified comparative learning result. S1-F finite stability and S1-E comparative learning qualification remain unresolved. The 60 label-conditioned microfit endpoints were not used. No fitting, tuning, replacement world, successful-block rescoring, population interval, p-value, freeze or certification was performed. The frozen weights, generated worlds and execution evidence are not distributed with the public source.

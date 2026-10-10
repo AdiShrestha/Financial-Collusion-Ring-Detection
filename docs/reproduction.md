@@ -7,9 +7,26 @@ From the repository root, run the small data-independent implementation fixtures
 ```sh
 python3 -B -m unittest source.tests.test_research_invariants
 python3 -B -m unittest source.tests.test_s1_diagnostic_interface
+python3 -B -m unittest source.tests.test_s1_heldout_adapter
 ```
 
-These fixtures check extraction identities, split integrity and mathematical properties on explicitly constructed examples. They do not generate empirical benchmark results or validate an entire future model comparison.
+These fixtures check extraction identities, split integrity, mathematical properties and the label-blind inference interface on explicitly constructed examples. They do not generate empirical benchmark results or validate an entire future model comparison.
+
+## Frozen simulator inference
+
+The inference adapter accepts an indexed set of already generated worlds, frozen model bytes, a study configuration and a new output directory:
+
+```sh
+python3 -s -B source/scripts/evaluate_s1_heldout.py \
+  --world-index /path/to/world-index.json \
+  --model-lock /path/to/model-lock.json \
+  --study-config /path/to/study-config.json \
+  --output-dir /path/to/prediction-results
+```
+
+It performs prediction only. It validates the registered model and input bindings, keeps labels out of the scoring input inventory, and writes a hash-bound prediction manifest before metric code joins labels. Existing prediction outputs are protected from overwrite. The public tests use synthetic fixtures; they do not run the frozen models.
+
+The actual frozen model states, generated worlds and their index are not distributed in this repository. A public checkout can inspect the adapter and run its fixtures, but cannot reproduce the four-world empirical comparison without those separately supplied inputs.
 
 ## S1 learning diagnostic
 
