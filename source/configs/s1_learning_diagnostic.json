@@ -1,0 +1,73 @@
+{
+  "evaluation_every_epochs": 25,
+  "execution_wall_limit_seconds": 5400,
+  "experiment_id": "S1-F",
+  "loss": "unweighted equal-world BCEWithLogits; no class weights",
+  "maximum_new_output_bytes": 536870912,
+  "microfit": {
+    "arms": "four unchanged S1-E architectures/widths",
+    "endpoint": "BCE<=0.02 and all16 correct at zero-logit threshold for20 consecutive evaluations; else cap/not-established",
+    "forbidden": "validation microset, filtering failures, replacement candidates, ID predictors",
+    "initialization": "fresh per arm/seed, same initialization for all three rates; no S1-E warm start",
+    "intent": "label-conditioned balanced training capability diagnostic only",
+    "max_epochs": 1500,
+    "selection": "report every trial; no validation used or efficacy claim",
+    "subset": "in each training world, lexicographically first two exact members and first two nonmembers; 16 total; save before optimization",
+    "trials": 60
+  },
+  "optimizer": {
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "name": "Adam",
+    "weight_decay": 0
+  },
+  "rates": [
+    0.001,
+    0.01,
+    0.03
+  ],
+  "round_robin_block_epochs": 100,
+  "scheduler": {
+    "eps": 1e-08,
+    "factor": 0.5,
+    "metric": "training BCE only",
+    "min_lr": 1e-05,
+    "mode": "min",
+    "name": "ReduceLROnPlateau",
+    "patience_evaluations": 8,
+    "threshold": 0.001,
+    "threshold_mode": "rel"
+  },
+  "scope": "exploratory existing-world learning diagnosis only",
+  "seeds": [
+    11,
+    23,
+    37,
+    53,
+    71
+  ],
+  "summary_control": {
+    "active_parameters": 8425,
+    "architecture": "Linear20to81,ReLU,Linear81to81,ReLU,Linear81to1",
+    "checkpoint": "lowest equal-world validation BCE; ties earliest",
+    "features": "exact unchanged check_s1_benchmark.gbdt_row 20 columns; no IDs, equality-to29 or labels added",
+    "max_epochs": 3000,
+    "normalization": "float64 means/population sd from 312 training rows; scale=1 only for exactly constant columns; float32 model tensors",
+    "rate_selection": "mean best validation BCE over five seeds; ties lower rate",
+    "stability": "diagnostic only; same 200/200+400 rule as S1-E, all15 trials retained; no early-stop based on AP",
+    "trials": 15
+  },
+  "training_worlds": [
+    "S1_dev_101",
+    "S1_dev_103",
+    "S1_dev_107",
+    "S1_dev_109"
+  ],
+  "validation_worlds": [
+    "S1_dev_113",
+    "S1_dev_127"
+  ]
+}

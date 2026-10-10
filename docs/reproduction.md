@@ -6,9 +6,30 @@ From the repository root, run the small data-independent implementation fixtures
 
 ```sh
 python3 -B -m unittest source.tests.test_research_invariants
+python3 -B -m unittest source.tests.test_s1_diagnostic_interface
 ```
 
 These fixtures check extraction identities, split integrity and mathematical properties on explicitly constructed examples. They do not generate empirical benchmark results or validate an entire future model comparison.
+
+## S1 learning diagnostic
+
+The public diagnostic accepts ordinary paths for an indexed set of development worlds, a study configuration, and an output directory:
+
+```sh
+python3 -s -B source/scripts/diagnose_s1_learning.py \
+  --world-index /path/to/world_index.json \
+  --study-config source/configs/s1_learning_diagnostic.json \
+  --output-dir /path/to/diagnostic-results --qualify-only
+
+python3 -s -B source/scripts/diagnose_s1_learning.py \
+  --world-index /path/to/world_index.json \
+  --study-config source/configs/s1_learning_diagnostic.json \
+  --output-dir /path/to/diagnostic-results
+```
+
+The first command checks the data and model paths without optimizer updates and binds the qualification to the current inputs and source. The second runs the study using that qualification. The study configuration records the fixed summary-control and microfit settings. The world index must resolve the six development worlds named there and their retained source artifacts inside the repository checkout. Optional `--contract-report`, `--failure-history`, and `--reference-json` arguments accept explicit paths; none has a project-specific default. Supply the same optional input paths to both commands. The output directory retains trial traces, checkpoints, joined predictions, diagnostic figures, and a final report. Use a new output directory for each run; existing trial evidence is protected from overwrite.
+
+The repository does not distribute the six world artifacts or their index, so a clone alone cannot reproduce the empirical run. Public fixtures exercise only the interface and data-independent contracts; they do not run an optimizer or assert the empirical findings below.
 
 The development summary publishes exact aggregated findings and metric definitions without distributing the source datasets. Full scientific reproduction also requires the publisher's version-pinned files, the complete family index, exact annotation joins and independently checked scoring artifacts. Those artifacts have been retained locally but are not presently a public reproduction package. An ordinary clone can inspect the implementation and run its fixtures; it cannot reconstruct the complete reported census from the summary alone.
 
