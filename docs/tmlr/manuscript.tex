@@ -1,0 +1,275 @@
+\documentclass{article}
+% Substantive anonymous draft. Genuine local TMLR style/template and page verification are pending.
+% No substitute style or compliant PDF is supplied. SVG inclusion requires a compatible conversion toolchain.
+\usepackage{tmlr}
+\usepackage{amsmath,amssymb,booktabs,graphicx,svg,natbib,url}
+\title{Strong Summary Baselines and a Temporal Shortcut Hypothesis in Simulated AML Cycle Recovery}
+\author{Anonymous authors}
+\date{}
+\begin{document}
+\maketitle
+\footnotemark
+
+\footnotetext{OpenAI Codex assisted study-design and methodological proposals, implementation, execution, aggregate statistical verification, figures and writing. External Claude, Gemini and Qwen audit texts were consulted as advisory material. The sole human author retains responsibility for all claims and final decisions. Detailed roles and verification limitations are disclosed in the appendix.}
+
+\begin{abstract}
+We study exact persisted generated CYCLE membership using physical-event-preserving graph, cellular, simplicial and fixed-summary inputs. The original 4 prospectively registered simulator worlds are now described retrospectively as the primary pilot. A separate prospective replication evaluated 30 previously selected states on 30 newly registered realizations of the same controlled generator; all 900 prediction blocks were bound before the separate metric-label join. AP is averaged over all settings within world and then equally over worlds. Fixed-summary GBDT mean AP was 0.9164 (marginal 95\% paired-world interval [0.8716, 0.9572]), compared with 0.7009 for the summary neural control. All prespecified neural-minus-GBDT mean contrasts were negative; the complete conditional signed-rank family is reported with Holm correction. Per-world reversals remain visible. This replication concerns fixed selected states and one generator template. Full-corpus neural learning/stability and feature/readout/tuning parity remain unresolved; the local complex paths are adaptations. Development temporal-span evidence motivates a shortcut hypothesis, which replication alone does not establish causally. These observations do not establish broader financial efficacy or population precision.
+\end{abstract}
+\section{Question, contribution and related work}
+
+Our question concerns exact membership in generated persisted cycle tuples, including SAR and non-SAR annotations. The comparison asks whether these particular retained representation/readout paths add measured recovery performance beyond fixed summaries. It does not estimate criminal activity. The observation contract retains individual physical events, their directions, native attributes and candidate masks; an aggregation that merges parallel transfers changes this task.
+
+AMLSim is a synthetic transaction simulator credited to Suzumura and Kanezashi at the retained revision \citep{AMLSIM}. Weber et al. motivate synthetic graph-learning study in anti-money laundering \citep{WEBER2018}. CW networks \citep{CWN2021} and message passing simplicial networks \citep{MPSN2021} supply background for cellular and simplicial ideas. Our arms use disclosed local constructions and small readouts; they are adaptations, not faithful reproductions or refutations of those papers. Feature extraction paired with boosting is relevant prior work \citep{GFP2024}, with different tasks, features and populations. This is narrow background coverage; no published benchmark score is a measurement in this study.
+
+The current simulator evidence is separate from earlier exploratory AMLworld, Elliptic and structural/engineering investigations. Historical repository metrics do not become current efficacy evidence. The original large AMLworld population design remains unresolved. Neither a new source nor a finite simulator comparison supplies missing population support for that design.
+
+Dataset scope. Real-world AML annotation is constrained by confidentiality and incomplete detection. U.S. SAR protections in 31 U.S.C. \S{} 5318(g)(2) restrict disclosure revealing suspicious-transaction reporting \citep{SAR_CONFIDENTIALITY}; this does not establish a blanket prohibition on all deidentified bank transactions. Altman et al. (2023) motivate synthetic AML benchmarks with complete generated annotations \citep{ALTMAN2023}, rather than verified criminal ground truth. Our earlier HI-Small audit reconciled 54 supplied CYCLE blocks involving 271 bank-qualified accounts. Its then-used any-transaction-intersection labeling rule produced 7082 positive candidates, an amplification of the annotation target rather than that many independent laundering rings. That historical rule differs from the current exact physical-event-tuple membership target. In the inspected Elliptic++ address-to-address release \citep{ELLIPTIC2023}, the weak-component sizes were 7 and 822935; all eligible labeled wallets lay in the larger component. The address edge file lacked event timestamps, so feature-snapshot times could not define a prospective topology split. These are limitations of those inspected files and our specified target/custody requirements. They establish neither transaction-graph acyclicity nor that Elliptic++, other releases, or other financial benchmarks are generally unsuitable. The controlled AMLSim panel is a scoped experimental choice, not the only possible dataset.
+
+\section{Data, target and candidate census}
+
+The fixed controlled mechanism uses 32 accounts over 120 native simulator steps, 6 CYCLE templates, 2 noncycle alert templates and background transfers. It is based on pinned IBM AMLSim source with disclosed controlled-input, Java runtime and observation/persistence variants. The upstream revision and credits appear in the data card. Source code licensing does not grant release of the retained worlds or model states. Accounts and scheduling templates are shared design choices across realizations; seed changes do not demonstrate independent institutions.
+
+Let a directed simple account cycle be an ordered distinct-account sequence modulo cyclic rotation, with length from 2 through 12. For each directed arc, take every physical persisted transfer with matching endpoints. The candidate frame is the Cartesian product of these arc-event sets for every cycle. Thus parallel equal-content transfers remain distinct; reversing direction is a different cycle. A candidate is a world-specific physical-event tuple, not an aggregated edge or an account identity. Self-loops remain in full-world context but are outside the simple candidate-cycle length frame. Cash-in/out rows are excluded from the candidate arc census. Guards reject more than 128 noncash events or 10000 candidate tuples without clipping or replacement.
+
+A positive tuple equals one complete persisted generated CYCLE instance, reconciled through finalized membership/scheduling, arc attempts and native persisted events. Both SAR statuses are included. A nonmember is a complement of these exact annotations, not verified legitimate activity. Failed/incomplete intentions cannot silently become successful positives. Generation reconciliation accesses annotations, while scoring accesses only allowlisted observations/topology. Custody is local to one user; no externally sealed-label or independently witnessed execution claim follows.
+
+The original pilot counts remain in its separate data card and tables. Every new replication realization had an actual census of 78 candidate tuples and 6 exact members. These observed counts were outcomes, not acceptance criteria imposed on new draws. Candidates overlap in accounts/transfers and are not independent population units. Full per-world counts, secondary metrics and confusion endpoints are exported; no pilot census was imposed on replication.
+
+Time input is the native integer step divided by the configured number of steps; it is not a financial wall-clock time. Amount input is log1p of the actual persisted native amount. The retained Java logger truncates emitted positive double amounts toward zero at cents; reconciliation uses that persistence convention rather than nearest-cent rounding. No currency conversion, conservation, time-respecting flow or criminal interpretation is inferred.
+
+\section{Representations and actual model equations}
+
+For a physical event from account u to v, the cellular boundary column has -1 at u and +1 at v, with a zero column for a loop. The candidate face boundary selects its directed cycle events. Exact integer boundary closure satisfies B\textsubscript{1}B\textsubscript{2}=0. Every physical event retains a separate coordinate. The simplicial representation replaces each event by account \(\to\) source port \(\to\) event vertex \(\to\) target port \(\to\) account; a fan triangulates the selected subdivided perimeter. Spokes are auxiliary geometry, not financial transfers. Native event observations occur once at event vertices. The closure and identity checks concern this construction; external persistent-homology parity remains unavailable.
+
+Write \(\sigma\) for tanh and L for a trainable affine map, with independently named maps below. The cellular arm computes node h\textsubscript{v}=\(\sigma\)(L\textsubscript{n}m\textsubscript{v}), initial event h\textsubscript{e}\textsuperscript{0}=\(\sigma\)(L\textsubscript{e}[t\textsubscript{e},a\textsubscript{e},s\textsubscript{e}]), and face h\(\mathcal{f}\)\textsuperscript{0}=\(\sigma\)(L\(\mathcal{f}\)k). Its lower message is |B\textsubscript{1}|\textsuperscript{T}h\textsubscript{v}, plus separately transformed source and target states. Its upper message is |B\textsubscript{2}|h\(\mathcal{f}\)\textsuperscript{0}. The updated event state is \(\sigma\)(L\textsubscript{u}[h\textsubscript{e}\textsuperscript{0}, lower+directional, upper]); the face update is \(\sigma\)(L\(\mathcal{f}\)\textsubscript{u}[h\(\mathcal{f}\)\textsuperscript{0}, |B\textsubscript{2}|\textsuperscript{T}h\textsubscript{e}]). The scalar logit reads the updated face plus the mean of all world-event states. In the Hasse control, the lower message is separately transformed source and target states instead of |B\textsubscript{1}|\textsuperscript{T}h\textsubscript{v}; the additional directional maps and face/event readout remain. This local contrast is descriptive and does not isolate a causal topology mechanism.
+
+The simplicial arm encodes vertex type/mask/event observations and edge-relation indicators. It computes h\textsubscript{v}=\(\sigma\)(L\textsubscript{v}v), h\textsubscript{e}=\(\sigma\)(L\textsubscript{e}[\(\sigma\)(L\textsubscript{r}e), |B\textsubscript{1}|\textsuperscript{T}h\textsubscript{v}]), h\textsubscript{v}'=\(\sigma\)(L\textsubscript{v}\textsubscript{u}[h\textsubscript{v}, |B\textsubscript{1}|h\textsubscript{e}]), and h\(\mathcal{f}\)=\(\sigma\)(L\(\mathcal{f}\)\textsubscript{u}[\(\sigma\)(L\(\mathcal{f}\)f), |B\textsubscript{2}|\textsuperscript{T}h\textsubscript{e}]). Its logit reads mean face plus mean updated vertex states. Absolute incidence removes basis-sign information from these paths; coordinate invariance does not establish signed-cochain reasoning or original MPSN semantics.
+
+The conventional directed edge GNN computes separate incoming/outgoing event messages from endpoint node states and native event features, sums them at accounts, and updates node states. It encodes source-updated event states. Its final affine readout concatenates the masked mean of central node states, the masked mean of selected event states, and candidate length; masked denominators include the executed small positive epsilon. Whole-world topology and event attributes remain available to the neural arms.
+
+The fixed-summary input contains cycle length; min/mean/max/population-SD of selected time and log amount; their spans; min/mean/max central full-world in/out degree; and min/mean/max selected directed-pair multiplicity. These are lossy summaries of legitimate observations, not identical tensors to graph inputs. GBDT receives unnormalized float64 summaries. The summary network is affine--ReLU--affine--ReLU--affine with input dimension 20, hidden width 81 in each hidden layer, and output dimension 1. The original training-only population mean/SD transform is applied in float64, exact constant columns use scale one, then neural tensors become float32. No transform is fit on validation or holdout rows.
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrr}
+\toprule
+Arm family & Accessible observation & Representation/readout & Training opportunity \\
+\midrule
+Directed GNN & Full world events/topology, native attributes and masks & Directional sum messages; masked node/event pooling & Development grid and continuation \\
+Cellular and Hasse & Same physical event observations and candidate face & Absolute incidence or local endpoint paths; face/world-event pooling & Development grid and continuation \\
+Simplicial & Same observations via event-port vertices & Absolute incidence; mean face/vertex pooling & Development grid and continuation \\
+Summary neural & Fixed selected/context summaries & Training-only normalization; ReLU network & Separate summary rate grid \\
+GBDT & Same fixed summaries & Unnormalized tree boosting, selected staged round & Leaf grid and bounded extension \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+Parameter matching does not match optimization/tuning opportunity. Architecture sizes, selected checkpoints and histories are reported rather than used to assert comprehensive fairness. Persistent homology is not an evaluated learned holdout arm, and no standalone temporal predictor was deployed.
+
+Scope of topological learning. Bodnar et al. (2021) study cellular and simplicial message passing with richer topological domains and expressivity questions \citep{CWN2021} \citep{MPSN2021}. Here the cycle enumeration already supplies a simple-cycle candidate frame to every arm. The local cellular and simplicial adaptations use the specific subdivisions, absolute-incidence paths and readouts given above, with whole-world observation context retained. Candidate-frame conditioning limits the discovery question but does not make every attributed context identical. We do not test faithful published CWN/MPSN implementations, signed orientation-equivariant variants, the full range of higher-order domains, or their expressivity theorems. Papamarkou et al. (2024) describe a broader topological-learning research program and unresolved practical and theoretical questions \citep{PAPAMARKOU2024}. The observed baseline advantage in this local experiment cannot refute that program or all topological deep learning.
+
+\section{Development learning and selection history}
+
+The whole-world development split has 4 training and 2 validation worlds, aliased separately from holdout. Initial fitting and extensions retain 100 trial summaries. Neural development used Adam, unweighted equal-world binary cross-entropy and validation-only checkpoint selection. Initial learning-rate and GBDT leaf grids, best epochs/iterations and per-trial measured durations appear in separate complete tables. The continuation compares declared candidate rates across all settings, retains the original history, and selects the lowest mean best equal-world validation BCE, with the lower-rate tie rule. Checkpoint ties keep the earlier epoch. Scheduler reductions and terminal endpoints do not redefine selected checkpoints.
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrr}
+\toprule
+Arm & Hidden width & Active neural parameters & Selected rate & Selected epochs in setting order \\
+\midrule
+Fixed-summary neural control & 81 / 81 & 8425 & 0.001 & 375, 375, 575, 300, 375 \\
+Directed local edge GNN & 36 & 8390 & 0.03 & 875, 825, 690, 780, 1125 \\
+Local simplicial MPSN-style & 36 & 8533 & 0.03 & 800, 925, 925, 750, 1150 \\
+Cellular Hasse control & 30 & 8431 & 0.01 & 1125, 1350, 3375, 670, 1275 \\
+Local cellular CWN-style & 34 & 8467 & 0.01 & 1000, 1175, 1450, 1225, 1600 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+
+The initial neural rate grid was 0.0001, 0.001, 0.01; the GBDT maximum-leaf grid was 3, 7, 15; the separate summary rate grid was 0.001, 0.01, 0.03. All candidate settings and extensions are retained. GBDT uses one-based staged round 70 selected in development from retained 800-round fitted objects. Its frozen policy and summary architecture are documented in the linked methods. It was not refit on holdout. Width/count similarity does not resolve learning: only 2 of 20 selected graph continuation runs recorded sustained local stability under the finite diagnostic. No summary trial among 15 established that rule. Low training loss or an epoch cap is not a proof of convergence.
+
+All 60 graph/complex microfit trials met their declared fitting endpoint on a deliberately label-conditioned balanced training subset. The subset chooses exact members and nonmembers in each training world. Endpoint success establishes fitting capability on those rows only; it does not establish full-corpus adequacy, generalization or a topology mechanism. None of these microfit states was deployed. Selection measurements, terminal learning measurements and microfit endpoints are exported with distinct record types and splits.
+
+Training opportunity and limited trainability. Neural size matching used 8390–8533 active parameters across the retained neural arms, about eight thousand four hundred parameters; it does not equate their inputs, readouts or optimization opportunities with one another or with tree capacity. The 60 microfits covered four graph/complex arms, three learning rates and five initializations on a deliberately label-conditioned balanced subset of 16 training rows. Their declared endpoint was BCE ≤0.02 with every row classified correctly at logit zero for 20 consecutive post-update evaluations. This is evidence of trainability on those selected rows, not proof of full-corpus convergence, adequate model capacity, matched tuning, absence of every implementation defect, or generalization. These microfit states were not deployed. GBDT used its development-selected one-based staged round 70; neither the stored fitted object's later rounds nor holdout outcomes reselected that policy. The disclosed grids and continuation histories differ between arms. The retained comparison therefore concerns these selected models under the recorded development opportunities, with learning and comprehensive training parity unresolved.
+
+\section{Chronology, prediction boundary and estimand}
+
+The original W1--W4 panel was registered as a 4-world study. Its 120 blocks and results were exposed before the descriptor ``Pre-Registered Primary Pilot'' was assigned; that pilot descriptor is retrospective. It remains descriptive, with no retrospectively added pilot p-values or confidence intervals. W5--W34 form a separate prospective replication registered before generation, using the same 30 previously selected states and unchanged transform, thresholds and staged GBDT policy. There was one attempt per draw, no replacement or successful-block rescoring, and no fitting or selection from replication outcomes. All 900 blocks were hash-bound before the scorer exited and a separate process joined labels. The two panels are never pooled for confirmation.
+
+Generation and annotation reconciliation are annotation-aware. Scoring opens its allowlisted observation/topology inputs only; this local prediction boundary operates under the same OS user. It does not supply externally sealed labels, independent institutional custody or cold external review. The statistical verification used a distinct arithmetic implementation in the same local session after the conclusions were exposed.
+
+For descending distinct logit thresholds, grouped AP is the sum of recall increments times cumulative precision; exactly equal logits enter together. AUROC gives half credit to positive/nonmember ties, BCE is mean stable logit binary cross-entropy, and confusion counts use raw logit \(\geq\)0 without calibration. AP is unavailable without positives; AUROC is unavailable for a single class. Null required AP blocks the complete primary aggregate and inference rather than dropping a world. All required primary endpoints were defined here. Secondary metrics and all counts remain descriptive and are retained for every setting.
+
+The primary observable first averages 5 separately computed state APs within each arm/world and then equally weights all 30 replication worlds. It is neither candidate-pooled AP nor AP of averaged logits. Initializations condition on the same trained-data history and do not multiply independent realizations. The realization of this fixed generator is the analysis unit; the original AMLworld population design and its learning, custody and precision requirements remain unresolved.
+
+\section{Conditional statistical protocol}
+
+All 5 prespecified neural-minus-GBDT contrasts use paired world means. Rank arithmetic rounds differences to 12 decimal places, omits exact zeros (wilcox), and assigns midranks to tied absolute differences. A dynamic program enumerates the conditional sign distribution on integer doubled ranks. The two-sided p-value is min(1, 2 \(\times\) min(inclusive lower tail, inclusive upper tail)); integer tail counts and denominators are retained. Holm adjustment covers the full family at \(\alpha\)=0.05. The null is conditional sign symmetry about zero under the assumed independence of generator realizations; it is not a test specifically of the arithmetic mean contrast. Shared design and distinct seeds alone do not establish these assumptions.
+
+The paired world bootstrap uses 20000 resamples of 30 worlds with replacement and the same indices across all arms and contrasts. The published arithmetic utility uses PCG64(2026101103) and unrounded world means/differences; percentile endpoints use linear quantiles at 0.025 and 0.975. The 95\% intervals are marginal, not simultaneous or multiplicity-adjusted, and are not a power or precision guarantee. All interval widths are reported.
+
+Chance references come from each realized candidate census: a constant-score AP is m/N, while uniform random tie-free expected AP is H\_N/N + (m-1)(N-H\_N)/(N(N-1)) for the nondegenerate census, with H\_N the harmonic sum. Here all realized censuses share N=78 and m=6, giving 0.076923077 and 0.124159693 respectively. These are expectations, not hard lower bounds on any arm. Candidates and settings are not independent worlds.
+
+\section{Complete results}
+
+\subsection{Separate prospective replication}
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrr}
+\toprule
+Retained arm & Equal-world mean AP & Marginal 95\% interval & Interval width \\
+\midrule
+Fixed-summary GBDT & 0.916436388 & [0.871573939, 0.957195767] & 0.085621828 \\
+Fixed-summary neural control & 0.700936296 & [0.645358386, 0.756532553] & 0.111174167 \\
+Directed local edge GNN & 0.274785236 & [0.239726740, 0.313892221] & 0.074165480 \\
+Local simplicial MPSN-style & 0.240643342 & [0.229998956, 0.251455533] & 0.021456577 \\
+Cellular Hasse control & 0.238591585 & [0.225240891, 0.252871530] & 0.027630639 \\
+Local cellular CWN-style & 0.228528262 & [0.211346715, 0.247371459] & 0.036024743 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
+\toprule
+Neural arm minus GBDT & Mean AP contrast & Marginal 95\% interval & Width & Raw exact p & Holm p \\
+\midrule
+Fixed-summary neural control & -0.215500091 & [-0.266535669, -0.162939913] & 0.103595756 & 3.53902578e-08 & 3.53902578e-08 \\
+Directed local edge GNN & -0.641651152 & [-0.702548353, -0.573504172] & 0.129044180 & 1.86264515e-09 & 9.31322575e-09 \\
+Local simplicial MPSN-style & -0.675793045 & [-0.718436188, -0.628766833] & 0.089669355 & 1.86264515e-09 & 9.31322575e-09 \\
+Cellular Hasse control & -0.677844802 & [-0.717449149, -0.634426955] & 0.083022194 & 1.86264515e-09 & 9.31322575e-09 \\
+Local cellular CWN-style & -0.687908126 & [-0.728558142, -0.642154604] & 0.086403538 & 1.86264515e-09 & 9.31322575e-09 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+The retained GBDT has the highest whole-panel mean among these fixed states. Every graph/complex world mean is below its corresponding GBDT mean in this replication; this statement concerns setting-averaged world means, not every individual setting or adequately optimized architectural capacity. The summary neural control retains reversals on W19 (AP contrast +0.090823158) and W26 (AP contrast +0.042748918). These exceptions remain in the complete exports rather than being excluded from the test family.
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrrrr}
+\toprule
+Neural arm & W+ & W- & Min rank sum & Nonzero & Zeros & Tied observations & Inclusive lower count & Inclusive upper count & Exact denominator \\
+\midrule
+Fixed-summary neural control & 7 & 458 & 7 & 30 & 0 & 0 & 19 & 1073741810 & 1073741824 \\
+Directed local edge GNN & 0 & 465 & 0 & 30 & 0 & 0 & 1 & 1073741824 & 1073741824 \\
+Local simplicial MPSN-style & 0 & 465 & 0 & 30 & 0 & 0 & 1 & 1073741824 & 1073741824 \\
+Cellular Hasse control & 0 & 465 & 0 & 30 & 0 & 0 & 1 & 1073741824 & 1073741824 \\
+Local cellular CWN-style & 0 & 465 & 0 & 30 & 0 & 0 & 1 & 1073741824 & 1073741824 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+No tied absolute rank differences or omitted zeros occurred in this retained panel; the methods and utility still preserve those conventions. Small positive p-values quantify this conditional fixed-state result; they do not identify a causal mechanism or establish optimization fairness, generalization, power or qualified learning.
+
+\begin{figure}[t]
+\centering
+\includesvg[width=\textwidth]{../../figures/s1_benchmark/replication_ap_by_world}
+\caption{All replication world APs. Panel, units and marginal interval scopes are labeled in the vector source.}
+\end{figure}
+
+Figure: Every replication world and all six arms, each point averaging all settings within world. Lines connect aliases for visual comparison and do not represent a temporal series. No per-world uncertainty bar is asserted.
+
+\begin{figure}[t]
+\centering
+\includesvg[width=\textwidth]{../../figures/s1_benchmark/replication_mean_ap_intervals}
+\caption{Replication arm means and intervals. Panel, units and marginal interval scopes are labeled in the vector source.}
+\end{figure}
+
+Figure: Observed equal-world AP means and marginal paired-world percentile intervals for the separate prospective replication.
+
+\begin{figure}[t]
+\centering
+\includesvg[width=\textwidth]{../../figures/s1_benchmark/replication_ap_contrast_intervals}
+\caption{Replication paired contrasts and intervals. Panel, units and marginal interval scopes are labeled in the vector source.}
+\end{figure}
+
+Figure: All prespecified neural-minus-GBDT mean AP contrasts and marginal intervals. Zero marks equality of observed means; interval scope is conditional on the fixed states and generator.
+
+The complete replication metrics (\url{../results/s1_benchmark/replication/metrics_by_world_initialization.csv}), world means (\url{../results/s1_benchmark/replication/ap_by_world.csv}), contrasts (\url{../results/s1_benchmark/replication/ap_contrasts.csv}), mean intervals (\url{../results/s1_benchmark/replication/mean_ap_intervals.csv}), exact inference (\url{../results/s1_benchmark/replication/paired_ap_inference.csv}), chance references (\url{../results/s1_benchmark/replication/chance_references.csv}) and summary (\url{../results/s1_benchmark/replication/summary.json}) retain full round-trip precision, every arm and setting, secondary metrics and actual censuses.
+
+\subsection{Original four-world pilot, kept descriptive}
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
+\toprule
+Retained arm & W1 & W2 & W3 & W4 & Equal-world mean \\
+\midrule
+Fixed-summary GBDT & 1.0000 & 0.5093 & 0.9151 & 1.0000 & 0.8561 \\
+Fixed-summary neural control & 0.9095 & 0.7497 & 0.8304 & 0.5092 & 0.7497 \\
+Directed local edge GNN & 0.2254 & 0.1434 & 0.5530 & 0.1955 & 0.2793 \\
+Local simplicial MPSN-style & 0.2230 & 0.2496 & 0.2385 & 0.2675 & 0.2447 \\
+Cellular Hasse control & 0.2259 & 0.2892 & 0.2194 & 0.2045 & 0.2348 \\
+Local cellular CWN-style & 0.1623 & 0.2879 & 0.2282 & 0.1813 & 0.2149 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+
+The fixed-summary GBDT has the higher whole-panel mean than each graph/complex arm; the summary neural control also has the higher mean than every graph/complex arm. The complete world columns preserve the summary-neural advantage on W2. GBDT's perfect AP on W1, W4 is retained as a finite observed result: saved-byte arithmetic and native annotation/source joins were checked in the completed local review. It is not evidence of universal cycle detection. The full per-setting metrics include secondary measures and every zero-logit confusion record; class imbalance and threshold errors should be read alongside AP.
+
+\begin{center}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}
+\toprule
+Neural arm minus GBDT & W1 & W2 & W3 & W4 & Equal-world mean \\
+\midrule
+Fixed-summary neural control & -0.0905 & +0.2404 & -0.0847 & -0.4908 & -0.1064 \\
+Directed local edge GNN & -0.7746 & -0.3659 & -0.3621 & -0.8045 & -0.5768 \\
+Local simplicial MPSN-style & -0.7770 & -0.2596 & -0.6766 & -0.7325 & -0.6114 \\
+Cellular Hasse control & -0.7741 & -0.2201 & -0.6957 & -0.7955 & -0.6213 \\
+Local cellular CWN-style & -0.8377 & -0.2214 & -0.6868 & -0.8187 & -0.6411 \\
+\bottomrule
+\end{tabular}}
+\end{center}
+
+
+\begin{figure}[t]
+\centering
+\includesvg[width=\textwidth]{../../figures/s1_benchmark/average_precision_by_world}
+\caption{AP by world. Panel, units and marginal interval scopes are labeled in the vector source.}
+\end{figure}
+
+Figure: AP for every arm on every registered world, averaging all initialization settings within world. The axes use metric units, with no population error bars. Connecting lines aid comparison across aliases rather than representing a time series.
+
+\begin{figure}[t]
+\centering
+\includesvg[width=\textwidth]{../../figures/s1_benchmark/descriptive_ap_contrasts}
+\caption{Descriptive AP differences. Panel, units and marginal interval scopes are labeled in the vector source.}
+\end{figure}
+
+Figure: Every predeclared neural-minus-GBDT AP difference by world. The zero line marks equality of the finite means. Signs are descriptive; unresolved learning and support prevent qualified superiority or equivalence interpretation.
+
+The complete metric table (\url{../results/s1_benchmark/metrics_by_world_initialization.csv}), world means (\url{../results/s1_benchmark/ap_by_world.csv}), contrast family (\url{../results/s1_benchmark/ap_contrasts.csv}), and machine-readable summary (\url{../results/s1_benchmark/summary.json}) retain unrounded values. Supplemental development tables are initial trials (\url{../results/s1_benchmark/development_initial_trials.csv}), initial selected validation (\url{../results/s1_benchmark/development_selected_metrics.csv}), continuation selected/terminal metrics (\url{../results/s1_benchmark/development_continuation_metrics.csv}), continuation policy/stability (\url{../results/s1_benchmark/development_continuation_status.csv}), and learning diagnostic trials/selections/endpoints (\url{../results/s1_benchmark/learning_diagnostic_trials.csv}). Their dictionary preserves scope and missingness. Development records are never pooled into holdout performance.
+
+\section{Negative findings, failure analysis and limitations}
+
+The weak frozen graph-arm AP is a legitimate retained outcome. It cannot establish intrinsic architectural inferiority because full-corpus optimization and finite stability are unresolved. Conversely, successful microfits do not repair that qualification. A strong baseline is evidence that legitimate summaries capture useful signal in these small generator realizations; deleting that signal to make another representation competitive would change the question.
+
+Existing development column-permutation and native-span investigations point to schedule cues of this generator. They remain development-only evidence, not a new holdout temporal model or a causal intervention. The study did not establish matched causal ablations, sensitivity, external PH backend parity, broader/OOD validation or financial generalization. No new subgroup ranking/efficacy analysis is introduced. Existing threshold confusion records and all exceptions remain available.
+
+The fixed tiny template limits mechanism variation. Shared accounts/schedules, candidate overlap and same-user custody limit the interpretation of nominally distinct seeds. No exact normalized predictor-input duplicate was found in the retained review; absence of byte-level duplicates is not graph-isomorphism detection or proof of independent institutions. Review occurred in the same session after exposure to the conclusion. Independently written saved-metric arithmetic and source joins support local consistency; they supply no cold or externally independent reviewer/label-custody assurance.
+
+Replication strengthens the observed baseline finding for the same states and generator. It does not test a new span-only predictor, causal intervention or repaired neural learning endpoint. The temporal shortcut remains a development-supported hypothesis, with fixed-template scheduling and other readout/optimization confounds unresolved. The findings cannot be generalized to all topological deep learning, original CWN/MPSN expressivity, independent institutions or real laundering detection. Distinct predictor fingerprints are exact equality checks rather than graph-isomorphism tests or proofs of independence.
+
+Causal boundary. The temporal-span shortcut is an exploratory development-phase hypothesis. Retained column-permutation and native-span diagnostics suggested scheduling cues; the native diagnostic used a span-equality score at 29 simulator steps on the already exposed development worlds. It was not a newly registered holdout arm. The replication evaluated unchanged selected multifeature models, without a span-only confirmatory model, matched causal intervention, feature-removal retraining, or an alternative scheduling mechanism. Neither the AP gap nor its small conditional p-values establish that span alone is sufficient or necessary, that a graph readout cannot learn it, or that the cue caused the gap. Fixed schedules, observation summaries, optimization and readouts remain competing explanations. The shortcut hypothesis must remain separate from the verified fixed-state baseline result.
+
+\section{Measured cost, reproducibility and availability}
+
+The prospective replication's recorded runner duration was 65.784577209 seconds. Its output-size field measured 77599362 bytes at that point; the later mechanical inventory counted 79040489 bytes. These stages are distinct. Wrapper and maximum-child RSS were 208683008 and 1407074304 bytes separately, not a summed or simultaneous process-tree peak. These are single measured scopes; energy, thermal effects, repeated-runtime distributions and full-campaign cost were not measured. Original pilot/development resource scopes remain in their separate summary.
+
+The released tables allow AP aggregation, the complete conditional rank/Holm family, fixed paired-world bootstrap and vector-plot reproduction using ordinary project tools. This arithmetic checks already exported state/world endpoints; it computes no new empirical scores. Raw worlds, candidate labels/logits, frozen weights and operational records are withheld, so a clone cannot rerun the empirical comparison. A clean minimal environment lock remains outstanding. Original public project software is licensed under Apache License 2.0; the manuscript, documentation, aggregate tables and figures are licensed under CC BY 4.0. Third-party rights and credits remain under their original terms. These licenses cover released public material and do not release withheld worlds or weights.
+
+\section{Ethics, assistance and draft status}
+
+Annotations are synthetic generated CYCLE membership, not criminal truth or verified noncriminal activity. The simulator study contains no claimed real personal financial records and supplies no deployment recommendation. Automated assistance by OpenAI Codex covered study-design and methodological proposals, implementation, execution, aggregate analysis, verification, figure production and drafting; it was not limited to language polishing. Verification used distinct arithmetic in the same conclusion-exposed local session and does not constitute cold external assurance. This work was conducted by a sole independent human author, without university funding or institutional support. Automated tools are not co-authors. Final release and submission decisions remain pending.
+
+TMLR is the selected venue, with a Human-defined main-text target of \(\leq\)12 pages excluding references and appendix. The anonymous LaTeX and bibliography contain the substantive draft. A genuine local TMLR style/template and typesetting environment have not been supplied; formatting and main-text page count are unverified. No compliant PDF, final release or submission is claimed.
+
+\nocite{AMLSIM_LICENSE,AP_DOC}
+\bibliographystyle{plainnat}
+\bibliography{references}
+\appendix
+\section{Complete companion exports}
+The inspectable companion CSVs retain every original pilot/development row and every separate replication arm/world/setting endpoint, contrast, chance reference and inferential diagnostic. They contain aggregates only. Candidate identities, scores, labels, worlds and weights are withheld; arithmetic/figure reproduction does not reconstruct the empirical experiment.
+\section{AI assistance and responsibility}
+AI assistance and responsibility. OpenAI Codex was used throughout the research workflow, including protocol and methodological proposals, code implementation and debugging, authorized local experiment orchestration, saved-evidence analysis and statistical verification, figure production, literature checking and manuscript drafting/revision. These contributions were substantive and were not restricted to grammar or language polishing. Human directives selected the research scope, authorized experiments, retained the adverse baseline finding and prohibit invented favorable results; this does not establish that every methodological idea or sentence originated unaided with the human author. The human author must review, understand and take responsibility for the complete submitted work, including accuracy, originality, citations and limitations. No assertion that every line of code or calculation was manually derived or independently checked by a human is made. AI-generated scientific assertions were checked against retained artifacts or primary literature when incorporated, and unsupported external audit suggestions were rejected. The pasted Claude, Gemini and Qwen documents were advisory AI-generated critiques, not authenticated external peer reviews. Their precise model versions are not verified and are not invented. The arithmetic verification was performed with distinct implementations in a local session after conclusions were exposed, not by a cold independent reviewer. AI tools are not authors. The first-page disclosure implements the FAQ transparency request; the detailed appendix is supplied for completeness rather than claimed to be an additional FAQ mandate \citep{TMLR_FAQ} \citep{TMLR_POLICY}.
+\end{document}

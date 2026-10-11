@@ -1,5 +1,6 @@
 {
   "aggregation": "mean AP over every initialization within world, then equal mean across worlds",
+  "chronology": "Registered as a four-world study before generation; pilot terminology assigned after outcomes were exposed",
   "coverage": {
     "arms": 6,
     "initializations_per_arm": 5,
@@ -32,7 +33,7 @@
     "simplicial_mpsn_style_local": 0.2446533539611085
   },
   "historical_context": "AMLworld/Elliptic/E0 remain separate exploratory studies; historical tag scores not current efficacy",
-  "inference": "descriptive_only",
+  "inference": "pilot descriptive only; no retrospectively added pilot p-values or intervals",
   "learning_status": {
     "continuation_selected_runs": {
       "cellular_cwn_style_local": {
@@ -71,7 +72,7 @@
     "outer_launch_and_contract_bytes": 3565
   },
   "missing_analyses": [
-    "population precision/intervals",
+    "original pilot population precision/intervals (unperformed)",
     "neural comparative learning qualification",
     "causal ablations",
     "sensitivity",
@@ -79,8 +80,10 @@
     "OOD/institutional/financial validation",
     "externally sealed custody/cold review"
   ],
+  "panel": "Original four-world study, retrospectively described as Pre-Registered Primary Pilot",
   "public_reproduction": "saved metric export and plotting; empirical inputs/weights withheld",
   "publication_status": "draft_pending_review_and_final_freeze",
+  "replication": "Separate W5-W34 prospective replication is under replication/; no pooled confirmatory estimate",
   "schema": "s1_publication_results_v1",
   "target": "exact complete persisted generated CYCLE membership, SAR and non-SAR",
   "world_ap_means": {

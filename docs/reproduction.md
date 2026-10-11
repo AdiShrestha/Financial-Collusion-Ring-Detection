@@ -26,7 +26,7 @@ python3 -s -B source/scripts/evaluate_s1_heldout.py \
 
 It performs prediction only. It validates the registered model and input bindings, keeps labels out of the scoring input inventory, and writes a hash-bound prediction manifest before metric code joins labels. Existing prediction outputs are protected from overwrite. The public tests use synthetic fixtures; they do not run the frozen models.
 
-The actual frozen model states, generated worlds and their index are not distributed in this repository. A public checkout can inspect the adapter and run its fixtures, but cannot reproduce the four-world empirical comparison without those separately supplied inputs.
+The actual frozen model states, generated worlds and their index are not distributed in this repository. A public checkout can inspect the adapter and run its fixtures, but cannot reproduce the original pilot or the prospective replication empirical comparison without those separately supplied inputs.
 
 ## S1 learning diagnostic
 
@@ -68,3 +68,24 @@ python3 -s -B -m unittest discover -s source/tests -p test_s1_publication_plot.p
 The utility refuses duplicate/incomplete model–world–setting coverage, nonfinite metrics and inconsistent counts, and protects existing figures from overwrite. Optional `--preview-dir` writes local PNG previews. It averages saved AP across settings within worlds and renders every predeclared contrast. It does not load a model, generate a world or compute scores. Null required AP makes the corresponding aggregate unavailable instead of dropping that world.
 
 The manuscript, data card and result dictionary explain target/alias/phase/missingness conventions. Released CSVs contain full aggregate metrics and counts only. Figure reproduction and synthetic fixtures do not reproduce the empirical run: frozen states, raw worlds and candidate-level evidence are not distributed. The benchmark shares a fixed simulator mechanism, and the published draft does not establish population precision, qualified neural learning, financial generalization or external review/custody assurance.
+
+## Reproduce separate replication arithmetic and plots
+
+The following commands operate exclusively on published aggregate endpoints and world means, and do not load weights, query labels, generate worlds or compute empirical scores. Use a fresh output location.
+
+```sh
+python3 -s -B source/scripts/reproduce_s1_statistics.py \
+  --world-ap-csv results/s1_benchmark/replication/ap_by_world.csv \
+  --output-json /path/to/new-statistics.json
+python3 -s -B source/scripts/plot_s1_results.py \
+  --panel replication \
+  --metrics-csv results/s1_benchmark/replication/metrics_by_world_initialization.csv \
+  --mean-intervals-csv results/s1_benchmark/replication/mean_ap_intervals.csv \
+  --contrast-intervals-csv results/s1_benchmark/replication/paired_ap_inference.csv \
+  --output-dir /path/to/new-replication-figures
+python3 -s -B -m unittest discover -s source/tests -p test_s1_replication_publication.py
+```
+
+The statistics command requires every replication arm/world row and preserves required-AP missingness. It reproduces the complete exact conditional rank/Holm family and 20000 paired world bootstrap resamples with PCG64(2026101103). It never pools the original pilot, selects an arm or resamples candidates/initializations. Small arithmetic floating-point differences may occur across numerical-library versions; integer rank/tail counts and exact binary-rational p-values are inspectable. Plot interval inputs are checked against the complete saved world means. Both utilities protect existing outputs.
+
+The inference adapter's explicit optional `--world-registry /path/to/world-registry.json` argument supplies the separate prospective replication registry when used with separately available frozen inputs. Those inputs and weights remain withheld; this public interface does not make the empirical run reproducible from a clone. The manuscript's anonymous LaTeX/bibliography source is under `docs/tmlr/`. A genuine local TMLR style/template and working typesetting environment are still required; its SVG inclusion also requires a compatible vector conversion toolchain. Formatting and the ≤12-page main-text target excluding references/appendix have not been verified. No PDF binary is supplied and no template download is required by these arithmetic/plot commands.

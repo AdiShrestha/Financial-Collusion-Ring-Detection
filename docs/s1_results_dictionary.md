@@ -4,7 +4,7 @@ All numeric values are exported from retained measurements at full JSON/CSV roun
 
 AP uses complete equal-logit threshold groups without identifier tie breaking; AUROC gives half credit for ties; BCE uses stable logit arithmetic. AP is unavailable for no-positive support, AUROC for a single class. Null AP blocks required aggregate/contrast output rather than removing an unfavorable world. The retained holdout has complete defined metrics. Counts are integer physical-candidate counts and fixed-zero-logit confusions. No empirical score computation is performed by the plotting utility.
 
-World/initialization aliases preserve registered order. D aliases identify development worlds only. Mean rows average metrics across all settings, then weight every world equally. Contrasts are neural minus fixed-summary GBDT, with no population inference, confidence intervals or p-values. No raw labels, predictions or exact seed/state identities are distributed.
+World/initialization aliases preserve registered order. D aliases identify development worlds only. Mean rows average metrics across all settings, then weight every world equally. Original pilot contrasts are descriptive neural minus fixed-summary GBDT, without retrospectively added p-values or intervals. Separate replication tables carry conditional inference and marginal intervals. No raw labels, predictions or exact seed/state identities are distributed.
 
 ## metrics_by_world_initialization.csv
 
@@ -198,3 +198,24 @@ Rows: 88.
 | `positives` | Exact complete generated CYCLE member count. |
 | `world` | Neutral registered holdout alias W or distinct development alias D; equal_world_mean is an aggregate row. |
 | `mean_best_equal_world_validation_bce` | Across-setting mean minimum validation BCE for a candidate policy. |
+
+## Separate replication tables
+
+Original `phase=heldout` rows refer only to W1–W4 and remain byte-identical. New `phase=replication` rows refer only to W5–W34; never pool the panels. Replication I1–I5 follow the same state-setting order. Empty cells mean unavailable values with explicit reasons; no zero or finite result is invented for missing endpoints.
+
+`replication/metrics_by_world_initialization.csv` has 900 rows with the same AP/AUROC/BCE/count/prevalence/fixed-zero confusion fields as the original metric table. Each is one retained state/world endpoint. `replication/ap_by_world.csv` retains all arm/world five-setting means. `replication/ap_contrasts.csv` retains all paired world differences plus one equal-world mean row for every prespecified contrast. The exact expected dimensions and source-derived estimates are also in the replication summary.
+
+`replication/mean_ap_intervals.csv` contains each arm's `mean_ap`, `lower_95`, `upper_95`, `interval_width`, `interval_scope`, `world_count` and `initialization_count`. Its intervals are marginal conditional percentile intervals over world resamples. `replication/paired_ap_inference.csv` contains each prespecified neural-minus-GBDT contrast and these fields:
+
+| Fields | Meaning |
+|---|---|
+| `phase`, `arm`, `reference`, `alternative`, `null_assumption` | Separate replication, stable arm names, fixed GBDT reference and two-sided conditional sign-symmetry semantics; independence is assumed, not proved by seeds. |
+| `mean_ap_difference` | Observed unrounded equal-world arithmetic mean contrast; the signed-rank null is not specifically its mean-null hypothesis. |
+| `lower_95`, `upper_95`, `interval_width`, `interval_scope` | Marginal paired-world percentile interval on the unrounded mean contrast, not simultaneous coverage. |
+| `statistic`, `w_plus`, `w_minus` | Minimum signed rank sum and the positive/negative midrank sums. |
+| `n_nonzero`, `zero_count`, `tie_group_count`, `tied_observation_count` | Counts after rank-only rounding and wilcox zero omission, with absolute-difference midrank ties. |
+| `tail_le_count`, `tail_ge_count`, `exact_denominator` | Exact integer inclusive conditional sign tail counts and total sign assignments. |
+| `p_value`, `holm_adjusted_p_value`, `family_size`, `alpha` | Positive exact two-sided p-value and full-family Holm adjustment; values are never printed as zero. |
+| `rank_rounding_decimal_places`, `test_status` | Registered rounding scope and exact/degenerate status; all-zero tests return unit p-value. |
+
+`replication/chance_references.csv` has one actual-census row per new world: candidate/positive counts, prevalence, constant-score AP, uniform-random tie-free expected AP and undefined reason. References are expectations, not hard lower bounds. `replication/summary.json` records the full separate panel, estimates, intervals, rank diagnostics and statistical/reproduction limitations. The bootstrap uses 20000 common world resamples with PCG64(2026101103), linear marginal percentile endpoints, and no candidate/setting resampling.

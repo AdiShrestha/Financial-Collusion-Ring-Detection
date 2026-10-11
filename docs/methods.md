@@ -94,3 +94,11 @@ The venue-neutral [manuscript](manuscript.md), [data card](s1_benchmark_data_car
 
 
 Each world column averages every initialization; the final column weights worlds equally. These are finite conditional observations, with no population superiority or financial efficacy inference. Full per-setting secondary metrics/confusions and separate development tables accompany the paper. The measured GBDT policy is staged round 70 from 800-round fitted objects with 7 maximum leaves; learning rate is 0.1, minimum leaf sample count 2, and API early stopping disabled. Its strong result is retained. Current graph/complex learning remains unqualified. No microfit state was deployed.
+
+## Separate prospective simulator replication
+
+The original four-world study is kept descriptive and is now called a pilot retrospectively. The new prospective replication contains 30 worlds W5–W34, 30 unchanged selected states and 900 complete blocks, all bound before separate metric-label access. No refit, tuning, state selection, replacement or successful-block rescoring was performed. Initializations remain within-world settings, not independent worlds.
+
+Grouped-tie AP is computed separately per state/world, averaged across all settings within world and then equally over replication worlds. All prespecified neural-minus-GBDT contrasts are retained. Exact conditional signed-rank tests use 12-decimal rank differences, zero omission, absolute midranks and inclusive two-sided integer sign tails; Holm adjusts the complete family at α=0.05. Their sign-symmetry null is not specifically a mean-difference test. Paired world bootstrap intervals use 20000 common 30-world resamples, PCG64(2026101103), unrounded estimates and linear percentile endpoints; intervals are marginal, not simultaneous. See the manuscript and separate replication tables for all values, widths, assumptions and reversals.
+
+This performance replication does not resolve full-corpus optimization/stability, feature/readout/tuning parity, the development temporal-shortcut hypothesis, external custody, broad independence or original AMLworld population precision. Local CWN/MPSN-style adaptations are not faithful original implementations. No microfit state or standalone span predictor was deployed.

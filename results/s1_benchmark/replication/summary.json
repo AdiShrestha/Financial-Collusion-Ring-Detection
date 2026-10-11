@@ -1,0 +1,227 @@
+{
+  "aggregation": "five per-state APs averaged within world, then equal weight to every replication world",
+  "availability": "table arithmetic and plotting available; worlds, candidate scores/labels and weights withheld",
+  "bootstrap": {
+    "pairing": "common world indices across all arms and contrasts",
+    "quantiles": "linear percentile",
+    "resamples": 20000,
+    "rng": "PCG64",
+    "seed": 2026101103,
+    "unit": "world"
+  },
+  "chance_references": {
+    "equal_world_mean_constant_score_ap": 0.07692307692307694,
+    "equal_world_mean_uniform_random_tie_free_expected_ap": 0.12415969292024874
+  },
+  "coverage": {
+    "arms": 6,
+    "chance_rows": 30,
+    "initializations_per_arm": 5,
+    "mean_contrasts": 5,
+    "metric_rows": 900,
+    "world_ap_rows": 180,
+    "world_contrast_rows": 150,
+    "worlds": 30
+  },
+  "equal_world_ap_contrasts": {
+    "cellular_cwn_style_local": -0.6879081261192839,
+    "cellular_hasse_mechanism_control": -0.6778448022434126,
+    "directed_local_edge_gnn": -0.6416511516259469,
+    "fixed20_tabular_neural_control": -0.21550009130465111,
+    "simplicial_mpsn_style_local": -0.6757930452918048
+  },
+  "equal_world_ap_means": {
+    "cellular_cwn_style_local": 0.22852826156710387,
+    "cellular_hasse_mechanism_control": 0.238591585442975,
+    "directed_local_edge_gnn": 0.27478523606044086,
+    "fixed20_tabular_neural_control": 0.7009362963817363,
+    "gbdt_fixed20": 0.9164363876863877,
+    "simplicial_mpsn_style_local": 0.24064334239458288
+  },
+  "learning_qualification": "not established for comparative models",
+  "limitations": [
+    "fixed trained states and one controlled generator template",
+    "unresolved full-corpus learning and stability",
+    "unmatched feature/readout/tuning opportunity",
+    "no causal shortcut intervention",
+    "no institutional or financial generalization or population precision guarantee"
+  ],
+  "marginal_intervals": {
+    "cellular_cwn_style_local": {
+      "estimate": 0.22852826156710387,
+      "lower_95": 0.21134671515702635,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": 0.2473714585105607,
+      "width": 0.03602474335353434
+    },
+    "cellular_cwn_style_local_minus_gbdt_fixed20": {
+      "estimate": -0.6879081261192839,
+      "lower_95": -0.728558141791616,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": -0.6421546041497339,
+      "width": 0.08640353764188213
+    },
+    "cellular_hasse_mechanism_control": {
+      "estimate": 0.238591585442975,
+      "lower_95": 0.22524089103593842,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": 0.2528715296031938,
+      "width": 0.027630638567255394
+    },
+    "cellular_hasse_mechanism_control_minus_gbdt_fixed20": {
+      "estimate": -0.6778448022434126,
+      "lower_95": -0.7174491485092698,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": -0.6344269546100738,
+      "width": 0.08302219389919596
+    },
+    "directed_local_edge_gnn": {
+      "estimate": 0.27478523606044086,
+      "lower_95": 0.2397267402622309,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": 0.3138922205733026,
+      "width": 0.07416548031107173
+    },
+    "directed_local_edge_gnn_minus_gbdt_fixed20": {
+      "estimate": -0.6416511516259469,
+      "lower_95": -0.7025483525678766,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": -0.5735041722394235,
+      "width": 0.1290441803284531
+    },
+    "fixed20_tabular_neural_control": {
+      "estimate": 0.7009362963817363,
+      "lower_95": 0.6453583855669388,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": 0.756532552686484,
+      "width": 0.1111741671195452
+    },
+    "fixed20_tabular_neural_control_minus_gbdt_fixed20": {
+      "estimate": -0.21550009130465111,
+      "lower_95": -0.26653566917939336,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": -0.16293991313632666,
+      "width": 0.1035957560430667
+    },
+    "gbdt_fixed20": {
+      "estimate": 0.9164363876863877,
+      "lower_95": 0.8715739387926885,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": 0.9571957671957668,
+      "width": 0.0856218284030783
+    },
+    "simplicial_mpsn_style_local": {
+      "estimate": 0.24064334239458288,
+      "lower_95": 0.2299989560777815,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": 0.25145553337970816,
+      "width": 0.021456577301926655
+    },
+    "simplicial_mpsn_style_local_minus_gbdt_fixed20": {
+      "estimate": -0.6757930452918048,
+      "lower_95": -0.7184361882221755,
+      "scope": "marginal conditional percentile interval",
+      "upper_95": -0.6287668327788751,
+      "width": 0.08966935544330035
+    }
+  },
+  "multiplicity": {
+    "alpha": 0.05,
+    "family_size": 5,
+    "intervals": "marginal, not simultaneous",
+    "method": "Holm"
+  },
+  "panel": "separate prospective replication",
+  "pilot_pooled": false,
+  "publication_status": "anonymous draft; formatting/page verification pending genuine local TMLR assets",
+  "review_scope": "distinct arithmetic implementation in the same exposed local session; not external assurance",
+  "schema": "simulator_replication_results_v1",
+  "signed_rank_family": {
+    "cellular_cwn_style_local": {
+      "denominator": 1073741824,
+      "holm_adjusted_p_value": 9.313225746154785e-09,
+      "mean_signed_difference": -0.6879081261192839,
+      "n_nonzero": 30,
+      "p_value": 1.862645149230957e-09,
+      "rounding_decimal_places": 12,
+      "statistic": 0.0,
+      "status": "EXACT_CONDITIONAL_SIGN_DISTRIBUTION",
+      "tail_ge_count": 1073741824,
+      "tail_le_count": 1,
+      "tie_groups": [],
+      "tied_observation_count": 0,
+      "w_minus": 465.0,
+      "w_plus": 0.0,
+      "zero_count": 0
+    },
+    "cellular_hasse_mechanism_control": {
+      "denominator": 1073741824,
+      "holm_adjusted_p_value": 9.313225746154785e-09,
+      "mean_signed_difference": -0.6778448022434126,
+      "n_nonzero": 30,
+      "p_value": 1.862645149230957e-09,
+      "rounding_decimal_places": 12,
+      "statistic": 0.0,
+      "status": "EXACT_CONDITIONAL_SIGN_DISTRIBUTION",
+      "tail_ge_count": 1073741824,
+      "tail_le_count": 1,
+      "tie_groups": [],
+      "tied_observation_count": 0,
+      "w_minus": 465.0,
+      "w_plus": 0.0,
+      "zero_count": 0
+    },
+    "directed_local_edge_gnn": {
+      "denominator": 1073741824,
+      "holm_adjusted_p_value": 9.313225746154785e-09,
+      "mean_signed_difference": -0.6416511516259469,
+      "n_nonzero": 30,
+      "p_value": 1.862645149230957e-09,
+      "rounding_decimal_places": 12,
+      "statistic": 0.0,
+      "status": "EXACT_CONDITIONAL_SIGN_DISTRIBUTION",
+      "tail_ge_count": 1073741824,
+      "tail_le_count": 1,
+      "tie_groups": [],
+      "tied_observation_count": 0,
+      "w_minus": 465.0,
+      "w_plus": 0.0,
+      "zero_count": 0
+    },
+    "fixed20_tabular_neural_control": {
+      "denominator": 1073741824,
+      "holm_adjusted_p_value": 3.5390257835388184e-08,
+      "mean_signed_difference": -0.21550009130465111,
+      "n_nonzero": 30,
+      "p_value": 3.5390257835388184e-08,
+      "rounding_decimal_places": 12,
+      "statistic": 7.0,
+      "status": "EXACT_CONDITIONAL_SIGN_DISTRIBUTION",
+      "tail_ge_count": 1073741810,
+      "tail_le_count": 19,
+      "tie_groups": [],
+      "tied_observation_count": 0,
+      "w_minus": 458.0,
+      "w_plus": 7.0,
+      "zero_count": 0
+    },
+    "simplicial_mpsn_style_local": {
+      "denominator": 1073741824,
+      "holm_adjusted_p_value": 9.313225746154785e-09,
+      "mean_signed_difference": -0.6757930452918048,
+      "n_nonzero": 30,
+      "p_value": 1.862645149230957e-09,
+      "rounding_decimal_places": 12,
+      "statistic": 0.0,
+      "status": "EXACT_CONDITIONAL_SIGN_DISTRIBUTION",
+      "tail_ge_count": 1073741824,
+      "tail_le_count": 1,
+      "tie_groups": [],
+      "tied_observation_count": 0,
+      "w_minus": 465.0,
+      "w_plus": 0.0,
+      "zero_count": 0
+    }
+  },
+  "target": "exact complete persisted generated CYCLE membership, SAR and non-SAR"
+}

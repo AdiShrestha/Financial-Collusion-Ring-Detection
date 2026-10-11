@@ -1,0 +1,7 @@
+phase,arm,mean_ap,lower_95,upper_95,interval_width,interval_scope,world_count,initialization_count
+replication,gbdt_fixed20,0.9164363876863877,0.8715739387926885,0.9571957671957668,0.0856218284030783,marginal conditional percentile interval,30,5
+replication,fixed20_tabular_neural_control,0.7009362963817363,0.6453583855669388,0.756532552686484,0.1111741671195452,marginal conditional percentile interval,30,5
+replication,directed_local_edge_gnn,0.27478523606044086,0.2397267402622309,0.3138922205733026,0.07416548031107173,marginal conditional percentile interval,30,5
+replication,simplicial_mpsn_style_local,0.24064334239458288,0.2299989560777815,0.25145553337970816,0.021456577301926655,marginal conditional percentile interval,30,5
+replication,cellular_hasse_mechanism_control,0.238591585442975,0.22524089103593842,0.2528715296031938,0.027630638567255394,marginal conditional percentile interval,30,5
+replication,cellular_cwn_style_local,0.22852826156710387,0.21134671515702635,0.2473714585105607,0.03602474335353434,marginal conditional percentile interval,30,5

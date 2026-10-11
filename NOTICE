@@ -1,0 +1,16 @@
+TopoRing
+Copyright 2026 Aditya Shrestha
+Contact: adityashrestha39@gmail.com
+
+Original public project software is licensed under Apache License 2.0.
+Original manuscript, documentation, aggregate tables and figures are licensed
+under Creative Commons Attribution 4.0 International; see docs/licensing.md.
+
+AMLSim is an upstream simulator by IBM and its contributors. Its source retains
+its own Apache-2.0 license and applicable notices. This project does not claim
+ownership of upstream simulator source or imply IBM endorsement.
+
+The scientific methods acknowledge CW Networks and Message Passing Simplicial
+Networks by Bodnar et al.; the implemented local adaptations are described in
+the project documentation. Citations do not transfer copyright or relicense
+third-party implementations, datasets, dependencies or publications.

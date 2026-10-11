@@ -168,13 +168,75 @@ def load_benchmark(lock: dict[str, Any]):
     return module, binding
 
 
-def validate_protocol(study: dict[str, Any], lock: dict[str, Any]) -> list[str]:
+def _validate_s1i_registry(study: dict[str, Any], lock: dict[str, Any], registry: dict[str, Any]) -> list[str]:
+    worlds = study.get("test_worlds")
+    if not isinstance(registry, dict):
+        raise ValueError("S1-I world registry must be a JSON object")
+    rows = registry.get("worlds")
+    if (registry.get("schema") != "s1_replication_world_registry_v1"
+            or registry.get("experiment_id") != "S1-I"
+            or registry.get("extension_id") != "E3"
+            or registry.get("phase") != 4
+            or registry.get("status") != "REGISTERED_UNMATERIALIZED"
+            or registry.get("test_world_generation_performed") is not False):
+        raise ValueError("S1-I world registry identity or registration status differs")
+    if not isinstance(rows, list) or len(rows) != 30 or not isinstance(worlds, list) or len(worlds) != 30:
+        raise ValueError("S1-I requires exactly 30 registered worlds")
+    expected_rows = []
+    for ordinal, (world_id, row) in enumerate(zip(worlds, rows, strict=True), start=1):
+        if not isinstance(row, dict):
+            raise ValueError(f"invalid registry row at ordinal {ordinal}")
+        suffix = world_id.removeprefix("S1_test_") if isinstance(world_id, str) else ""
+        if not suffix.isdigit():
+            raise ValueError(f"registered S1-I world ID does not encode its seed: {world_id!r}")
+        seed = int(suffix)
+        registry_path = study.get("world_registry", {}).get("path")
+        output_root = study.get("outputs", {}).get("root")
+        if not isinstance(registry_path, str) or not isinstance(output_root, str):
+            raise ValueError("S1-I protocol paths must be supplied through the registered configuration")
+        expected_spec = (Path(registry_path).parent / "world_specs" / f"{world_id}.json").as_posix()
+        expected_output = (Path(output_root) / "worlds" / world_id).as_posix()
+        binding = row.get("spec_binding")
+        if (row.get("world_id") != world_id or row.get("seed") != seed
+                or row.get("ordinal") != ordinal
+                or row.get("publication_world_label") != f"W{ordinal + 4}"
+                or row.get("publication_world_number") != ordinal + 4
+                or row.get("panel") != "Confirmatory Replication Panel"
+                or row.get("role") != "prospective_heldout_test"
+                or row.get("status") != "REGISTERED_UNMATERIALIZED"
+                or row.get("replacement_authorized") is not False
+                or row.get("attempt") != "attempts/run_01"
+                or row.get("spec_path") != expected_spec
+                or row.get("output_root") != expected_output
+                or not isinstance(binding, dict)
+                or binding.get("path") != expected_spec
+                or type(binding.get("bytes")) is not int
+                or not isinstance(binding.get("sha256"), str)):
+            raise ValueError(f"S1-I registry mapping differs from the immutable W5-W34 registration at {world_id}")
+        expected_rows.append(row)
+    if len(set(worlds)) != 30 or len({row["seed"] for row in expected_rows}) != 30:
+        raise ValueError("S1-I registry contains duplicate world IDs or seeds")
+    if registry.get("generator_source_pin") != study.get("generation", {}).get("source_pin"):
+        raise ValueError("S1-I generator source pin differs from its registration")
+    lock_id = study.get("model_lock_experiment_id")
+    if (lock_id != "S1-G" or study.get("replication_of", {}).get("experiment_id") != "S1-G"
+            or lock.get("experiment_id") != "S1-G"):
+        raise ValueError("S1-I must bind the unchanged S1-G model lock explicitly")
+    return worlds
+
+
+def validate_protocol(
+    study: dict[str, Any], lock: dict[str, Any], registry: dict[str, Any] | None = None,
+) -> list[str]:
     experiment_id = study.get("experiment_id")
     if type(experiment_id) is not str or not experiment_id or study.get("phase") != 4:
         raise ValueError("study config lacks a valid experiment identity or evaluation phase")
     if study.get("status") != "REGISTERED_UNEXECUTED":
         raise ValueError("study config status differs from the registered unexecuted protocol")
-    if study.get("model_states") != 30 or study.get("prediction_blocks") != 120:
+    is_s1i = experiment_id == "S1-I"
+    expected_world_count = 30 if is_s1i else 4
+    expected_block_count = expected_world_count * 30
+    if study.get("model_states") != 30 or study.get("prediction_blocks") != expected_block_count:
         raise ValueError("registered model or prediction-block count differs")
     inference = study.get("inference", {})
     if any(inference.get(key) is not expected for key, expected in (
@@ -188,7 +250,8 @@ def validate_protocol(study: dict[str, Any], lock: dict[str, Any]) -> list[str]:
         raise ValueError("selected GBDT iteration or thread count differs from the lock")
     if inference.get("device") != "cpu" or inference.get("mode") != "eval/no_grad":
         raise ValueError("inference device/mode differs from the lock")
-    if lock.get("experiment_id") != experiment_id or lock.get("status") != "MODEL_AND_POLICY_BYTES_LOCKED":
+    expected_lock_id = study.get("model_lock_experiment_id", experiment_id)
+    if lock.get("experiment_id") != expected_lock_id or lock.get("status") != "MODEL_AND_POLICY_BYTES_LOCKED":
         raise ValueError("model lock identity or status differs from the study")
     rows = lock.get("models")
     if not isinstance(rows, list) or len(rows) != 30:
@@ -215,8 +278,15 @@ def validate_protocol(study: dict[str, Any], lock: dict[str, Any]) -> list[str]:
     if any(values != set(SEEDS) for values in seeds_by_arm.values()):
         raise ValueError("each registered arm must contain the exact five initialization settings")
     expected_order = study.get("test_worlds")
-    if not isinstance(expected_order, list) or len(expected_order) != 4 or len(set(expected_order)) != 4:
-        raise ValueError("study config must name four unique registered test worlds")
+    if (not isinstance(expected_order, list) or len(expected_order) != expected_world_count
+            or len(set(expected_order)) != expected_world_count):
+        raise ValueError(f"study config must name {expected_world_count} unique registered test worlds")
+    if is_s1i:
+        if registry is None:
+            raise ValueError("S1-I scoring requires the exact prospective world registry")
+        expected_order = _validate_s1i_registry(study, lock, registry)
+    elif experiment_id != "S1-G":
+        raise ValueError(f"unsupported heldout experiment identity: {experiment_id!r}")
     if lock.get("number_of_model_states") != 30:
         raise ValueError("model-lock state count differs from the study config")
     return expected_order
@@ -583,6 +653,7 @@ def score_registered_worlds(
     study_path: Path,
     model_lock_path: Path,
     output_dir: Path,
+    registry_path: Path | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     forbidden_existing = [
@@ -595,7 +666,21 @@ def score_registered_worlds(
     index = _load_json_arg(index_path)
     study = _load_json_arg(study_path)
     lock = _load_json_arg(model_lock_path)
-    expected_worlds = validate_protocol(study, lock)
+    registry = _load_json_arg(registry_path) if registry_path is not None else None
+    expected_worlds = validate_protocol(study, lock, registry)
+    is_s1i = study["experiment_id"] == "S1-I"
+    if is_s1i:
+        expected_registry_hash = study.get("world_registry", {}).get("sha256")
+        if registry_path is None or file_binding(registry_path)["sha256"] != expected_registry_hash:
+            raise ValueError("S1-I world registry bytes differ from the registered study binding")
+        for row in registry["worlds"]:
+            spec_path = Path(row["spec_path"])
+            if not spec_path.is_absolute():
+                spec_path = Path.cwd() / spec_path
+            actual_spec = file_binding(spec_path)
+            expected_spec = row["spec_binding"]
+            if actual_spec["bytes"] != expected_spec["bytes"] or actual_spec["sha256"] != expected_spec["sha256"]:
+                raise ValueError(f"registered S1-I world specification changed: {row['world_id']}")
     experiment_id = study["experiment_id"]
     if file_binding(model_lock_path)["sha256"] != study.get("model_lock", {}).get("sha256"):
         raise ValueError("model-lock bytes differ from the study binding")
@@ -605,16 +690,18 @@ def score_registered_worlds(
         raise ValueError("world index schema is not the heldout wrapper schema")
     entries = index.get("worlds")
     if not isinstance(entries, list) or [entry.get("world_id") for entry in entries] != expected_worlds:
-        raise ValueError("world index does not exactly cover the four registered worlds in order")
+        raise ValueError(f"world index does not exactly cover the {len(expected_worlds)} registered worlds in order")
     seeds = [entry.get("seed") for entry in entries]
     if any(type(seed) is not int for seed in seeds) or len(set(seeds)) != len(entries):
-        raise ValueError("world index seeds must be unique integers; registry equality is checked by the caller")
+        raise ValueError("world index seeds must be unique integers")
+    if is_s1i and seeds != [row["seed"] for row in registry["worlds"]]:
+        raise ValueError("world index seed order differs from the exact S1-I registry")
     benchmark, benchmark_binding = load_benchmark(lock)
     transform, transform_binding = load_summary_transform(lock, study)
     worlds = [_join_and_build_world(entry, index_path, benchmark) for entry in entries]
-    if len(worlds) != 4:
-        raise ValueError("exactly four reconciled worlds are required before scoring")
-    expected_blocks = 4 * 30
+    if len(worlds) != len(expected_worlds):
+        raise ValueError(f"exactly {len(expected_worlds)} reconciled worlds are required before scoring")
+    expected_blocks = len(expected_worlds) * len(lock["models"])
     torch.set_num_threads(1)
     models, model_bindings = load_locked_models(lock, benchmark)
     output_dir = output_dir.resolve()
@@ -703,6 +790,9 @@ def score_registered_worlds(
             },
             "prediction_blocks_directory": "prediction_blocks",
         }
+        if is_s1i:
+            manifest["world_registry"] = file_binding(registry_path)
+            manifest["model_lock_experiment_id"] = "S1-G"
         _atomic_json(output_dir / "pre_label_prediction_manifest.json", manifest)
         return {
             "status": "PREDICTIONS_COMPLETE_LABELS_NOT_OPENED",
@@ -733,9 +823,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model-lock", type=Path, required=True)
     parser.add_argument("--study-config", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--world-registry", type=Path)
     args = parser.parse_args(argv)
     try:
-        result = score_registered_worlds(args.world_index, args.study_config, args.model_lock, args.output_dir)
+        result = score_registered_worlds(args.world_index, args.study_config, args.model_lock, args.output_dir, args.world_registry)
     except Exception:
         traceback.print_exc(file=sys.stderr)
         return 1
