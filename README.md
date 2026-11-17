@@ -24,7 +24,7 @@ Every unfavourable result is kept, including two held-out worlds where the summa
 | `docs/` | [Reproduction](docs/reproduction.md), [data card](docs/s1_benchmark_data_card.md), [results dictionary](docs/s1_results_dictionary.md), [licensing](docs/licensing.md) |
 | `source/src/`, `docs/historical_*` | Earlier exploratory AMLworld and Elliptic++ work, not used by the benchmark study |
 
-The simulated worlds, labels, fitted models and prediction files are distributed with the anonymous review supplement rather than in this repository.
+The simulated worlds, labels, fitted models and prediction files are distributed separately as a data and model archive (about 5 MB) rather than in this repository.
 
 ## Quick start
 

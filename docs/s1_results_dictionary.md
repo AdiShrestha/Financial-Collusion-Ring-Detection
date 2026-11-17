@@ -4,7 +4,7 @@ All numeric values are exported from retained measurements at full JSON/CSV roun
 
 AP uses complete equal-logit threshold groups without identifier tie breaking; AUROC gives half credit for ties; BCE uses stable logit arithmetic. AP is unavailable for no-positive support, AUROC for a single class. Null AP blocks required aggregate/contrast output rather than removing an unfavorable world. The retained holdout has complete defined metrics. Counts are integer physical-candidate counts and fixed-zero-logit confusions. No empirical score computation is performed by the plotting utility.
 
-World/initialization aliases preserve registered order. D aliases identify development worlds only. Mean rows average metrics across all settings, then weight every world equally. Original pilot contrasts are descriptive neural minus fixed-summary GBDT, without retrospectively added p-values or intervals. Separate replication tables carry conditional inference and marginal intervals. Candidate-level labels, predictions, worlds and fitted models are distributed with the anonymous review supplement, not in this repository.
+World/initialization aliases preserve registered order. D aliases identify development worlds only. Mean rows average metrics across all settings, then weight every world equally. Original pilot contrasts are descriptive neural minus fixed-summary GBDT, without retrospectively added p-values or intervals. Separate replication tables carry conditional inference and marginal intervals. Candidate-level labels, predictions, worlds and fitted models are distributed separately as a data and model archive, not in this repository.
 
 ## metrics_by_world_initialization.csv
 

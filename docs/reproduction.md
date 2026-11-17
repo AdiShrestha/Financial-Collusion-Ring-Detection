@@ -48,7 +48,7 @@ python -s -B source/scripts/plot_s1_results.py --panel replication \
 
 ## 5. Models, worlds and predictions
 
-The worlds, fitted models and prediction files are distributed with the anonymous review supplement, not with this repository. With those files:
+The worlds, fitted models and prediction files are distributed separately as a data and model archive, not with this repository. With those files:
 
 - `source/scripts/check_s1_benchmark.py` defines candidate tensors, the 20 summary features, the four neural graph and complex models and the AP and AUROC metrics.
 - `source/scripts/train_s1_development.py`, `continue_s1_development.py` and `diagnose_s1_learning.py` reproduce training, continuation and the summary-MLP grid and microfits.
@@ -59,7 +59,7 @@ Checkpoints written by the training scripts are pickled objects; load them only 
 
 ## 6. Code versions and checks
 
-The scripts here are tidied versions of the ones that produced the reported results: the same computations, formatted with Black, with clearer messages, argument-based paths and pinned jar hashes. The byte-exact executed files, with their SHA-256 values, are distributed with the review supplement. `source/pyproject.toml` configures Ruff and Black; continuous integration runs both, the unit tests, the statistics and the figures.
+The scripts here are tidied versions of the ones that produced the reported results: the same computations, formatted with Black, with clearer messages, argument-based paths and pinned jar hashes. The byte-exact executed files, with their SHA-256 values, are included in the data and model archive. `source/pyproject.toml` configures Ruff and Black; continuous integration runs both, the unit tests, the statistics and the figures.
 
 ## Legacy code
 

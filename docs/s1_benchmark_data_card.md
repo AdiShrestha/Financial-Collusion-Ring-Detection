@@ -39,7 +39,7 @@ Models and the analysis plan were fixed before W5–W34 were generated. Generati
 
 ## Availability and licence
 
-The anonymous review supplement contains all 40 worlds (candidate observations, identities, labels and topology files), the fitted models, all prediction files, the analysis plan and every result table. The public repository contains the code and the aggregate result tables. Original software is Apache-2.0; data, documentation, tables and figures are CC BY 4.0. AMLSim keeps its own Apache-2.0 licence.
+The separately distributed data and model archive contains all 40 worlds (candidate observations, identities, labels and topology files), the fitted models, all prediction files, the analysis plan and every result table. The public repository contains the code and the aggregate result tables. Original software is Apache-2.0; data, documentation, tables and figures are CC BY 4.0. AMLSim keeps its own Apache-2.0 licence.
 
 ## Intended use and limits
 
