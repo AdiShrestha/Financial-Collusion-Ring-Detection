@@ -5,24 +5,14 @@ Implements Section 6.6 of project_description.md.
 
 from typing import Dict, Any
 import numpy as np
-import scipy.sparse as sp
 
-try:
-    from source.src.topology.incidence import (
-        build_b1,
-        build_b2_simplicial,
-        build_b2_cellular,
-        verify_nilpotency,
-        compute_hodge_laplacians,
-    )
-except ModuleNotFoundError:
-    from src.topology.incidence import (
-        build_b1,
-        build_b2_simplicial,
-        build_b2_cellular,
-        verify_nilpotency,
-        compute_hodge_laplacians,
-    )
+from .incidence import (
+    build_b1,
+    build_b2_simplicial,
+    build_b2_cellular,
+    verify_nilpotency,
+    compute_hodge_laplacians,
+)
 
 
 def oracle_1_path_graph() -> Dict[str, Any]:

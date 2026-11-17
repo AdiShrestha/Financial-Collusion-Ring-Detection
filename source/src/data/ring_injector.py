@@ -6,8 +6,8 @@ Traces to Contract C02-04, FR-002, INV-001, INV-002, INV-008.
 
 import math
 import random
-from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
 import networkx as nx
 
 
@@ -180,10 +180,12 @@ class SemiSyntheticRingInjector:
         if len(ring.edges) != k or len(ring.nodes) != k or len(set(ring.nodes)) != k:
             return False
 
-        if not all(math.isfinite(float(v)) and float(v) >= 0 for v in
-                   [ring.initial_volume, ring.final_volume, ring.fee_rate] +
-                   [e["amount"] for e in ring.edges] +
-                   [e["amount_next"] for e in ring.edges]):
+        if not all(
+            math.isfinite(float(v)) and float(v) >= 0
+            for v in [ring.initial_volume, ring.final_volume, ring.fee_rate]
+            + [e["amount"] for e in ring.edges]
+            + [e["amount_next"] for e in ring.edges]
+        ):
             return False
 
         # 1. Verify monotonic timestamps

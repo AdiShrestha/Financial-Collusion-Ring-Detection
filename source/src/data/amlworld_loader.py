@@ -8,21 +8,13 @@ import math
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Set, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple
 import networkx as nx
 
-try:
-    from source.src.data.amlworld_patterns import (
-        LaunderingPatternBlock,
-        PatternTransaction,
-        parse_amlworld_patterns,
-    )
-except ModuleNotFoundError:
-    from src.data.amlworld_patterns import (
-        LaunderingPatternBlock,
-        PatternTransaction,
-        parse_amlworld_patterns,
-    )
+from .amlworld_patterns import (
+    LaunderingPatternBlock,
+    parse_amlworld_patterns,
+)
 
 
 @dataclass
@@ -120,7 +112,19 @@ class AMLWorldLoader:
             header = next(reader, None)
             if not header:
                 raise ValueError("Transaction CSV is empty")
-            expected = ["Timestamp", "From Bank", "Account", "To Bank", "Account", "Amount Received", "Receiving Currency", "Amount Paid", "Payment Currency", "Payment Format", "Is Laundering"]
+            expected = [
+                "Timestamp",
+                "From Bank",
+                "Account",
+                "To Bank",
+                "Account",
+                "Amount Received",
+                "Receiving Currency",
+                "Amount Paid",
+                "Payment Currency",
+                "Payment Format",
+                "Is Laundering",
+            ]
             if header != expected:
                 raise ValueError(f"Unexpected AMLworld CSV header: {header}")
 
@@ -129,7 +133,9 @@ class AMLWorldLoader:
 
             for row in reader:
                 if len(row) != 11:
-                    raise ValueError(f"Malformed AMLworld CSV row {row_idx + 2}: expected 11 columns, got {len(row)}")
+                    raise ValueError(
+                        f"Malformed AMLworld CSV row {row_idx + 2}: expected 11 columns, got {len(row)}"
+                    )
                 if any(not row[i].strip() for i in (0, 1, 2, 3, 4, 6, 8, 9)):
                     raise ValueError(f"Missing required AMLworld field at CSV row {row_idx + 2}")
 
@@ -138,10 +144,17 @@ class AMLWorldLoader:
                     amt_rec = float(row[5].replace("$", "").replace(",", "").strip())
                     amt_paid = float(row[7].replace("$", "").replace(",", "").strip())
                     is_launder = int(row[10].strip())
-                    if is_launder not in (0, 1) or not (math.isfinite(amt_rec) and math.isfinite(amt_paid)) or amt_rec < 0 or amt_paid < 0:
+                    if (
+                        is_launder not in (0, 1)
+                        or not (math.isfinite(amt_rec) and math.isfinite(amt_paid))
+                        or amt_rec < 0
+                        or amt_paid < 0
+                    ):
                         raise ValueError("nonbinary label, nonfinite amount, or negative amount")
                 except (ValueError, IndexError) as exc:
-                    raise ValueError(f"Invalid AMLworld numeric field at CSV row {row_idx + 2}: {row}") from exc
+                    raise ValueError(
+                        f"Invalid AMLworld numeric field at CSV row {row_idx + 2}: {row}"
+                    ) from exc
 
                 tx_id = f"tx_{row_idx:08d}"
                 sender = f"{row[1].strip()}_{row[2].strip()}"

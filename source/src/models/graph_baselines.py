@@ -13,16 +13,11 @@ Upholds Invariants:
 - INV-009 (Model Parameter and FLOP Matching Protocol): parameter delta <= 2%.
 """
 
-import os
-import sys
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 def global_pool(x: torch.Tensor, batch: Optional[torch.Tensor] = None) -> torch.Tensor:
@@ -36,7 +31,7 @@ def global_pool(x: torch.Tensor, batch: Optional[torch.Tensor] = None) -> torch.
     mean_list = []
     max_list = []
     for b in range(batch_size):
-        mask = (batch == b)
+        mask = batch == b
         if mask.sum() == 0:
             mean_list.append(torch.zeros((1, x.size(-1)), device=x.device, dtype=x.dtype))
             max_list.append(torch.zeros((1, x.size(-1)), device=x.device, dtype=x.dtype))
@@ -159,7 +154,9 @@ class GATConvLayer(nn.Module):
         edge_att = F.leaky_relu(alpha_src[src] + alpha_dst[dst], negative_slope=0.2)
         # Softmax normalization per destination node
         max_per_dst = torch.full((num_nodes, self.heads), -torch.inf, device=x.device, dtype=edge_att.dtype)
-        max_per_dst.scatter_reduce_(0, dst.unsqueeze(1).expand(-1, self.heads), edge_att, reduce="amax", include_self=True)
+        max_per_dst.scatter_reduce_(
+            0, dst.unsqueeze(1).expand(-1, self.heads), edge_att, reduce="amax", include_self=True
+        )
         exp_att = torch.exp(edge_att - max_per_dst[dst])
         exp_sum = torch.zeros((num_nodes, self.heads), device=x.device)
         exp_sum.scatter_add_(0, dst.unsqueeze(1).expand(-1, self.heads), exp_att)
@@ -176,10 +173,10 @@ class GATConvLayer(nn.Module):
 
 class SAGEConvLayer(nn.Module):
     """GraphSAGE mean neighborhood convolution layer (additive variant).
-    
+
     NOTE: This implements the sum-project variant: h_v = W·(x_v + mean_neigh(x_u))
     rather than the canonical concat-project variant: h_v = W·[x_v || mean_neigh(x_u)].
-    
+
     The additive form is a deliberate capacity-matching choice (INV-009):
     concat-project would double the input dimension of the linear layer,
     inflating parameter count and breaking parity with GCN/GAT baselines.
@@ -208,6 +205,8 @@ class SAGEConvLayer(nn.Module):
 
         neigh_mean = neigh_sum / deg.unsqueeze(1)
         return self.linear(x + neigh_mean)  # Additive variant
+
+
 class BaseGNNClassifier(nn.Module):
     """Abstract base class for capacity-matched GNN ring classifiers."""
 
@@ -365,9 +364,7 @@ class GraphSAGEBaseline(BaseGNNClassifier):
         return logits.squeeze(-1)
 
 
-def audit_parameter_parity(
-    models: Dict[str, BaseGNNClassifier], tolerance: float = 0.05
-) -> Dict[str, Any]:
+def audit_parameter_parity(models: Dict[str, BaseGNNClassifier], tolerance: float = 0.05) -> Dict[str, Any]:
     """Audits parameter capacity parity across baseline models (INV-009)."""
     counts = {name: m.count_parameters() for name, m in models.items()}
     values = list(counts.values())

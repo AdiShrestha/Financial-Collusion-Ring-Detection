@@ -14,16 +14,10 @@ Upholds Invariants:
 - INV-009 (Model Parameter and FLOP Matching Protocol): parameter delta <= 2%.
 """
 
-import os
-import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
-import numpy as np
+from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 def global_cell_pool(x: torch.Tensor) -> torch.Tensor:
@@ -99,7 +93,9 @@ class CellularConvLayer(nn.Module):
             deg1_up = abs_b2.sum(dim=1, keepdim=True).clamp(min=1.0)
             norm_b2 = abs_b2 / deg1_up
             m1 = m1 + torch.matmul(norm_b2, x2)
-        h1_out = F.relu(self.linear1(m1)) if x1.numel() > 0 else torch.empty((0, self.out_dim), device=x1.device)
+        h1_out = (
+            F.relu(self.linear1(m1)) if x1.numel() > 0 else torch.empty((0, self.out_dim), device=x1.device)
+        )
 
         # 3. Update 2-cells: aggregate from L2 and B2^T (from 1-cells)
         if x2.numel() > 0:
@@ -163,11 +159,13 @@ class CellularComplexNetwork(nn.Module):
         self.readout_pooling = readout_pooling
 
         # Dynamic Message passing layers
-        self.input_projections = nn.ModuleList([
-            nn.Linear(in_dim0, hidden_dim),
-            nn.Linear(in_dim1, hidden_dim),
-            nn.Linear(in_dim2, hidden_dim),
-        ])
+        self.input_projections = nn.ModuleList(
+            [
+                nn.Linear(in_dim0, hidden_dim),
+                nn.Linear(in_dim1, hidden_dim),
+                nn.Linear(in_dim2, hidden_dim),
+            ]
+        )
         self.convs = nn.ModuleList()
         # Layer 1
         self.convs.append(CellularConvLayer(hidden_dim, hidden_dim, hidden_dim, hidden_dim))
@@ -225,8 +223,16 @@ class CellularComplexNetwork(nn.Module):
         # Global hierarchical pooling across cell dimensions
         pool_mult = 2 if self.readout_pooling == "mean_max" else 1
         p0 = pool_cells_by_mode(h0, mode=self.readout_pooling)
-        p1 = pool_cells_by_mode(h1, mode=self.readout_pooling) if h1.numel() > 0 else torch.zeros((1, self.hidden_dim * pool_mult), device=x0.device)
-        p2 = pool_cells_by_mode(h2, mode=self.readout_pooling) if h2.numel() > 0 else torch.zeros((1, self.hidden_dim * pool_mult), device=x0.device)
+        p1 = (
+            pool_cells_by_mode(h1, mode=self.readout_pooling)
+            if h1.numel() > 0
+            else torch.zeros((1, self.hidden_dim * pool_mult), device=x0.device)
+        )
+        p2 = (
+            pool_cells_by_mode(h2, mode=self.readout_pooling)
+            if h2.numel() > 0
+            else torch.zeros((1, self.hidden_dim * pool_mult), device=x0.device)
+        )
 
         pooled = torch.cat([p0, p1, p2], dim=-1)
 

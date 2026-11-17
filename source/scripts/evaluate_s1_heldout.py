@@ -9,6 +9,7 @@ SHA-256 binds bytes to a supplied manifest; it does not authenticate an
 untrusted party who supplies both manifest and payload. This interface is
 not a sandbox or a safe loader for third-party uploads. Locked evidence is
 left unchanged; no serialization migration is performed here."""
+
 from __future__ import annotations
 
 import argparse
@@ -19,7 +20,6 @@ import json
 import math
 import os
 import pickle
-import platform
 import sys
 import traceback
 from pathlib import Path
@@ -28,7 +28,6 @@ from typing import Any
 import numpy as np
 import torch
 from torch import nn
-
 
 SUMMARY_ARM = "fixed20_tabular_neural_control"
 GBDT_ARM = "gbdt_fixed20"
@@ -61,9 +60,20 @@ PREDICTION_COLUMNS = (
     "raw_logit",
 )
 FORBIDDEN_OBSERVATION_FIELDS = {
-    "label", "sar", "alert_id", "alertID", "seed", "generator", "role",
-    "candidate_rank", "event_ordinal", "candidate_id", "instance_id",
-    "world_id", "account_id", "event_ids",
+    "label",
+    "sar",
+    "alert_id",
+    "alertID",
+    "seed",
+    "generator",
+    "role",
+    "candidate_rank",
+    "event_ordinal",
+    "candidate_id",
+    "instance_id",
+    "world_id",
+    "account_id",
+    "event_ids",
 }
 
 
@@ -148,8 +158,7 @@ def _load_json_arg(path: Path) -> Any:
 
 def _source_reference(lock: dict[str, Any], basename: str) -> tuple[Path, dict[str, Any]]:
     matches = [
-        row for row in lock.get("source_reference", [])
-        if Path(str(row.get("path", ""))).name == basename
+        row for row in lock.get("source_reference", []) if Path(str(row.get("path", ""))).name == basename
     ]
     if len(matches) != 1:
         raise ValueError(f"model lock must bind exactly one {basename} source reference")
@@ -177,17 +186,21 @@ def load_benchmark(lock: dict[str, Any]):
     return module, binding
 
 
-def _validate_s1i_registry(study: dict[str, Any], lock: dict[str, Any], registry: dict[str, Any]) -> list[str]:
+def _validate_s1i_registry(
+    study: dict[str, Any], lock: dict[str, Any], registry: dict[str, Any]
+) -> list[str]:
     worlds = study.get("test_worlds")
     if not isinstance(registry, dict):
         raise ValueError("S1-I world registry must be a JSON object")
     rows = registry.get("worlds")
-    if (registry.get("schema") != "s1_replication_world_registry_v1"
-            or registry.get("experiment_id") != "S1-I"
-            or registry.get("extension_id") != "E3"
-            or registry.get("phase") != 4
-            or registry.get("status") != "REGISTERED_UNMATERIALIZED"
-            or registry.get("test_world_generation_performed") is not False):
+    if (
+        registry.get("schema") != "s1_replication_world_registry_v1"
+        or registry.get("experiment_id") != "S1-I"
+        or registry.get("extension_id") != "E3"
+        or registry.get("phase") != 4
+        or registry.get("status") != "REGISTERED_UNMATERIALIZED"
+        or registry.get("test_world_generation_performed") is not False
+    ):
         raise ValueError("S1-I world registry identity or registration status differs")
     if not isinstance(rows, list) or len(rows) != 30 or not isinstance(worlds, list) or len(worlds) != 30:
         raise ValueError("S1-I requires exactly 30 registered worlds")
@@ -206,36 +219,46 @@ def _validate_s1i_registry(study: dict[str, Any], lock: dict[str, Any], registry
         expected_spec = (Path(registry_path).parent / "world_specs" / f"{world_id}.json").as_posix()
         expected_output = (Path(output_root) / "worlds" / world_id).as_posix()
         binding = row.get("spec_binding")
-        if (row.get("world_id") != world_id or row.get("seed") != seed
-                or row.get("ordinal") != ordinal
-                or row.get("publication_world_label") != f"W{ordinal + 4}"
-                or row.get("publication_world_number") != ordinal + 4
-                or row.get("panel") != "Confirmatory Replication Panel"
-                or row.get("role") != "prospective_heldout_test"
-                or row.get("status") != "REGISTERED_UNMATERIALIZED"
-                or row.get("replacement_authorized") is not False
-                or row.get("attempt") != "attempts/run_01"
-                or row.get("spec_path") != expected_spec
-                or row.get("output_root") != expected_output
-                or not isinstance(binding, dict)
-                or binding.get("path") != expected_spec
-                or type(binding.get("bytes")) is not int
-                or not isinstance(binding.get("sha256"), str)):
-            raise ValueError(f"S1-I registry mapping differs from the immutable W5-W34 registration at {world_id}")
+        if (
+            row.get("world_id") != world_id
+            or row.get("seed") != seed
+            or row.get("ordinal") != ordinal
+            or row.get("publication_world_label") != f"W{ordinal + 4}"
+            or row.get("publication_world_number") != ordinal + 4
+            or row.get("panel") != "Confirmatory Replication Panel"
+            or row.get("role") != "prospective_heldout_test"
+            or row.get("status") != "REGISTERED_UNMATERIALIZED"
+            or row.get("replacement_authorized") is not False
+            or row.get("attempt") != "attempts/run_01"
+            or row.get("spec_path") != expected_spec
+            or row.get("output_root") != expected_output
+            or not isinstance(binding, dict)
+            or binding.get("path") != expected_spec
+            or type(binding.get("bytes")) is not int
+            or not isinstance(binding.get("sha256"), str)
+        ):
+            raise ValueError(
+                f"S1-I registry mapping differs from the immutable W5-W34 registration at {world_id}"
+            )
         expected_rows.append(row)
     if len(set(worlds)) != 30 or len({row["seed"] for row in expected_rows}) != 30:
         raise ValueError("S1-I registry contains duplicate world IDs or seeds")
     if registry.get("generator_source_pin") != study.get("generation", {}).get("source_pin"):
         raise ValueError("S1-I generator source pin differs from its registration")
     lock_id = study.get("model_lock_experiment_id")
-    if (lock_id != "S1-G" or study.get("replication_of", {}).get("experiment_id") != "S1-G"
-            or lock.get("experiment_id") != "S1-G"):
+    if (
+        lock_id != "S1-G"
+        or study.get("replication_of", {}).get("experiment_id") != "S1-G"
+        or lock.get("experiment_id") != "S1-G"
+    ):
         raise ValueError("S1-I must bind the unchanged S1-G model lock explicitly")
     return worlds
 
 
 def validate_protocol(
-    study: dict[str, Any], lock: dict[str, Any], registry: dict[str, Any] | None = None,
+    study: dict[str, Any],
+    lock: dict[str, Any],
+    registry: dict[str, Any] | None = None,
 ) -> list[str]:
     experiment_id = study.get("experiment_id")
     if type(experiment_id) is not str or not experiment_id or study.get("phase") != 4:
@@ -248,12 +271,15 @@ def validate_protocol(
     if study.get("model_states") != 30 or study.get("prediction_blocks") != expected_block_count:
         raise ValueError("registered model or prediction-block count differs")
     inference = study.get("inference", {})
-    if any(inference.get(key) is not expected for key, expected in (
-        ("training_authorized", False),
-        ("optimizer_authorized", False),
-        ("checkpoint_reselection_authorized", False),
-        ("successful_block_rescoring_authorized", False),
-    )):
+    if any(
+        inference.get(key) is not expected
+        for key, expected in (
+            ("training_authorized", False),
+            ("optimizer_authorized", False),
+            ("checkpoint_reselection_authorized", False),
+            ("successful_block_rescoring_authorized", False),
+        )
+    ):
         raise ValueError("study config authorizes an out-of-scope fitting or rescoring action")
     if inference.get("selected_gbdt_iteration") != 70 or inference.get("torch_threads") != 1:
         raise ValueError("selected GBDT iteration or thread count differs from the lock")
@@ -287,8 +313,11 @@ def validate_protocol(
     if any(values != set(SEEDS) for values in seeds_by_arm.values()):
         raise ValueError("each registered arm must contain the exact five initialization settings")
     expected_order = study.get("test_worlds")
-    if (not isinstance(expected_order, list) or len(expected_order) != expected_world_count
-            or len(set(expected_order)) != expected_world_count):
+    if (
+        not isinstance(expected_order, list)
+        or len(expected_order) != expected_world_count
+        or len(set(expected_order)) != expected_world_count
+    ):
         raise ValueError(f"study config must name {expected_world_count} unique registered test worlds")
     if is_s1i:
         if registry is None:
@@ -364,7 +393,9 @@ def _candidate_ids(rows: list[dict[str, Any]], field: str, where: str) -> list[s
 
 
 def _join_and_build_world(
-    entry: dict[str, Any], index_path: Path, benchmark: Any,
+    entry: dict[str, Any],
+    index_path: Path,
+    benchmark: Any,
 ) -> dict[str, Any]:
     world_id = entry.get("world_id")
     seed = entry.get("seed")
@@ -439,7 +470,8 @@ def _join_and_build_world(
         views.append({"r": row, "cell": (b1, b2), "simp": simplicial})
     digest_input = json.dumps(
         [{"name": name, "sha256": input_hashes[name]["sha256"]} for name in INPUT_ALLOWLIST],
-        sort_keys=True, separators=(",", ":"),
+        sort_keys=True,
+        separators=(",", ":"),
     ).encode("utf-8")
     return {
         "world_id": world_id,
@@ -466,7 +498,9 @@ def _read_locked_artifact(record: dict[str, Any], where: str) -> tuple[Path, dic
     return path, actual
 
 
-def load_summary_transform(lock: dict[str, Any], study: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+def load_summary_transform(
+    lock: dict[str, Any], study: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
     ref = lock.get("summary_transform", {}).get("frozen")
     if not isinstance(ref, dict):
         raise ValueError("model lock lacks the frozen summary transform")
@@ -482,11 +516,18 @@ def load_summary_transform(lock: dict[str, Any], study: dict[str, Any]) -> tuple
         raise ValueError("model lock must prohibit transform refitting")
     if transform.get("fit_candidate_count") != 312:
         raise ValueError("frozen transform was not fitted on the registered training rows")
-    if transform.get("fit_worlds") != policy.get("fit_worlds") or transform.get("fit_worlds") != study.get("training_worlds_unchanged"):
+    if transform.get("fit_worlds") != policy.get("fit_worlds") or transform.get("fit_worlds") != study.get(
+        "training_worlds_unchanged"
+    ):
         raise ValueError("frozen transform training worlds differ from the locked policy")
     mean = np.asarray(transform.get("mean_float64"), dtype=np.float64)
     scale = np.asarray(transform.get("scale_float64"), dtype=np.float64)
-    if mean.shape != (20,) or scale.shape != (20,) or not np.isfinite(mean).all() or not np.isfinite(scale).all():
+    if (
+        mean.shape != (20,)
+        or scale.shape != (20,)
+        or not np.isfinite(mean).all()
+        or not np.isfinite(scale).all()
+    ):
         raise ValueError("frozen normalization vectors are malformed")
     if np.any(scale <= 0):
         raise ValueError("frozen normalization contains a nonpositive scale")
@@ -499,7 +540,9 @@ def load_summary_transform(lock: dict[str, Any], study: dict[str, Any]) -> tuple
     return transform, binding
 
 
-def summary_feature_matrices(world: dict[str, Any], benchmark: Any, transform: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
+def summary_feature_matrices(
+    world: dict[str, Any], benchmark: Any, transform: dict[str, Any]
+) -> tuple[np.ndarray, np.ndarray]:
     raw = np.asarray([benchmark.gbdt_row(row) for row in world["data"]["rows"]], dtype=np.float64)
     if raw.shape != (world["candidate_count"], 20) or not np.isfinite(raw).all():
         raise ValueError(f"fixed20 feature matrix is invalid in {world['world_id']}")
@@ -560,13 +603,17 @@ def load_gbdt_model_record(record: dict[str, Any]) -> tuple[dict[str, Any], dict
     if type(record.get("selected_iteration")) is not int or record["selected_iteration"] != 70:
         raise ValueError(f"GBDT selected iteration differs from 70: {record.get('model_id')}")
     if getattr(model, "n_iter_", None) != 800:
-        raise ValueError(f"retained GBDT object does not contain its locked 800 fitted rounds: {record.get('model_id')}")
+        raise ValueError(
+            f"retained GBDT object does not contain its locked 800 fitted rounds: {record.get('model_id')}"
+        )
     if not callable(getattr(model, "staged_decision_function", None)):
         raise ValueError(f"retained GBDT object lacks staged inference: {record.get('model_id')}")
     return {**record, "model": model, "model_sha256": binding["sha256"]}, binding
 
 
-def load_locked_models(lock: dict[str, Any], benchmark: Any) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def load_locked_models(
+    lock: dict[str, Any], benchmark: Any
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     loaded: list[dict[str, Any]] = []
     artifact_bindings: list[dict[str, Any]] = []
     for record in lock["models"]:
@@ -626,7 +673,9 @@ def predict_neural_logits(
 def _write_block(path: Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
     partial = path.with_suffix(path.suffix + ".partial")
     with partial.open("x", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=PREDICTION_COLUMNS, lineterminator="\n", extrasaction="raise")
+        writer = csv.DictWriter(
+            handle, fieldnames=PREDICTION_COLUMNS, lineterminator="\n", extrasaction="raise"
+        )
         writer.writeheader()
         handle.flush()
         os.fsync(handle.fileno())
@@ -641,7 +690,9 @@ def _write_block(path: Path, rows: list[dict[str, Any]]) -> dict[str, Any]:
 def _write_combined_predictions(path: Path, block_paths: list[Path]) -> dict[str, Any]:
     temporary = path.with_name(path.name + ".partial")
     with temporary.open("x", newline="", encoding="utf-8") as output_handle:
-        writer = csv.DictWriter(output_handle, fieldnames=PREDICTION_COLUMNS, lineterminator="\n", extrasaction="raise")
+        writer = csv.DictWriter(
+            output_handle, fieldnames=PREDICTION_COLUMNS, lineterminator="\n", extrasaction="raise"
+        )
         writer.writeheader()
         output_handle.flush()
         for block_path in block_paths:
@@ -671,7 +722,9 @@ def score_registered_worlds(
         output_dir / "prediction_blocks",
     ]
     if any(path.exists() for path in forbidden_existing):
-        raise FileExistsError("prediction output already exists; successful blocks are never overwritten or rescored")
+        raise FileExistsError(
+            "prediction output already exists; successful blocks are never overwritten or rescored"
+        )
     index = _load_json_arg(index_path)
     study = _load_json_arg(study_path)
     lock = _load_json_arg(model_lock_path)
@@ -688,7 +741,10 @@ def score_registered_worlds(
                 spec_path = Path.cwd() / spec_path
             actual_spec = file_binding(spec_path)
             expected_spec = row["spec_binding"]
-            if actual_spec["bytes"] != expected_spec["bytes"] or actual_spec["sha256"] != expected_spec["sha256"]:
+            if (
+                actual_spec["bytes"] != expected_spec["bytes"]
+                or actual_spec["sha256"] != expected_spec["sha256"]
+            ):
                 raise ValueError(f"registered S1-I world specification changed: {row['world_id']}")
     experiment_id = study["experiment_id"]
     if file_binding(model_lock_path)["sha256"] != study.get("model_lock", {}).get("sha256"):
@@ -699,7 +755,9 @@ def score_registered_worlds(
         raise ValueError("world index schema is not the heldout wrapper schema")
     entries = index.get("worlds")
     if not isinstance(entries, list) or [entry.get("world_id") for entry in entries] != expected_worlds:
-        raise ValueError(f"world index does not exactly cover the {len(expected_worlds)} registered worlds in order")
+        raise ValueError(
+            f"world index does not exactly cover the {len(expected_worlds)} registered worlds in order"
+        )
     seeds = [entry.get("seed") for entry in entries]
     if any(type(seed) is not int for seed in seeds) or len(set(seeds)) != len(entries):
         raise ValueError("world index seeds must be unique integers")
@@ -729,10 +787,16 @@ def score_registered_worlds(
                     logits = selected_gbdt_scores(model_record["model"], raw_summary, 70)
                 else:
                     logits = predict_neural_logits(
-                        model_record["model"], arm, world, benchmark, normalized_summary,
+                        model_record["model"],
+                        arm,
+                        world,
+                        benchmark,
+                        normalized_summary,
                     )
                 if logits.shape != (world["candidate_count"],) or not np.isfinite(logits).all():
-                    raise ValueError(f"score block has invalid shape or values: {model_record['model_id']} / {world['world_id']}")
+                    raise ValueError(
+                        f"score block has invalid shape or values: {model_record['model_id']} / {world['world_id']}"
+                    )
                 block_name = f"{completed + 1:03d}_{arm}_seed_{seed}_{world['world_id']}.csv"
                 block_path = blocks_dir / block_name
                 rows = [
@@ -750,18 +814,22 @@ def score_registered_worlds(
                 ]
                 binding = _write_block(block_path, rows)
                 block_paths.append(block_path)
-                block_records.append({
-                    "arm": arm,
-                    "initialization_seed": seed,
-                    "model_id": model_record["model_id"],
-                    "world_id": world["world_id"],
-                    "candidate_count": world["candidate_count"],
-                    "candidate_ids_sha256": sha256_bytes("\n".join(world["candidate_ids"]).encode("utf-8")),
-                    "world_input_digest": world["world_input_digest"],
-                    "file": str(block_path.relative_to(output_dir)),
-                    "bytes": binding["bytes"],
-                    "sha256": binding["sha256"],
-                })
+                block_records.append(
+                    {
+                        "arm": arm,
+                        "initialization_seed": seed,
+                        "model_id": model_record["model_id"],
+                        "world_id": world["world_id"],
+                        "candidate_count": world["candidate_count"],
+                        "candidate_ids_sha256": sha256_bytes(
+                            "\n".join(world["candidate_ids"]).encode("utf-8")
+                        ),
+                        "world_input_digest": world["world_input_digest"],
+                        "file": str(block_path.relative_to(output_dir)),
+                        "bytes": binding["bytes"],
+                        "sha256": binding["sha256"],
+                    }
+                )
                 completed += 1
         if completed != expected_blocks:
             raise ValueError(f"expected {expected_blocks} prediction blocks; completed {completed}")
@@ -835,7 +903,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--world-registry", type=Path)
     args = parser.parse_args(argv)
     try:
-        result = score_registered_worlds(args.world_index, args.study_config, args.model_lock, args.output_dir, args.world_registry)
+        result = score_registered_worlds(
+            args.world_index, args.study_config, args.model_lock, args.output_dir, args.world_registry
+        )
     except Exception:
         traceback.print_exc(file=sys.stderr)
         return 1

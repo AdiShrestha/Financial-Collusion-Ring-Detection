@@ -12,21 +12,12 @@ Upholds Invariants:
 - INV-010 (Dependency and Environment Integrity): Pure NumPy implementation.
 """
 
-from dataclasses import dataclass
-import os
-import sys
 import math
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 import numpy as np
 
-# Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.ph.gudhi_backend import PersistenceDiagram
-except ModuleNotFoundError:
-    from src.ph.gudhi_backend import PersistenceDiagram
+from .gudhi_backend import PersistenceDiagram
 
 
 class PersistenceLandscapeVectorizer:
@@ -99,10 +90,10 @@ class PersistenceLandscapeVectorizer:
     ) -> np.ndarray:
         """
         Evaluates the first `num_landscapes` persistence landscape functions on a uniform grid.
-        
+
         Tent function for interval (b, d):
             Lambda_{(b, d)}(t) = max(0, min(t - b, d - t))
-            
+
         Returns:
             np.ndarray of shape (num_landscapes, resolution).
         """
@@ -147,7 +138,7 @@ class PersistenceLandscapeVectorizer:
         """
         Computes summary topological features:
         [total_persistence, max_persistence, mean_persistence, persistence_entropy, point_count]
-        
+
         Returns:
             np.ndarray of shape (5,), dtype=float64.
         """
@@ -176,13 +167,13 @@ class PersistenceLandscapeVectorizer:
     def vectorize(self, diagram: PersistenceDiagram) -> np.ndarray:
         """
         Converts a PersistenceDiagram into a single concatenated 1D float32 vector.
-        
+
         Feature vector structure:
         - H0 landscapes: (num_landscapes * resolution,)
         - H0 summary stats: (5,)
         - H1 landscapes: (num_landscapes * resolution,)
         - H1 summary stats: (5,)
-        
+
         Total length = 2 * (num_landscapes * resolution + 5)
         """
         max_t = float(diagram.max_filtration_time)
@@ -206,12 +197,14 @@ class PersistenceLandscapeVectorizer:
         h1_landscapes = self.compute_landscape(clean_h1, t_min=grid_min, t_max=grid_max)
         h1_stats = self.compute_summary_stats(clean_h1)
 
-        feature_vector = np.concatenate([
-            h0_landscapes.flatten(),
-            h0_stats,
-            h1_landscapes.flatten(),
-            h1_stats,
-        ]).astype(np.float32)
+        feature_vector = np.concatenate(
+            [
+                h0_landscapes.flatten(),
+                h0_stats,
+                h1_landscapes.flatten(),
+                h1_stats,
+            ]
+        ).astype(np.float32)
 
         # Guarantee no NaN or inf
         if not np.isfinite(feature_vector).all():

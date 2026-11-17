@@ -12,24 +12,17 @@ Upholds Invariants:
 """
 
 from dataclasses import dataclass, field
-import os
-import sys
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import List, Optional, Tuple
 import numpy as np
 
-# Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.ph.graph_filtration import PHGraphView, FilteredSimplex
-except ModuleNotFoundError:
-    from src.ph.graph_filtration import PHGraphView, FilteredSimplex
+from .graph_filtration import PHGraphView
 
 
 @dataclass
 class PersistenceDiagram:
     """Structured representation of persistent homology intervals in dimensions 0 and 1."""
+
     h0_intervals: List[Tuple[float, float]] = field(default_factory=list)
     h1_intervals: List[Tuple[float, float]] = field(default_factory=list)
     max_filtration_time: float = 0.0
@@ -68,7 +61,7 @@ class PersistenceDiagram:
         finite = lifetimes[np.isfinite(lifetimes) & (lifetimes >= 0)]
         if len(finite) == 0:
             return 0.0
-        return float(np.sum(finite ** p))
+        return float(np.sum(finite**p))
 
 
 class GudhiPersistenceEngine:
@@ -77,7 +70,8 @@ class GudhiPersistenceEngine:
     def __init__(self):
         self.has_gudhi = False
         try:
-            import gudhi
+            import gudhi  # noqa: F401  (availability check)
+
             self.has_gudhi = True
         except ImportError:
             self.has_gudhi = False
@@ -87,11 +81,11 @@ class GudhiPersistenceEngine:
     ) -> PersistenceDiagram:
         """
         Computes H0 and H1 persistence intervals from an unfilled 1-skeleton PHGraphView.
-        
+
         Args:
             ph_view: The filtered 1-skeleton.
             infinity_replacement: If set, replaces death = inf with max_time + infinity_replacement.
-            
+
         Returns:
             PersistenceDiagram containing H0 and H1 intervals.
         """
@@ -104,9 +98,7 @@ class GudhiPersistenceEngine:
             )
 
         # Determine maximum filtration time
-        all_times = [v.filtration_val for v in ph_view.vertices] + [
-            e.filtration_val for e in ph_view.edges
-        ]
+        all_times = [v.filtration_val for v in ph_view.vertices] + [e.filtration_val for e in ph_view.edges]
         max_time = float(max(all_times)) if all_times else 0.0
 
         if self.has_gudhi:

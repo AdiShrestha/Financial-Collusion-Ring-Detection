@@ -5,7 +5,6 @@ import json
 import unittest
 from pathlib import Path
 
-
 SOURCE = Path(__file__).resolve().parents[1]
 SCRIPT = SOURCE / "scripts" / "check_s1_benchmark.py"
 SPEC = importlib.util.spec_from_file_location("s1_benchmark_contract", SCRIPT)
@@ -44,12 +43,15 @@ class S1BenchmarkContractTests(unittest.TestCase):
             name: sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
             for name, model in models.items()
         }
-        self.assertEqual(observed, {
-            "cellular_cwn_style_local": 8467,
-            "simplicial_mpsn_style_local": 8533,
-            "directed_local_edge_gnn": 8390,
-            "cellular_hasse_mechanism_control": 8431,
-        })
+        self.assertEqual(
+            observed,
+            {
+                "cellular_cwn_style_local": 8467,
+                "simplicial_mpsn_style_local": 8533,
+                "directed_local_edge_gnn": 8390,
+                "cellular_hasse_mechanism_control": 8431,
+            },
+        )
         self.assertEqual(BENCH.DEFAULT_HIDDEN, 24)
 
 

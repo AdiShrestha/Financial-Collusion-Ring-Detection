@@ -15,28 +15,18 @@ Upholds Invariants:
 """
 
 import argparse
-from datetime import datetime, timezone
 import hashlib
 import json
-import os
 from pathlib import Path
-import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.models.feature_encoders import CandidateFeatureExtractor
-    from source.src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
-    from source.src.models.train_harness import Trainer, compute_optimal_threshold, compute_classification_metrics
-except ModuleNotFoundError:
-    from src.models.feature_encoders import CandidateFeatureExtractor
-    from src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
-    from src.models.train_harness import Trainer, compute_optimal_threshold, compute_classification_metrics
+from .feature_encoders import CandidateFeatureExtractor
+from .graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
+from .train_harness import Trainer, compute_optimal_threshold, compute_classification_metrics
 
 
 def compute_file_sha256(filepath: Union[str, Path]) -> str:
@@ -132,7 +122,9 @@ class BaselineBenchmarkRunner:
         """Trains model on train fold, validates with early stopping, evaluates on test."""
         model = self._create_model()
         train_labels = [int(c.label if hasattr(c, "label") else c["label"]) for c in train_candidates]
-        fold_pos_weight = self.pos_weight if self.pos_weight is not None else Trainer.compute_pos_weight(train_labels)
+        fold_pos_weight = (
+            self.pos_weight if self.pos_weight is not None else Trainer.compute_pos_weight(train_labels)
+        )
         trainer = Trainer(
             model=model,
             lr=self.lr,
@@ -168,10 +160,13 @@ class BaselineBenchmarkRunner:
         preds_filename = f"{self.model_name}_{self.tier}_fold_{fold_id}_preds.json"
         preds_path = self.output_dir / preds_filename
         with open(preds_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "y_true": y_true.tolist(),
-                "y_probs": y_probs.tolist(),
-            }, f)
+            json.dump(
+                {
+                    "y_true": y_true.tolist(),
+                    "y_probs": y_probs.tolist(),
+                },
+                f,
+            )
 
         fold_report = {
             "fold_id": str(fold_id),

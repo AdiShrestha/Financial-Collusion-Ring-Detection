@@ -8,40 +8,29 @@ Upholds Invariants:
 """
 
 from dataclasses import dataclass
-import os
-import sys
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Tuple
 import numpy as np
 import scipy.sparse as sp
 
-# Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.topology.incidence import (
-        build_b1,
-        build_b2_cellular,
-        compute_hodge_laplacians,
-        verify_nilpotency,
-    )
-except ModuleNotFoundError:
-    from src.topology.incidence import (
-        build_b1,
-        build_b2_cellular,
-        compute_hodge_laplacians,
-        verify_nilpotency,
-    )
+from .incidence import (
+    build_b1,
+    build_b2_cellular,
+    compute_hodge_laplacians,
+    verify_nilpotency,
+)
 
 
 class NilpotencyViolationError(Exception):
     """Raised when boundary operator composition B1 @ B2 != 0."""
+
     pass
 
 
 @dataclass
 class CellComplex:
     """Represents a regular 2-dimensional cell complex with Hodge linear operators."""
+
     nodes: List[str]
     edges: List[Tuple[str, str]]
     cells: List[Tuple[str, ...]]
@@ -179,7 +168,11 @@ class CellComplexLifter:
             x_1 = np.array([[np.log1p(row[0]), row[1] - origin] for row in edge_attrs], dtype=np.float32)
         else:
             x_1 = np.zeros((len(edge_list), 2), dtype=np.float32)
-        x_2 = np.array(cell_attrs, dtype=np.float32) if cell_attrs else np.zeros((len(cells), 2), dtype=np.float32)
+        x_2 = (
+            np.array(cell_attrs, dtype=np.float32)
+            if cell_attrs
+            else np.zeros((len(cells), 2), dtype=np.float32)
+        )
 
         return CellComplex(
             nodes=nodes,

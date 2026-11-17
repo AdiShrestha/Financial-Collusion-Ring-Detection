@@ -9,17 +9,18 @@ or account overlaps between training, validation, and test splits.
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple
-import numpy as np
 
 
 class DataLeakageError(Exception):
     """Raised when accounts or transactions are shared across cross-validation folds."""
+
     pass
 
 
 @dataclass
 class FoldAuditSummary:
     """Audit summary proving zero leakage and reporting fold balance."""
+
     n_splits: int
     total_candidates: int
     zero_node_leakage: bool
@@ -80,7 +81,9 @@ class GroupSafeSplitter:
             edges = set()
             for e in cand.edges:
                 if isinstance(e, dict):
-                    edges.add(str(e.get("tx_id", f"{e.get('source')}_{e.get('target')}_{e.get('timestamp', '')}")))
+                    edges.add(
+                        str(e.get("tx_id", f"{e.get('source')}_{e.get('target')}_{e.get('timestamp', '')}"))
+                    )
                 else:
                     edges.add(str(e))
             label = getattr(cand, "label", None)
@@ -92,7 +95,9 @@ class GroupSafeSplitter:
             edges = set()
             for e in cand.get("edges", []):
                 if isinstance(e, dict):
-                    edges.add(str(e.get("tx_id", f"{e.get('source')}_{e.get('target')}_{e.get('timestamp', '')}")))
+                    edges.add(
+                        str(e.get("tx_id", f"{e.get('source')}_{e.get('target')}_{e.get('timestamp', '')}"))
+                    )
                 else:
                     edges.add(str(e))
             label = cand.get("label")
@@ -103,7 +108,10 @@ class GroupSafeSplitter:
         if label not in (0, 1):
             raise ValueError(f"Candidate {cand_id} requires an explicit binary label, got {label!r}")
         return (
-            str(cand_id), {str(n) for n in nodes}, edges, int(label),
+            str(cand_id),
+            {str(n) for n in nodes},
+            edges,
+            int(label),
             (str(pattern_id) if pattern_id else None),
             (str(matched_group_id) if matched_group_id else None),
         )
@@ -180,8 +188,11 @@ class GroupSafeSplitter:
             if cid in cand_map:
                 raise ValueError(f"Duplicate candidate ID: {cid}")
             cand_map[cid] = {
-                "nodes": nodes, "edges": edges, "label": label,
-                "pattern_id": pat_id, "matched_group_id": matched_group_id,
+                "nodes": nodes,
+                "edges": edges,
+                "label": label,
+                "pattern_id": pat_id,
+                "matched_group_id": matched_group_id,
             }
 
         groups = self.compute_connected_groups(candidates)
@@ -191,27 +202,27 @@ class GroupSafeSplitter:
         for gid, grp in enumerate(groups):
             pos_count = sum(cand_map[cid]["label"] for cid in grp)
             neg_count = len(grp) - pos_count
-            group_profiles.append({
-                "group_id": gid,
-                "candidates": grp,
-                "pos_count": pos_count,
-                "neg_count": neg_count,
-                "total_count": len(grp)
-            })
+            group_profiles.append(
+                {
+                    "group_id": gid,
+                    "candidates": grp,
+                    "pos_count": pos_count,
+                    "neg_count": neg_count,
+                    "total_count": len(grp),
+                }
+            )
 
         # ── Seed-conditioned shuffling ──
         # Shuffle components using the seed BEFORE sorting by size.
         # This ensures different seeds produce different fold assignments
         # while the subsequent sort-by-size stabilizes bin-packing quality.
         import random as _random
+
         rng = _random.Random(self.seed)
         rng.shuffle(group_profiles)
 
         # Stable sort by descending size after shuffle (ties broken by shuffle order)
-        group_profiles.sort(
-            key=lambda p: (p["pos_count"], p["total_count"]),
-            reverse=True
-        )
+        group_profiles.sort(key=lambda p: (p["pos_count"], p["total_count"]), reverse=True)
 
         # Multi-objective greedy bin-packing into n_splits folds
         fold_pos = [0] * self.n_splits
@@ -240,7 +251,9 @@ class GroupSafeSplitter:
         self.verify_zero_leakage(candidates, candidate_to_fold)
         return candidate_to_fold
 
-    def three_way_split(self, candidates: List[Any], test_fold: int) -> Tuple[List[Any], List[Any], List[Any], Dict[str, int]]:
+    def three_way_split(
+        self, candidates: List[Any], test_fold: int
+    ) -> Tuple[List[Any], List[Any], List[Any], Dict[str, int]]:
         """Hold out two whole, disjoint folds for validation and test."""
         if self.n_splits < 3:
             raise ValueError("Three-way evaluation requires at least three folds")
@@ -250,17 +263,21 @@ class GroupSafeSplitter:
         val_fold = (test_fold + 1) % self.n_splits
         test = [c for c in candidates if assignments[self._extract_candidate_attrs(c)[0]] == test_fold]
         val = [c for c in candidates if assignments[self._extract_candidate_attrs(c)[0]] == val_fold]
-        train = [c for c in candidates if assignments[self._extract_candidate_attrs(c)[0]] not in (test_fold, val_fold)]
+        train = [
+            c
+            for c in candidates
+            if assignments[self._extract_candidate_attrs(c)[0]] not in (test_fold, val_fold)
+        ]
         for name, partition in (("train", train), ("validation", val), ("test", test)):
             labels = {self._extract_candidate_attrs(c)[3] for c in partition}
             if labels != {0, 1}:
-                raise ValueError(f"{name} fold lacks both classes: labels={sorted(labels)}; revise the cohort or split protocol")
+                raise ValueError(
+                    f"{name} fold lacks both classes: labels={sorted(labels)}; revise the cohort or split protocol"
+                )
         return train, val, test, assignments
 
     def verify_zero_leakage(
-        self,
-        candidates: List[Any],
-        split_assignments: Dict[str, int]
+        self, candidates: List[Any], split_assignments: Dict[str, int]
     ) -> FoldAuditSummary:
         """
         Mechanically audits split assignments to verify Invariant INV-007.
@@ -329,5 +346,5 @@ class GroupSafeSplitter:
             fold_positive_counts=dict(fold_pos_counts),
             fold_positive_ratios=fold_pos_ratios,
             fold_node_counts={f: len(nodes) for f, nodes in fold_nodes.items()},
-            fold_edge_counts={f: len(edges) for f, edges in fold_edges.items()}
+            fold_edge_counts={f: len(edges) for f, edges in fold_edges.items()},
         )

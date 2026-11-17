@@ -28,11 +28,12 @@ class ResearchInvariantTests(unittest.TestCase):
     def test_multigraph_preserves_transactions_and_extraction_is_label_blind(self):
         graph = nx.MultiDiGraph()
         for u, v, tid, label in [
-            ("a", "b", "ab1", 1), ("a", "b", "ab2", 0),
-            ("b", "c", "bc", 1), ("c", "a", "ca", 1),
+            ("a", "b", "ab1", 1),
+            ("a", "b", "ab2", 0),
+            ("b", "c", "bc", 1),
+            ("c", "a", "ca", 1),
         ]:
-            graph.add_edge(u, v, tx_id=tid, amount=2.0, timestamp=1.0,
-                           is_laundering=label)
+            graph.add_edge(u, v, tx_id=tid, amount=2.0, timestamp=1.0, is_laundering=label)
         extractor = CandidateExtractor(min_k=3, max_k=3, max_cycles=10)
         first = extractor.find_simple_cycles(graph)
         for _, _, data in graph.edges(data=True):
@@ -61,9 +62,7 @@ class ResearchInvariantTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "patterns.txt"
             path.write_text(
-                "BEGIN LAUNDERING ATTEMPT - Cycle\n"
-                + valid + "\n"
-                + "END LAUNDERING ATTEMPT - Smurfing\n",
+                "BEGIN LAUNDERING ATTEMPT - Cycle\n" + valid + "\n" + "END LAUNDERING ATTEMPT - Smurfing\n",
                 encoding="utf-8",
             )
             _, audit = parse_amlworld_patterns(path)
@@ -98,27 +97,48 @@ class ResearchInvariantTests(unittest.TestCase):
 
     def test_group_split_keeps_matched_controls_together(self):
         candidates = [
-            CandidateSubgraph("positive", ["p1", "p2"], [], 3, [], 1,
-                              matched_group_id="pair-1"),
-            CandidateSubgraph("control", ["n1", "n2"], [], 3, [], 0,
-                              matched_group_id="pair-1"),
+            CandidateSubgraph("positive", ["p1", "p2"], [], 3, [], 1, matched_group_id="pair-1"),
+            CandidateSubgraph("control", ["n1", "n2"], [], 3, [], 0, matched_group_id="pair-1"),
         ]
         splitter = GroupSafeSplitter(n_splits=3)
         assignment = splitter.split(candidates)
         self.assertEqual(assignment["positive"], assignment["control"])
 
     def test_elliptic_matching_requires_exact_node_and_edge_support(self):
-        positive = CandidateSubgraph("p", ["a", "b"], [
-            {"source": "a", "target": "b"}, {"source": "b", "target": "a"},
-        ], 2, [], 1)
-        unmatched = CandidateSubgraph("n", ["x", "y"], [
-            {"source": "x", "target": "y"},
-        ], 2, [], 0)
+        positive = CandidateSubgraph(
+            "p",
+            ["a", "b"],
+            [
+                {"source": "a", "target": "b"},
+                {"source": "b", "target": "a"},
+            ],
+            2,
+            [],
+            1,
+        )
+        unmatched = CandidateSubgraph(
+            "n",
+            ["x", "y"],
+            [
+                {"source": "x", "target": "y"},
+            ],
+            2,
+            [],
+            0,
+        )
         with self.assertRaisesRegex(ValueError, "exact node-and-edge-count matched cohort"):
             match_elliptic_controls_by_structure([positive, unmatched], 1, control_seed=17)
-        control = CandidateSubgraph("n2", ["u", "v"], [
-            {"source": "u", "target": "v"}, {"source": "v", "target": "u"},
-        ], 2, [], 0)
+        control = CandidateSubgraph(
+            "n2",
+            ["u", "v"],
+            [
+                {"source": "u", "target": "v"},
+                {"source": "v", "target": "u"},
+            ],
+            2,
+            [],
+            0,
+        )
         matched, provenance = match_elliptic_controls_by_structure([positive, control], 1, control_seed=17)
         self.assertEqual(len(matched), 2)
         self.assertEqual(matched[0].matched_group_id, matched[1].matched_group_id)
@@ -145,20 +165,34 @@ class ResearchInvariantTests(unittest.TestCase):
             build_b2_simplicial([("a", "b"), ("b", "c")], [("a", "b", "c")])
 
     def test_cell_lift_does_not_invent_boundary_edges(self):
-        candidate = CandidateSubgraph("x", ["a", "b", "c"], [
-            {"source": "a", "target": "b", "amount": 1.0, "timestamp": 0.0},
-            {"source": "b", "target": "c", "amount": 1.0, "timestamp": 1.0},
-        ], 3, ["a", "b", "c"], 0)
+        candidate = CandidateSubgraph(
+            "x",
+            ["a", "b", "c"],
+            [
+                {"source": "a", "target": "b", "amount": 1.0, "timestamp": 0.0},
+                {"source": "b", "target": "c", "amount": 1.0, "timestamp": 1.0},
+            ],
+            3,
+            ["a", "b", "c"],
+            0,
+        )
         with self.assertRaises(ValueError):
             lift_to_cell_complex(candidate)
 
     def test_cell_features_align_with_collapsed_parallel_edges(self):
-        candidate = CandidateSubgraph("x", ["a", "b", "c"], [
-            {"source": "a", "target": "b", "amount": 100.0, "timestamp": 2.0},
-            {"source": "a", "target": "b", "amount": 200.0, "timestamp": 1.0},
-            {"source": "b", "target": "c", "amount": 1.0, "timestamp": 3.0},
-            {"source": "c", "target": "a", "amount": 1.0, "timestamp": 4.0},
-        ], 3, ["a", "b", "c"], 1)
+        candidate = CandidateSubgraph(
+            "x",
+            ["a", "b", "c"],
+            [
+                {"source": "a", "target": "b", "amount": 100.0, "timestamp": 2.0},
+                {"source": "a", "target": "b", "amount": 200.0, "timestamp": 1.0},
+                {"source": "b", "target": "c", "amount": 1.0, "timestamp": 3.0},
+                {"source": "c", "target": "a", "amount": 1.0, "timestamp": 4.0},
+            ],
+            3,
+            ["a", "b", "c"],
+            1,
+        )
         cell = lift_to_cell_complex(candidate)
         self.assertEqual(cell.B1.shape[1], cell.x_1.shape[0])
         self.assertAlmostEqual(cell.x_1[cell.edges.index(("a", "b")), 0], np.log1p(2))
@@ -176,23 +210,39 @@ class ResearchInvariantTests(unittest.TestCase):
 
     def test_ph_landscape_uses_common_normalized_coordinate(self):
         vectorizer = PersistenceLandscapeVectorizer()
-        a = PersistenceDiagram(h0_intervals=[(0.0, 2.0)],
-                               h1_intervals=[(2.0, float("inf"))], max_filtration_time=4.0)
-        b = PersistenceDiagram(h0_intervals=[(0.0, 4.0)],
-                               h1_intervals=[(4.0, float("inf"))], max_filtration_time=8.0)
+        a = PersistenceDiagram(
+            h0_intervals=[(0.0, 2.0)], h1_intervals=[(2.0, float("inf"))], max_filtration_time=4.0
+        )
+        b = PersistenceDiagram(
+            h0_intervals=[(0.0, 4.0)], h1_intervals=[(4.0, float("inf"))], max_filtration_time=8.0
+        )
         np.testing.assert_allclose(vectorizer.vectorize(a), vectorizer.vectorize(b))
         with self.assertRaises(ValueError):
             PersistenceLandscapeVectorizer(resolution=0)
 
     def test_temporal_filtration_rejects_missing_times_and_isolated_nodes(self):
-        missing_time = CandidateSubgraph("missing-time", ["a", "b"], [
-            {"source": "a", "target": "b"},
-        ], 0, [], 0)
+        missing_time = CandidateSubgraph(
+            "missing-time",
+            ["a", "b"],
+            [
+                {"source": "a", "target": "b"},
+            ],
+            0,
+            [],
+            0,
+        )
         with self.assertRaisesRegex(ValueError, "lacks source, target, or timestamp"):
             build_temporal_filtration(missing_time)
-        isolated = CandidateSubgraph("isolated", ["a", "b", "c"], [
-            {"source": "a", "target": "b", "timestamp": 1.0},
-        ], 0, [], 0)
+        isolated = CandidateSubgraph(
+            "isolated",
+            ["a", "b", "c"],
+            [
+                {"source": "a", "target": "b", "timestamp": 1.0},
+            ],
+            0,
+            [],
+            0,
+        )
         with self.assertRaisesRegex(ValueError, "has no observed transaction time"):
             build_temporal_filtration(isolated)
 
@@ -222,6 +272,7 @@ class ResearchInvariantTests(unittest.TestCase):
         model = GCNBaseline(in_dim=3, hidden_dim=8, ph_dim=None, dropout=0.0)
         x = np.zeros((3, 3), dtype=np.float32)
         import torch
+
         x = torch.tensor(x)
         edges = torch.tensor([[0, 1, 2], [1, 2, 0]], dtype=torch.long)
         attr = torch.tensor([[1.0, 0.0], [2.0, 0.5], [3.0, 1.0]])
@@ -231,6 +282,7 @@ class ResearchInvariantTests(unittest.TestCase):
 
     def test_graph_baseline_edge_features_are_pooled_per_graph(self):
         import torch
+
         model = GCNBaseline(in_dim=3, hidden_dim=8, ph_dim=None, dropout=0.0)
         x = torch.zeros((4, 3))
         edge_index = torch.tensor([[0, 1, 2, 3], [1, 0, 3, 2]], dtype=torch.long)

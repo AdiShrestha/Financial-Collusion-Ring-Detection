@@ -10,29 +10,26 @@ Upholds Invariants:
 
 from dataclasses import dataclass
 import math
-import os
-import sys
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
-
-# Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 class FilledSkeletonViolationError(Exception):
     """Raised when a simplex of dimension >= 2 is inserted into PHGraphView (INV-003)."""
+
     pass
 
 
 class FiltrationMonotonicityError(Exception):
     """Raised when an edge enters before either of its incident vertices."""
+
     pass
 
 
 @dataclass(frozen=True)
 class FilteredSimplex:
     """Represents an individual simplex with assigned filtration value."""
+
     simplex: Tuple[str, ...]
     dimension: int
     filtration_val: float
@@ -48,6 +45,7 @@ class FilteredSimplex:
 @dataclass
 class PHGraphView:
     """Dedicated 1-dimensional simplicial complex skeleton with temporal filtration."""
+
     candidate_id: str
     vertices: List[FilteredSimplex]
     edges: List[FilteredSimplex]
@@ -69,7 +67,7 @@ class PHGraphView:
     def to_gudhi_simplex_tree(self) -> Any:
         """Constructs and populates a GUDHI SimplexTree with the filtered 1-skeleton."""
         try:
-            import gudhi
+            import gudhi  # noqa: F401  (availability check)
         except ImportError:
             raise ImportError("GUDHI library is required for SimplexTree conversion.")
 
@@ -98,7 +96,8 @@ class PHGraphView:
         If GUDHI is available, uses GUDHI SimplexTree; otherwise uses exact DSU reduction.
         """
         try:
-            import gudhi
+            import gudhi  # noqa: F401  (availability check)
+
             st = self.to_gudhi_simplex_tree()
             st.compute_persistence(persistence_dim_max=True)
             h0_raw = st.persistence_intervals_in_dimension(0)
@@ -106,7 +105,9 @@ class PHGraphView:
             h0 = [(float(b), float(d)) for b, d in h0_raw]
             h1 = [(float(b), float(d)) for b, d in h1_raw]
             if infinity_replacement is not None:
-                max_t = max([v.filtration_val for v in self.vertices] + [e.filtration_val for e in self.edges] + [0.0])
+                max_t = max(
+                    [v.filtration_val for v in self.vertices] + [e.filtration_val for e in self.edges] + [0.0]
+                )
                 rep_val = max_t + infinity_replacement
                 h0 = [(b, rep_val if np.isinf(d) else d) for b, d in h0]
                 h1 = [(b, rep_val if np.isinf(d) else d) for b, d in h1]
@@ -161,7 +162,9 @@ class PHGraphView:
             h0_intervals.append((birth[r], float("inf")))
 
         if infinity_replacement is not None:
-            max_t = max([v.filtration_val for v in self.vertices] + [e.filtration_val for e in self.edges] + [0.0])
+            max_t = max(
+                [v.filtration_val for v in self.vertices] + [e.filtration_val for e in self.edges] + [0.0]
+            )
             rep_val = max_t + infinity_replacement
             h0_intervals = [(b, rep_val if np.isinf(d) else d) for b, d in h0_intervals]
             h1_intervals = [(b, rep_val if np.isinf(d) else d) for b, d in h1_intervals]
@@ -254,9 +257,7 @@ class TemporalFiltrationBuilder:
             if not math.isfinite(t_birth):
                 raise ValueError(f"Candidate {cand_id} node {n!r} has an invalid filtration time")
             node_birth[n] = t_birth
-            vertex_simplices.append(
-                FilteredSimplex(simplex=(n,), dimension=0, filtration_val=t_birth)
-            )
+            vertex_simplices.append(FilteredSimplex(simplex=(n,), dimension=0, filtration_val=t_birth))
 
         # 2. Compute edge filtration values: first transaction time between endpoints
         edge_simplices: List[FilteredSimplex] = []
@@ -274,9 +275,7 @@ class TemporalFiltrationBuilder:
                     f"max(u_birth={u_birth}, v_birth={v_birth})"
                 )
 
-            edge_simplices.append(
-                FilteredSimplex(simplex=(u, v), dimension=1, filtration_val=e_birth)
-            )
+            edge_simplices.append(FilteredSimplex(simplex=(u, v), dimension=1, filtration_val=e_birth))
 
         return PHGraphView(
             candidate_id=cand_id,

@@ -8,7 +8,7 @@ Traces to Contract C02-01, FR-001, FR-002, INV-002, INV-007.
 """
 
 from collections import deque
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import networkx as nx
 
@@ -237,17 +237,25 @@ class CandidateExtractor:
         for cand in candidates:
             if not cand.cycle_nodes or any("is_laundering" not in e for e in cand.edges):
                 raise ValueError("Cycle and observed transaction labels are required for ground truth")
-            pairs = {(cand.cycle_nodes[i], cand.cycle_nodes[(i + 1) % len(cand.cycle_nodes)])
-                     for i in range(len(cand.cycle_nodes))}
-            positive = all(any(e["source"] == u and e["target"] == v and
-                               int(e["is_laundering"]) == 1 for e in cand.edges)
-                           for u, v in pairs)
+            pairs = {
+                (cand.cycle_nodes[i], cand.cycle_nodes[(i + 1) % len(cand.cycle_nodes)])
+                for i in range(len(cand.cycle_nodes))
+            }
+            positive = all(
+                any(
+                    e["source"] == u and e["target"] == v and int(e["is_laundering"]) == 1 for e in cand.edges
+                )
+                for u, v in pairs
+            )
             negative = all(int(e["is_laundering"]) == 0 for e in cand.edges)
             if not positive and not negative:
                 continue
             cand.label = int(positive)
-            ids = {e.get("pattern_id") for e in cand.edges if
-                   (e["source"], e["target"]) in pairs and e.get("is_laundering") == 1 and e.get("pattern_id")}
+            ids = {
+                e.get("pattern_id")
+                for e in cand.edges
+                if (e["source"], e["target"]) in pairs and e.get("is_laundering") == 1 and e.get("pattern_id")
+            }
             cand.pattern_id = next(iter(ids)) if positive and len(ids) == 1 else None
             cand.overlap_score = None
             for e in cand.edges:

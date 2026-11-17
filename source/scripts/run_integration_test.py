@@ -31,43 +31,29 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import networkx as nx
 
 # Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
+# The legacy package lives in source/src; resolve it from this file, not the working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-try:
-    from source.src.data.amlworld_loader import AMLWorldLoader, AMLWorldTransaction
-    from source.src.data.candidate_extractor import CandidateExtractor, CandidateSubgraph
-    from source.src.data.path_utils import resolve_amlworld_paths
-    from source.src.topology.lift_dataset import lift_candidate, MultiDomainExample
-    from source.src.ph.graph_filtration import build_temporal_filtration
-    from source.src.ph.gudhi_backend import GudhiPersistenceEngine
-    from source.src.ph.vectorize import PersistenceLandscapeVectorizer
-    from source.src.models.feature_encoders import CandidateFeatureExtractor
-    from source.src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
-    from source.src.models.tdl_simplicial import SimplicialComplexNetwork
-    from source.src.models.tdl_cellular import CellularComplexNetwork
-    from source.src.models.topotune_adapter import TopoTuneInspiredAdapter, HybridTopologicalReadout
-except ModuleNotFoundError:
-    from src.data.amlworld_loader import AMLWorldLoader, AMLWorldTransaction
-    from src.data.candidate_extractor import CandidateExtractor, CandidateSubgraph
-    from src.data.path_utils import resolve_amlworld_paths
-    from src.topology.lift_dataset import lift_candidate, MultiDomainExample
-    from src.ph.graph_filtration import build_temporal_filtration
-    from src.ph.gudhi_backend import GudhiPersistenceEngine
-    from src.ph.vectorize import PersistenceLandscapeVectorizer
-    from src.models.feature_encoders import CandidateFeatureExtractor
-    from src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
-    from src.models.tdl_simplicial import SimplicialComplexNetwork
-    from src.models.tdl_cellular import CellularComplexNetwork
-    from src.models.topotune_adapter import TopoTuneInspiredAdapter, HybridTopologicalReadout
+from src.data.amlworld_loader import AMLWorldLoader
+from src.data.candidate_extractor import CandidateExtractor, CandidateSubgraph
+from src.data.path_utils import resolve_amlworld_paths
+from src.topology.lift_dataset import lift_candidate
+from src.ph.graph_filtration import build_temporal_filtration
+from src.ph.gudhi_backend import GudhiPersistenceEngine
+from src.ph.vectorize import PersistenceLandscapeVectorizer
+from src.models.feature_encoders import CandidateFeatureExtractor
+from src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
+from src.models.tdl_simplicial import SimplicialComplexNetwork
+from src.models.tdl_cellular import CellularComplexNetwork
+from src.models.topotune_adapter import TopoTuneInspiredAdapter, HybridTopologicalReadout
 
 
 class TopoTuneInspiredModel(nn.Module):
     """TopoTune-inspired model combining adapter layer and hybrid readout."""
+
     def __init__(
         self,
         in_dim0: int = 13,
@@ -271,11 +257,19 @@ class IntegrationPipelineEngine:
             candidates.append(cand)
 
         for c in candidates:
-            cycle_pairs = {(c.cycle_nodes[i], c.cycle_nodes[(i + 1) % len(c.cycle_nodes)])
-                           for i in range(len(c.cycle_nodes))}
-            c.label = int(all(any(e["source"] == u and e["target"] == v and
-                                  int(e.get("is_laundering", 0)) == 1 for e in c.edges)
-                              for u, v in cycle_pairs))
+            cycle_pairs = {
+                (c.cycle_nodes[i], c.cycle_nodes[(i + 1) % len(c.cycle_nodes)])
+                for i in range(len(c.cycle_nodes))
+            }
+            c.label = int(
+                all(
+                    any(
+                        e["source"] == u and e["target"] == v and int(e.get("is_laundering", 0)) == 1
+                        for e in c.edges
+                    )
+                    for u, v in cycle_pairs
+                )
+            )
             for e in c.edges:
                 e.pop("is_laundering", None)
                 e.pop("pattern_id", None)
@@ -292,7 +286,9 @@ class IntegrationPipelineEngine:
         # Invariant INV-004 verification on lifted cell complex
         b1_mat = multi_domain.cell.B1.toarray()
         b2_mat = multi_domain.cell.B2.toarray()
-        nilpotency_error = float(np.max(np.abs(b1_mat @ b2_mat))) if (b1_mat.size > 0 and b2_mat.size > 0) else 0.0
+        nilpotency_error = (
+            float(np.max(np.abs(b1_mat @ b2_mat))) if (b1_mat.size > 0 and b2_mat.size > 0) else 0.0
+        )
         if nilpotency_error > 1e-10:
             raise ValueError(f"INV-004 Violation: B1 @ B2 = {nilpotency_error} > 1e-10")
 
@@ -328,17 +324,22 @@ class IntegrationPipelineEngine:
             # Execute forward pass based on model architecture
             if self.model_family in ["gcn", "gat", "sage"]:
                 batch_vec = torch.zeros(x_node.size(0), dtype=torch.long)
-                logits = model(x_node, edge_index_cand, batch=batch_vec, ph_features=ph_tensor, edge_attr=edge_attr_cand)
+                logits = model(
+                    x_node, edge_index_cand, batch=batch_vec, ph_features=ph_tensor, edge_attr=edge_attr_cand
+                )
             elif self.model_family in ["cwn", "topotune"]:
                 x0 = x_node
                 x1 = torch.tensor(multi_domain.cell.x_1, dtype=torch.float32)
                 raw_x2 = multi_domain.cell.x_2
                 if raw_x2.shape[0] > 0:
                     if raw_x2.shape[1] < 4:
-                        x2 = torch.cat([
-                            torch.tensor(raw_x2, dtype=torch.float32),
-                            torch.zeros((raw_x2.shape[0], 4 - raw_x2.shape[1]), dtype=torch.float32),
-                        ], dim=-1)
+                        x2 = torch.cat(
+                            [
+                                torch.tensor(raw_x2, dtype=torch.float32),
+                                torch.zeros((raw_x2.shape[0], 4 - raw_x2.shape[1]), dtype=torch.float32),
+                            ],
+                            dim=-1,
+                        )
                     else:
                         x2 = torch.tensor(raw_x2[:, :4], dtype=torch.float32)
                 else:
@@ -357,10 +358,13 @@ class IntegrationPipelineEngine:
                 if num_triangles > 0:
                     simp_x2 = multi_domain.simplicial.x_2
                     if simp_x2.shape[1] < 4:
-                        x2 = torch.cat([
-                            simp_x2,
-                            torch.zeros((num_triangles, 4 - simp_x2.shape[1])),
-                        ], dim=-1)
+                        x2 = torch.cat(
+                            [
+                                simp_x2,
+                                torch.zeros((num_triangles, 4 - simp_x2.shape[1])),
+                            ],
+                            dim=-1,
+                        )
                     else:
                         x2 = simp_x2[:, :4]
                 else:
@@ -430,7 +434,9 @@ class IntegrationPipelineEngine:
             parquet_sha256 = compute_file_sha256(parquet_path)
 
             # Write Run Manifest
-            raw_sha = compute_file_sha256(self.trans_csv_path) if os.path.exists(self.trans_csv_path) else "NA"
+            raw_sha = (
+                compute_file_sha256(self.trans_csv_path) if os.path.exists(self.trans_csv_path) else "NA"
+            )
             patterns_sha = (
                 compute_file_sha256(self.patterns_txt_path)
                 if self.patterns_txt_path and os.path.exists(self.patterns_txt_path)

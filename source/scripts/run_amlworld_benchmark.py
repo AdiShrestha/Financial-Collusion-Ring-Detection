@@ -28,13 +28,11 @@ from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
 import json
-import os
 from pathlib import Path
 import platform
 import random
 import sys
-import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -42,46 +40,22 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
+# The legacy package lives in source/src; resolve it from this file, not the working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-try:
-    from source.src.data.build_candidates import build_candidate_pool
-    from source.src.data.candidate_extractor import CandidateSubgraph
-    from source.src.data.splits import GroupSafeSplitter, DataLeakageError
-    from source.src.topology.lift_dataset import lift_candidate
-    from source.src.ph.graph_filtration import build_temporal_filtration
-    from source.src.ph.gudhi_backend import GudhiPersistenceEngine
-    from source.src.ph.vectorize import PersistenceLandscapeVectorizer
-    from source.src.models.feature_encoders import CandidateFeatureExtractor
-    from source.src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
-    from source.src.models.tdl_simplicial import SimplicialComplexNetwork
-    from source.src.models.tdl_cellular import CellularComplexNetwork
-    from source.src.models.topotune_adapter import TopoTuneInspiredModel
-    from source.src.models.train_harness import compute_classification_metrics
-    from source.src.analysis.statistical_engine import (
-        cluster_bootstrap_paired_difference,
-        holm_bonferroni_correction,
-    )
-except ModuleNotFoundError:
-    from src.data.build_candidates import build_candidate_pool
-    from src.data.candidate_extractor import CandidateSubgraph
-    from src.data.splits import GroupSafeSplitter, DataLeakageError
-    from src.topology.lift_dataset import lift_candidate
-    from src.ph.graph_filtration import build_temporal_filtration
-    from src.ph.gudhi_backend import GudhiPersistenceEngine
-    from src.ph.vectorize import PersistenceLandscapeVectorizer
-    from src.models.feature_encoders import CandidateFeatureExtractor
-    from src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
-    from src.models.tdl_simplicial import SimplicialComplexNetwork
-    from src.models.tdl_cellular import CellularComplexNetwork
-    from src.models.topotune_adapter import TopoTuneInspiredModel
-    from src.models.train_harness import compute_classification_metrics
-    from src.analysis.statistical_engine import (
-        cluster_bootstrap_paired_difference,
-        holm_bonferroni_correction,
-    )
-
+from src.data.build_candidates import build_candidate_pool
+from src.data.candidate_extractor import CandidateSubgraph
+from src.data.splits import GroupSafeSplitter
+from src.topology.lift_dataset import lift_candidate
+from src.ph.graph_filtration import build_temporal_filtration
+from src.ph.gudhi_backend import GudhiPersistenceEngine
+from src.ph.vectorize import PersistenceLandscapeVectorizer
+from src.models.feature_encoders import CandidateFeatureExtractor
+from src.models.graph_baselines import GCNBaseline, GATBaseline, GraphSAGEBaseline
+from src.models.tdl_simplicial import SimplicialComplexNetwork
+from src.models.tdl_cellular import CellularComplexNetwork
+from src.models.topotune_adapter import TopoTuneInspiredModel
+from src.models.train_harness import compute_classification_metrics
 
 TRAINING_PROTOCOL = {
     "optimizer": "AdamW",
@@ -116,7 +90,8 @@ def compute_engine_provenance() -> Dict[str, Any]:
     """Hashes executable source/config files and records active dependency versions."""
     source_root = Path(__file__).resolve().parents[1]
     tracked = sorted(
-        p for p in source_root.rglob("*")
+        p
+        for p in source_root.rglob("*")
         if p.is_file()
         and "__pycache__" not in p.parts
         and (p.suffix == ".py" or p.name in {"pyproject.toml", "requirements_lock.txt"})
@@ -134,8 +109,6 @@ def compute_engine_provenance() -> Dict[str, Any]:
         except importlib.metadata.PackageNotFoundError:
             versions[package] = None
     return {"engine_source_sha256": digest.hexdigest(), "runtime_versions": versions}
-
-
 
 
 class BenchmarkRunner:
@@ -168,53 +141,60 @@ class BenchmarkRunner:
                 raise ValueError(f"Candidate {c.candidate_id} has no explicit binary label")
             lifted = lift_candidate(c)
             x_node, edge_index, edge_attr, _ = self.encoder.extract_features(c, mode="structure_aware")
-                
+
             ph_graph = build_temporal_filtration(c)
             diag = self.ph_engine.compute_persistence(ph_graph)
             ph_vec = self.ph_vectorizer.vectorize(diag)
             ph_tensor = torch.tensor(ph_vec, dtype=torch.float32).unsqueeze(0)
-            
+
             b1 = torch.tensor(lifted.cell.B1.toarray(), dtype=torch.float32)
             b2 = torch.tensor(lifted.cell.B2.toarray(), dtype=torch.float32)
             l0 = torch.tensor(lifted.cell.L0.toarray(), dtype=torch.float32)
             l1 = torch.tensor(lifted.cell.L1.toarray(), dtype=torch.float32)
             l2 = torch.tensor(lifted.cell.L2.toarray(), dtype=torch.float32)
-            
+
             raw_x2 = lifted.cell.x_2
             if raw_x2.shape[0] > 0:
                 if raw_x2.shape[1] < 4:
-                    x2 = torch.cat([
-                        torch.tensor(raw_x2, dtype=torch.float32),
-                        torch.zeros((raw_x2.shape[0], 4 - raw_x2.shape[1]), dtype=torch.float32)
-                    ], dim=-1)
+                    x2 = torch.cat(
+                        [
+                            torch.tensor(raw_x2, dtype=torch.float32),
+                            torch.zeros((raw_x2.shape[0], 4 - raw_x2.shape[1]), dtype=torch.float32),
+                        ],
+                        dim=-1,
+                    )
                 else:
                     x2 = torch.tensor(raw_x2[:, :4], dtype=torch.float32)
             else:
                 x2 = torch.empty((0, 4), dtype=torch.float32)
-                
+
             simp_b1 = torch.tensor(lifted.simplicial.B1.toarray(), dtype=torch.float32)
             simp_b2 = torch.tensor(lifted.simplicial.B2.toarray(), dtype=torch.float32)
             simp_x1 = lifted.simplicial.x_1
             simp_face = lifted.simplicial.x_2
             simp_x2 = F.pad(simp_face, (0, 4 - simp_face.shape[1]))
-            prepared.append({
-                "cand": c,
-                "x_node": x_node,
-                "edge_index": edge_index,
-                "edge_attr": edge_attr,
-                "cell_x1": torch.tensor(lifted.cell.x_1, dtype=torch.float32),
-                "ph_tensor": ph_tensor,
-                "b1": b1,
-                "b2": b2,
-                "l0": l0,
-                "l1": l1,
-                "l2": l2,
-                "x2": x2,
-                "simp_b1": simp_b1, "simp_b2": simp_b2,
-                "simp_x1": simp_x1, "simp_x2": simp_x2,
-                "label": int(c.label),
-                "pattern_id": c.pattern_id or "NONE"
-            })
+            prepared.append(
+                {
+                    "cand": c,
+                    "x_node": x_node,
+                    "edge_index": edge_index,
+                    "edge_attr": edge_attr,
+                    "cell_x1": torch.tensor(lifted.cell.x_1, dtype=torch.float32),
+                    "ph_tensor": ph_tensor,
+                    "b1": b1,
+                    "b2": b2,
+                    "l0": l0,
+                    "l1": l1,
+                    "l2": l2,
+                    "x2": x2,
+                    "simp_b1": simp_b1,
+                    "simp_b2": simp_b2,
+                    "simp_x1": simp_x1,
+                    "simp_x2": simp_x2,
+                    "label": int(c.label),
+                    "pattern_id": c.pattern_id or "NONE",
+                }
+            )
         return prepared
 
     def instantiate_model(self, model_family: str, ph_dim: int = 310) -> nn.Module:
@@ -223,15 +203,25 @@ class BenchmarkRunner:
         if fam == "gcn":
             return GCNBaseline(in_dim=13, hidden_dim=self.baseline_hidden_dim, ph_dim=ph_dim).to(self.device)
         elif fam == "gat":
-            return GATBaseline(in_dim=13, hidden_dim=self.baseline_hidden_dim, ph_dim=ph_dim, heads=self.baseline_heads).to(self.device)
+            return GATBaseline(
+                in_dim=13, hidden_dim=self.baseline_hidden_dim, ph_dim=ph_dim, heads=self.baseline_heads
+            ).to(self.device)
         elif fam == "sage":
-            return GraphSAGEBaseline(in_dim=13, hidden_dim=self.baseline_hidden_dim, ph_dim=ph_dim).to(self.device)
+            return GraphSAGEBaseline(in_dim=13, hidden_dim=self.baseline_hidden_dim, ph_dim=ph_dim).to(
+                self.device
+            )
         elif fam == "mpsn":
-            return SimplicialComplexNetwork(in_dim0=13, in_dim1=3, in_dim2=4, hidden_dim=27, ph_dim=ph_dim).to(self.device)
+            return SimplicialComplexNetwork(
+                in_dim0=13, in_dim1=3, in_dim2=4, hidden_dim=27, ph_dim=ph_dim
+            ).to(self.device)
         elif fam == "cwn":
-            return CellularComplexNetwork(in_dim0=13, in_dim1=2, in_dim2=4, hidden_dim=27, ph_dim=ph_dim).to(self.device)
+            return CellularComplexNetwork(in_dim0=13, in_dim1=2, in_dim2=4, hidden_dim=27, ph_dim=ph_dim).to(
+                self.device
+            )
         elif fam == "topotune":
-            return TopoTuneInspiredModel(in_dim0=13, in_dim1=2, in_dim2=4, hidden_dim=27, ph_dim=ph_dim).to(self.device)
+            return TopoTuneInspiredModel(in_dim0=13, in_dim1=2, in_dim2=4, hidden_dim=27, ph_dim=ph_dim).to(
+                self.device
+            )
         else:
             raise ValueError(f"Unknown family: {model_family}")
 
@@ -249,10 +239,10 @@ class BenchmarkRunner:
             raise ValueError("epochs and learning rate must be positive and finite")
         torch.manual_seed(seed)
         np.random.seed(seed)
-        
+
         ph_dim = self.prepared_data[0]["ph_tensor"].size(-1) if self.prepared_data else 310
         model = self.instantiate_model(model_family, ph_dim=ph_dim)
-        
+
         # Fixed AdamW parameter grouping; the exact settings are recorded in each run manifest.
         decay_params, no_decay_params = [], []
         for name, param in model.named_parameters():
@@ -263,12 +253,17 @@ class BenchmarkRunner:
             else:
                 decay_params.append(param)
 
-        optimizer = torch.optim.AdamW([
-            {"params": decay_params, "weight_decay": 1e-4},
-            {"params": no_decay_params, "weight_decay": 0.0},
-        ], lr=lr, betas=(0.9, 0.999), eps=1e-8)
+        optimizer = torch.optim.AdamW(
+            [
+                {"params": decay_params, "weight_decay": 1e-4},
+                {"params": no_decay_params, "weight_decay": 0.0},
+            ],
+            lr=lr,
+            betas=(0.9, 0.999),
+            eps=1e-8,
+        )
         criterion = nn.BCEWithLogitsLoss()
-        
+
         # ── INV-007: Group-safe splitting via DSU-based splitter ──
         splitter = GroupSafeSplitter(n_splits=5, seed=seed)
         train_cands, val_cands, test_cands, assignments = splitter.three_way_split(
@@ -280,15 +275,19 @@ class BenchmarkRunner:
         actual_train_items = [item for item in self.prepared_data if item["cand"].candidate_id in train_ids]
         val_items = [item for item in self.prepared_data if item["cand"].candidate_id in val_ids]
         test_items = [item for item in self.prepared_data if item["cand"].candidate_id in test_ids]
-            
+
         # Training loop with Early Stopping, Warmup-Cosine Annealing, Label Smoothing, and Gradient Clipping
         model.train()
         random.Random(seed).shuffle(actual_train_items)
 
         warmup_epochs = max(1, int(epochs * 0.15))
         sched1 = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_epochs)
-        sched2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(1, epochs - warmup_epochs), eta_min=1e-6)
-        scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[sched1, sched2], milestones=[warmup_epochs])
+        sched2 = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=max(1, epochs - warmup_epochs), eta_min=1e-6
+        )
+        scheduler = torch.optim.lr_scheduler.SequentialLR(
+            optimizer, schedulers=[sched1, sched2], milestones=[warmup_epochs]
+        )
 
         best_val_loss = float("inf")
         best_model_weights = None
@@ -303,22 +302,36 @@ class BenchmarkRunner:
                 x_node = item["x_node"].to(self.device)
                 ph = item["ph_tensor"].to(self.device)
                 target = torch.tensor([item["label"]], dtype=torch.float32, device=self.device)
-                
+
                 fam = model_family.lower()
                 if fam in ["gcn", "gat", "sage"]:
                     ei = item["edge_index"].to(self.device)
                     b = torch.zeros(x_node.size(0), dtype=torch.long, device=self.device)
-                    logits = model(x_node, ei, batch=b, ph_features=ph, edge_attr=item["edge_attr"].to(self.device))
+                    logits = model(
+                        x_node, ei, batch=b, ph_features=ph, edge_attr=item["edge_attr"].to(self.device)
+                    )
                 elif fam in ["cwn", "topotune"]:
-                    logits = model(x_node, item["cell_x1"].to(self.device), item["x2"].to(self.device),
-                                   item["b1"].to(self.device), item["b2"].to(self.device),
-                                   item["l0"].to(self.device), item["l1"].to(self.device),
-                                   item["l2"].to(self.device), ph_features=ph)
+                    logits = model(
+                        x_node,
+                        item["cell_x1"].to(self.device),
+                        item["x2"].to(self.device),
+                        item["b1"].to(self.device),
+                        item["b2"].to(self.device),
+                        item["l0"].to(self.device),
+                        item["l1"].to(self.device),
+                        item["l2"].to(self.device),
+                        ph_features=ph,
+                    )
                 elif fam == "mpsn":
-                    logits = model(x_node, item["simp_x1"].to(self.device), item["simp_x2"].to(self.device),
-                                   item["simp_b1"].to(self.device), item["simp_b2"].to(self.device),
-                                   ph_features=ph)
-                                   
+                    logits = model(
+                        x_node,
+                        item["simp_x1"].to(self.device),
+                        item["simp_x2"].to(self.device),
+                        item["simp_b1"].to(self.device),
+                        item["simp_b2"].to(self.device),
+                        ph_features=ph,
+                    )
+
                 # Symmetric binary label smoothing with epsilon=0.005.
                 smooth_target = target * 0.99 + 0.005
                 loss = criterion(logits.view(-1), smooth_target)
@@ -340,16 +353,30 @@ class BenchmarkRunner:
                     if fam in ["gcn", "gat", "sage"]:
                         ei = item["edge_index"].to(self.device)
                         b = torch.zeros(x_node.size(0), dtype=torch.long, device=self.device)
-                        lgt = model(x_node, ei, batch=b, ph_features=ph, edge_attr=item["edge_attr"].to(self.device))
+                        lgt = model(
+                            x_node, ei, batch=b, ph_features=ph, edge_attr=item["edge_attr"].to(self.device)
+                        )
                     elif fam in ["cwn", "topotune"]:
-                        lgt = model(x_node, item["cell_x1"].to(self.device), item["x2"].to(self.device),
-                                    item["b1"].to(self.device), item["b2"].to(self.device),
-                                    item["l0"].to(self.device), item["l1"].to(self.device),
-                                    item["l2"].to(self.device), ph_features=ph)
+                        lgt = model(
+                            x_node,
+                            item["cell_x1"].to(self.device),
+                            item["x2"].to(self.device),
+                            item["b1"].to(self.device),
+                            item["b2"].to(self.device),
+                            item["l0"].to(self.device),
+                            item["l1"].to(self.device),
+                            item["l2"].to(self.device),
+                            ph_features=ph,
+                        )
                     elif fam == "mpsn":
-                        lgt = model(x_node, item["simp_x1"].to(self.device), item["simp_x2"].to(self.device),
-                                    item["simp_b1"].to(self.device), item["simp_b2"].to(self.device),
-                                    ph_features=ph)
+                        lgt = model(
+                            x_node,
+                            item["simp_x1"].to(self.device),
+                            item["simp_x2"].to(self.device),
+                            item["simp_b1"].to(self.device),
+                            item["simp_b2"].to(self.device),
+                            ph_features=ph,
+                        )
                     total_val_loss += criterion(lgt.view(-1), target).item()
 
             avg_val_loss = total_val_loss / max(1, len(val_items))
@@ -379,65 +406,101 @@ class BenchmarkRunner:
                 if fam in ["gcn", "gat", "sage"]:
                     x = item["x_node"].to(self.device)
                     b = torch.zeros(x.size(0), dtype=torch.long, device=self.device)
-                    out = model(x, item["edge_index"].to(self.device), batch=b, ph_features=item["ph_tensor"].to(self.device), edge_attr=item["edge_attr"].to(self.device))
+                    out = model(
+                        x,
+                        item["edge_index"].to(self.device),
+                        batch=b,
+                        ph_features=item["ph_tensor"].to(self.device),
+                        edge_attr=item["edge_attr"].to(self.device),
+                    )
                 elif fam in ["cwn", "topotune"]:
-                    out = model(item["x_node"].to(self.device), item["cell_x1"].to(self.device), item["x2"].to(self.device),
-                                item["b1"].to(self.device), item["b2"].to(self.device), item["l0"].to(self.device),
-                                item["l1"].to(self.device), item["l2"].to(self.device), ph_features=item["ph_tensor"].to(self.device))
+                    out = model(
+                        item["x_node"].to(self.device),
+                        item["cell_x1"].to(self.device),
+                        item["x2"].to(self.device),
+                        item["b1"].to(self.device),
+                        item["b2"].to(self.device),
+                        item["l0"].to(self.device),
+                        item["l1"].to(self.device),
+                        item["l2"].to(self.device),
+                        ph_features=item["ph_tensor"].to(self.device),
+                    )
                 else:
-                    out = model(item["x_node"].to(self.device), item["simp_x1"].to(self.device), item["simp_x2"].to(self.device),
-                                item["simp_b1"].to(self.device), item["simp_b2"].to(self.device), ph_features=item["ph_tensor"].to(self.device))
+                    out = model(
+                        item["x_node"].to(self.device),
+                        item["simp_x1"].to(self.device),
+                        item["simp_x2"].to(self.device),
+                        item["simp_b1"].to(self.device),
+                        item["simp_b2"].to(self.device),
+                        ph_features=item["ph_tensor"].to(self.device),
+                    )
                 val_probs.append(float(torch.sigmoid(out.view(-1))[0].item()))
-        try:
-            from source.src.models.train_harness import compute_optimal_threshold
-        except ModuleNotFoundError:
-            from src.models.train_harness import compute_optimal_threshold
+        from src.models.train_harness import compute_optimal_threshold
+
         threshold = compute_optimal_threshold(np.array(val_y), np.array(val_probs))
-                
+
         # Test evaluation & prediction serialization
         model.eval()
         pred_records = []
         y_true_list = []
         y_prob_list = []
-        
+
         with torch.no_grad():
             for item in test_items:
                 x_node = item["x_node"].to(self.device)
                 ph = item["ph_tensor"].to(self.device)
                 target = item["label"]
-                
+
                 fam = model_family.lower()
                 if fam in ["gcn", "gat", "sage"]:
                     ei = item["edge_index"].to(self.device)
                     b = torch.zeros(x_node.size(0), dtype=torch.long, device=self.device)
-                    logits = model(x_node, ei, batch=b, ph_features=ph, edge_attr=item["edge_attr"].to(self.device))
+                    logits = model(
+                        x_node, ei, batch=b, ph_features=ph, edge_attr=item["edge_attr"].to(self.device)
+                    )
                 elif fam in ["cwn", "topotune"]:
-                    logits = model(x_node, item["cell_x1"].to(self.device), item["x2"].to(self.device),
-                                   item["b1"].to(self.device), item["b2"].to(self.device),
-                                   item["l0"].to(self.device), item["l1"].to(self.device),
-                                   item["l2"].to(self.device), ph_features=ph)
+                    logits = model(
+                        x_node,
+                        item["cell_x1"].to(self.device),
+                        item["x2"].to(self.device),
+                        item["b1"].to(self.device),
+                        item["b2"].to(self.device),
+                        item["l0"].to(self.device),
+                        item["l1"].to(self.device),
+                        item["l2"].to(self.device),
+                        ph_features=ph,
+                    )
                 elif fam == "mpsn":
-                    logits = model(x_node, item["simp_x1"].to(self.device), item["simp_x2"].to(self.device),
-                                   item["simp_b1"].to(self.device), item["simp_b2"].to(self.device),
-                                   ph_features=ph)
-                                   
+                    logits = model(
+                        x_node,
+                        item["simp_x1"].to(self.device),
+                        item["simp_x2"].to(self.device),
+                        item["simp_b1"].to(self.device),
+                        item["simp_b2"].to(self.device),
+                        ph_features=ph,
+                    )
+
                 prob = float(torch.sigmoid(logits.view(-1))[0].item())
                 y_prob_list.append(prob)
                 y_true_list.append(target)
-                
-                pred_records.append({
-                    "candidate_id": item["cand"].candidate_id,
-                    "model_family": model_family,
-                    "seed": seed,
-                    "fold": fold,
-                    "true_label": target,
-                    "predicted_prob": prob,
-                    "predicted_label": 1 if prob >= threshold else 0,
-                    "pattern_id": item["pattern_id"]
-                })
-                
-        metrics = compute_classification_metrics(np.array(y_true_list), np.array(y_prob_list), val_threshold=threshold)
-        
+
+                pred_records.append(
+                    {
+                        "candidate_id": item["cand"].candidate_id,
+                        "model_family": model_family,
+                        "seed": seed,
+                        "fold": fold,
+                        "true_label": target,
+                        "predicted_prob": prob,
+                        "predicted_label": 1 if prob >= threshold else 0,
+                        "pattern_id": item["pattern_id"],
+                    }
+                )
+
+        metrics = compute_classification_metrics(
+            np.array(y_true_list), np.array(y_prob_list), val_threshold=threshold
+        )
+
         # Save run directory and artifacts
         run_identity = {
             "model_family": model_family,
@@ -459,12 +522,12 @@ class BenchmarkRunner:
         run_id = f"run_amlworld_{model_family}_seed{seed}_fold{fold}_{run_digest}"
         run_path = self.runs_dir / run_id
         run_path.mkdir(parents=True, exist_ok=True)
-        
+
         df = pd.DataFrame(pred_records)
         parquet_path = run_path / "predictions.parquet"
         df.to_parquet(parquet_path, index=False)
         parquet_sha = compute_file_sha256(parquet_path)
-        
+
         manifest_data = {
             "run_id": run_id,
             "model_family": model_family,
@@ -487,11 +550,11 @@ class BenchmarkRunner:
             "metrics": metrics,
             "predictions_parquet": "predictions.parquet",
             "predictions_parquet_sha256": parquet_sha,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         manifest_file = run_path / "run_manifest.json"
         manifest_file.write_text(json.dumps(manifest_data, indent=2), encoding="utf-8")
-        
+
         return manifest_data
 
 
@@ -511,11 +574,21 @@ def run_amlworld_primary_benchmark(
     patterns_txt_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Runs a specified AML CSV prefix cohort; scope must be reported with results."""
-    if any(value is None for value in (
-        max_transactions, max_cycles, min_cycle_length, max_cycle_length,
-        candidate_hop_radius, trans_csv_path, patterns_txt_path, epochs,
-        baseline_hidden_dim, baseline_heads,
-    )):
+    if any(
+        value is None
+        for value in (
+            max_transactions,
+            max_cycles,
+            min_cycle_length,
+            max_cycle_length,
+            candidate_hop_radius,
+            trans_csv_path,
+            patterns_txt_path,
+            epochs,
+            baseline_hidden_dim,
+            baseline_heads,
+        )
+    ):
         raise ValueError(
             "Declare raw input paths, cohort limits, cycle bounds, hop radius, epochs, and baseline widths "
             "before running the AML cohort"
@@ -528,7 +601,7 @@ def run_amlworld_primary_benchmark(
         raise ValueError("Seed and model-family lists must not contain duplicates")
     target_seeds = list(seeds)
     target_families = list(families)
-    
+
     candidates, cleanup_fn, provenance = build_candidate_pool(
         trans_csv_path=trans_csv_path,
         patterns_txt_path=patterns_txt_path,
@@ -545,9 +618,7 @@ def run_amlworld_primary_benchmark(
         f"[INV-001 Violation] Data source is '{provenance.get('data_source')}', "
         f"expected 'ibm_amlworld_synthetic_csv'. Aborting benchmark."
     )
-    assert provenance.get("trans_csv_sha256"), (
-        "[INV-001 Violation] Missing SHA-256 hash for transaction CSV."
-    )
+    assert provenance.get("trans_csv_sha256"), "[INV-001 Violation] Missing SHA-256 hash for transaction CSV."
 
     try:
         runner = BenchmarkRunner(
@@ -567,7 +638,10 @@ def run_amlworld_primary_benchmark(
             for s in target_seeds:
                 for fold_idx in range(n_folds):
                     res = runner.evaluate_model_seed(
-                        model_family=fam, seed=s, fold=fold_idx, epochs=epochs,
+                        model_family=fam,
+                        seed=s,
+                        fold=fold_idx,
+                        epochs=epochs,
                         data_provenance=provenance,
                     )
                     runs_output.append(res)
@@ -576,9 +650,11 @@ def run_amlworld_primary_benchmark(
         # Fold scores reuse the same candidate groups across seeds and overlapping
         # training sets. They are not independent bootstrap clusters. Publish paired
         # descriptive differences only until a group-level inference protocol is fixed.
-        statistical_results = {"status": "not_estimated",
-                               "reason": "Repeated cross-validation fold scores are dependent; no valid independent bootstrap units supplied.",
-                               "paired_fold_ap_differences": {}}
+        statistical_results = {
+            "status": "not_estimated",
+            "reason": "Repeated cross-validation fold scores are dependent; no valid independent bootstrap units supplied.",
+            "paired_fold_ap_differences": {},
+        }
         if len(target_families) >= 2:
             baseline = target_families[0]
             baseline_runs = {(r["seed"], r["fold"]): r for r in runs_output if r["model_family"] == baseline}
@@ -610,7 +686,7 @@ def run_amlworld_primary_benchmark(
             "runs": runs_output,
             "statistical_inference": statistical_results,
             "data_provenance": provenance,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         return summary
     finally:
@@ -622,13 +698,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="AMLworld cohort benchmark runner")
     parser.add_argument("--runs-dir", default="runs", help="Directory to store runs")
     parser.add_argument("--seeds", nargs="+", type=int, required=True, help="Declared evaluation seeds")
-    parser.add_argument("--families", nargs="+", type=str, required=True, help="Target model families, e.g. gcn gat")
+    parser.add_argument(
+        "--families", nargs="+", type=str, required=True, help="Target model families, e.g. gcn gat"
+    )
     parser.add_argument("--epochs", type=int, required=True, help="Training epochs")
-    parser.add_argument("--baseline-hidden-dim", type=int, required=True,
-                        help="Hidden dim for the intentionally widened graph-baseline stress test")
+    parser.add_argument(
+        "--baseline-hidden-dim",
+        type=int,
+        required=True,
+        help="Hidden dim for the intentionally widened graph-baseline stress test",
+    )
     parser.add_argument("--baseline-heads", type=int, required=True, help="Attention heads for GAT baseline")
     parser.add_argument("--max-transactions", type=int, required=True, help="Predeclared CSV prefix size")
-    parser.add_argument("--max-cycles", type=int, required=True, help="Predeclared label-blind cycle enumeration cap")
+    parser.add_argument(
+        "--max-cycles", type=int, required=True, help="Predeclared label-blind cycle enumeration cap"
+    )
     parser.add_argument("--min-cycle-length", type=int, required=True)
     parser.add_argument("--max-cycle-length", type=int, required=True)
     parser.add_argument("--candidate-hop-radius", type=int, required=True)

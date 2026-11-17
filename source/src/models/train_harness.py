@@ -13,17 +13,12 @@ Upholds Invariants:
 """
 
 import copy
-import os
-import sys
 from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from sklearn.metrics import roc_auc_score, average_precision_score
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 def compute_optimal_threshold(
@@ -150,7 +145,7 @@ class Trainer:
     @staticmethod
     def compute_pos_weight(labels: Union[np.ndarray, torch.Tensor, list]) -> float:
         """Computes pos_weight = n_neg / n_pos from training fold labels.
-        
+
         Requires both classes in the training fold.
         """
         if isinstance(labels, torch.Tensor):
@@ -213,9 +208,7 @@ class Trainer:
         return total_loss / max(1, batches)
 
     @torch.no_grad()
-    def evaluate(
-        self, dataloader: Any
-    ) -> Tuple[float, Dict[str, float], np.ndarray, np.ndarray]:
+    def evaluate(self, dataloader: Any) -> Tuple[float, Dict[str, float], np.ndarray, np.ndarray]:
         """Evaluates model on dataloader, returning loss and performance metrics."""
         self.model.eval()
         total_loss = 0.0
@@ -275,14 +268,16 @@ class Trainer:
             val_auprc = val_metrics["auprc"]
             if val_auprc is None:
                 raise ValueError("Validation fold requires both classes for AUPRC early stopping")
-            history.append({
-                "epoch": epoch,
-                "train_loss": train_loss,
-                "val_loss": val_loss,
-                "val_auprc": val_auprc,
-                "val_auroc": val_metrics["auroc"],
-                "val_f1": val_metrics["f1"],
-            })
+            history.append(
+                {
+                    "epoch": epoch,
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    "val_auprc": val_auprc,
+                    "val_auroc": val_metrics["auroc"],
+                    "val_f1": val_metrics["f1"],
+                }
+            )
 
             if val_auprc > best_auprc:
                 best_auprc = val_auprc

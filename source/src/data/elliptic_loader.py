@@ -6,8 +6,7 @@ Traces to Contract C02-04, Foundation Document 01, and Invariants INV-001/INV-01
 import csv
 import math
 import os
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 import networkx as nx
 
 
@@ -50,7 +49,9 @@ class EllipticActorsLoader:
                     if not all(math.isfinite(value) for value in feat_vec):
                         raise ValueError("feature row contains a non-finite value")
                     if wallet_id in features:
-                        raise ValueError(f"Repeated wallet {wallet_id}: feature rows require a time-indexed loader")
+                        raise ValueError(
+                            f"Repeated wallet {wallet_id}: feature rows require a time-indexed loader"
+                        )
                     features[wallet_id] = feat_vec
                 except ValueError as exc:
                     raise ValueError(f"Invalid wallet feature row for {wallet_id}") from exc

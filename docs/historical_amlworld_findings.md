@@ -36,7 +36,7 @@ All 60 unchanged graph/complex microfits met the fitting endpoint on the deliber
 
 ## Complete learning history exports
 
-The original exploratory findings above retain their scope. Complete source-derived exports now distinguish initial trials/selected validation, continuation-selected metrics/terminal endpoints, and summary/microfit diagnostics. See the [dictionary](s1_results_dictionary.md) and [manuscript supplement links](manuscript.md#complete-results). The initial summary-status gaps remain null instead of invented completion statuses. 2 of 20 selected graph continuation runs recorded sustained local stability; none of the 15 summary-control trials did. All 60 label-conditioned microfit endpoints support selected-row fitting capability only.
+The original exploratory findings above retain their scope. Complete source-derived exports now distinguish initial trials/selected validation, continuation-selected metrics/terminal endpoints, and summary/microfit diagnostics. See the [dictionary](s1_results_dictionary.md). The initial summary-status gaps remain null instead of invented completion statuses. 2 of 20 selected graph continuation runs recorded sustained local stability; none of the 15 summary-control trials did. All 60 label-conditioned microfit endpoints support selected-row fitting capability only.
 
 The prospective fixed-world comparison is reported separately with every arm, world, setting and contrast. It preserves the strong GBDT mean and the summary-neural exception. Development measurements and microfit endpoints are not counted as heldout performance or population support.
 

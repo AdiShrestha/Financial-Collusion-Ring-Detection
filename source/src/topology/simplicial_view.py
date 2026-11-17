@@ -7,43 +7,34 @@ Traces to Contract C03-03, FR-003, INV-002, INV-004, INV-008.
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Tuple
 import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch
 
-try:
-    from source.src.data.candidate_extractor import CandidateSubgraph
-    from source.src.topology.incidence import (
-        build_b1,
-        build_b2_simplicial,
-        compute_hodge_laplacians,
-        verify_nilpotency,
-    )
-except ModuleNotFoundError:
-    from src.data.candidate_extractor import CandidateSubgraph
-    from src.topology.incidence import (
-        build_b1,
-        build_b2_simplicial,
-        compute_hodge_laplacians,
-        verify_nilpotency,
-    )
+from ..data.candidate_extractor import CandidateSubgraph
+from .incidence import (
+    build_b1,
+    build_b2_simplicial,
+    compute_hodge_laplacians,
+    verify_nilpotency,
+)
 
 
 @dataclass
 class SimplicialComplex:
-    nodes: List[str]                           # List of 0-simplices
-    edges: List[Tuple[str, str]]               # List of 1-simplices (canonical sorted pairs u < v)
-    triangles: List[Tuple[str, str, str]]      # List of 2-simplices (canonical sorted triplets u < v < w)
-    x_0: torch.Tensor                          # Node features (num_nodes, d_0) float32
-    x_1: torch.Tensor                          # Edge features (num_edges, d_1) float32
-    x_2: torch.Tensor                          # Triangle features (num_triangles, d_2) float32
-    B1: sp.csr_matrix                          # Simplicial boundary-1 matrix (|V| x |E|)
-    B2: sp.csr_matrix                          # Simplicial boundary-2 matrix (|E| x |T|)
-    L0: sp.csr_matrix                          # Simplicial 0-Laplacian (|V| x |V|)
-    L1: sp.csr_matrix                          # Simplicial 1-Laplacian (|E| x |E|)
-    label: int                                 # Target binary label
+    nodes: List[str]  # List of 0-simplices
+    edges: List[Tuple[str, str]]  # List of 1-simplices (canonical sorted pairs u < v)
+    triangles: List[Tuple[str, str, str]]  # List of 2-simplices (canonical sorted triplets u < v < w)
+    x_0: torch.Tensor  # Node features (num_nodes, d_0) float32
+    x_1: torch.Tensor  # Edge features (num_edges, d_1) float32
+    x_2: torch.Tensor  # Triangle features (num_triangles, d_2) float32
+    B1: sp.csr_matrix  # Simplicial boundary-1 matrix (|V| x |E|)
+    B2: sp.csr_matrix  # Simplicial boundary-2 matrix (|E| x |T|)
+    L0: sp.csr_matrix  # Simplicial 0-Laplacian (|V| x |V|)
+    L1: sp.csr_matrix  # Simplicial 1-Laplacian (|E| x |E|)
+    label: int  # Target binary label
     node_map: Dict[str, int]
     edge_map: Dict[Tuple[str, str], int]
     triangle_map: Dict[Tuple[str, str, str], int]
@@ -192,15 +183,21 @@ def lift_to_simplicial_complex(candidate: CandidateSubgraph) -> SimplicialComple
         is_cycle_node = 1.0 if node in cycle_nodes_set else 0.0
         tot_deg = in_degrees[i] + out_degrees[i]
         cycle_ratio = in_degrees[i] / (tot_deg + 1e-6)
-        node_features.append([
-            float(in_degrees[i]),
-            float(out_degrees[i]),
-            float(in_flow[i]),
-            float(out_flow[i]),
-            is_cycle_node,
-            float(cycle_ratio),
-        ])
-    x_0 = torch.tensor(node_features, dtype=torch.float32) if node_features else torch.empty((0, 6), dtype=torch.float32)
+        node_features.append(
+            [
+                float(in_degrees[i]),
+                float(out_degrees[i]),
+                float(in_flow[i]),
+                float(out_flow[i]),
+                is_cycle_node,
+                float(cycle_ratio),
+            ]
+        )
+    x_0 = (
+        torch.tensor(node_features, dtype=torch.float32)
+        if node_features
+        else torch.empty((0, 6), dtype=torch.float32)
+    )
 
     # Edge features x_1: (num_edges, 3)
     edge_features: List[List[float]] = []
@@ -208,12 +205,18 @@ def lift_to_simplicial_complex(candidate: CandidateSubgraph) -> SimplicialComple
         tot_amt = edge_amounts[(u_str, v_str)]
         log_amt = math.log1p(max(0.0, tot_amt))
         is_cycle_edge = 1.0 if (u_str in cycle_nodes_set and v_str in cycle_nodes_set) else 0.0
-        edge_features.append([
-            log_amt,
-            tot_amt,
-            is_cycle_edge,
-        ])
-    x_1 = torch.tensor(edge_features, dtype=torch.float32) if edge_features else torch.empty((0, 3), dtype=torch.float32)
+        edge_features.append(
+            [
+                log_amt,
+                tot_amt,
+                is_cycle_edge,
+            ]
+        )
+    x_1 = (
+        torch.tensor(edge_features, dtype=torch.float32)
+        if edge_features
+        else torch.empty((0, 3), dtype=torch.float32)
+    )
 
     # Triangle features x_2: (num_triangles, 3)
     triangle_features: List[List[float]] = []
@@ -226,14 +229,24 @@ def lift_to_simplicial_complex(candidate: CandidateSubgraph) -> SimplicialComple
         amt2 = edge_amounts.get(e2, 0.0)
         amt3 = edge_amounts.get(e3, 0.0)
         tot_tri_amt = amt1 + amt2 + amt3
-        mean_log_amt = (math.log1p(max(0.0, amt1)) + math.log1p(max(0.0, amt2)) + math.log1p(max(0.0, amt3))) / 3.0
-        is_cycle_tri = 1.0 if (v0 in cycle_nodes_set and v1 in cycle_nodes_set and v2 in cycle_nodes_set) else 0.0
-        triangle_features.append([
-            mean_log_amt,
-            tot_tri_amt,
-            is_cycle_tri,
-        ])
-    x_2 = torch.tensor(triangle_features, dtype=torch.float32) if triangle_features else torch.empty((0, 3), dtype=torch.float32)
+        mean_log_amt = (
+            math.log1p(max(0.0, amt1)) + math.log1p(max(0.0, amt2)) + math.log1p(max(0.0, amt3))
+        ) / 3.0
+        is_cycle_tri = (
+            1.0 if (v0 in cycle_nodes_set and v1 in cycle_nodes_set and v2 in cycle_nodes_set) else 0.0
+        )
+        triangle_features.append(
+            [
+                mean_log_amt,
+                tot_tri_amt,
+                is_cycle_tri,
+            ]
+        )
+    x_2 = (
+        torch.tensor(triangle_features, dtype=torch.float32)
+        if triangle_features
+        else torch.empty((0, 3), dtype=torch.float32)
+    )
 
     # Check for NaN / Inf
     if torch.isnan(x_0).any() or torch.isinf(x_0).any():

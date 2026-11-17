@@ -11,32 +11,18 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
-import os
 from pathlib import Path
 import pickle
-import sys
 from typing import Any, Dict, List, Optional, Union
 
-# Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.data.candidate_extractor import CandidateSubgraph
-    from source.src.topology.graph_view import GraphData, lift_to_graph
-    from source.src.topology.cell_view import CellComplex, lift_to_cell_complex
-    from source.src.topology.simplicial_view import (
-        SimplicialComplex,
-        lift_to_simplicial_complex,
-    )
-except ModuleNotFoundError:
-    from src.data.candidate_extractor import CandidateSubgraph
-    from src.topology.graph_view import GraphData, lift_to_graph
-    from src.topology.cell_view import CellComplex, lift_to_cell_complex
-    from src.topology.simplicial_view import (
-        SimplicialComplex,
-        lift_to_simplicial_complex,
-    )
+from ..data.candidate_extractor import CandidateSubgraph
+from .graph_view import GraphData, lift_to_graph
+from .cell_view import CellComplex, lift_to_cell_complex
+from .simplicial_view import (
+    SimplicialComplex,
+    lift_to_simplicial_complex,
+)
 
 
 def compute_file_sha256(filepath: Union[str, Path]) -> str:
@@ -51,6 +37,7 @@ def compute_file_sha256(filepath: Union[str, Path]) -> str:
 @dataclass
 class MultiDomainExample:
     """Unified container holding multi-domain topological representations."""
+
     candidate_id: str
     label: int
     graph: GraphData

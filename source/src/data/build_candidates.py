@@ -11,30 +11,17 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
-import os
 from pathlib import Path
-import shutil
-import sys
-import tempfile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import networkx as nx
 
 # Resolve import paths
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.data.candidate_extractor import (
-        CandidateExtractor,
-        CandidateSubgraph,
-    )
-    from source.src.data.splits import GroupSafeSplitter, FoldAuditSummary
-except ModuleNotFoundError:
-    from src.data.candidate_extractor import (
-        CandidateExtractor,
-        CandidateSubgraph,
-    )
-    from src.data.splits import GroupSafeSplitter, FoldAuditSummary
+from .candidate_extractor import (
+    CandidateExtractor,
+    CandidateSubgraph,
+)
+from .splits import GroupSafeSplitter, FoldAuditSummary
 
 
 def compute_file_sha256(filepath: Union[str, Path]) -> str:
@@ -121,9 +108,7 @@ class CandidateDatasetBuilder:
         out_path.mkdir(parents=True, exist_ok=True)
 
         # Partition candidates by fold
-        fold_partitions: Dict[int, List[Dict[str, Any]]] = {
-            f: [] for f in range(self.n_splits)
-        }
+        fold_partitions: Dict[int, List[Dict[str, Any]]] = {f: [] for f in range(self.n_splits)}
         for cand in candidates:
             f = split_assignments[cand.candidate_id]
             fold_partitions[f].append(cand.to_dict())
@@ -157,7 +142,6 @@ class CandidateDatasetBuilder:
         return manifest_file
 
 
-
 def build_candidate_pool(
     trans_csv_path: Optional[str] = None,
     patterns_txt_path: Optional[str] = None,
@@ -183,12 +167,8 @@ def build_candidate_pool(
         - synthetic_negatives_injected: Always zero in this CSV-derived path.
         - warnings: list of warning strings
     """
-    try:
-        from source.src.data.amlworld_loader import AMLWorldLoader
-        from source.src.data.path_utils import resolve_amlworld_paths
-    except ModuleNotFoundError:
-        from src.data.amlworld_loader import AMLWorldLoader
-        from src.data.path_utils import resolve_amlworld_paths
+    from .amlworld_loader import AMLWorldLoader
+    from .path_utils import resolve_amlworld_paths
 
     cleanup_fn = None
     if not trans_csv_path or not patterns_txt_path:
@@ -215,7 +195,9 @@ def build_candidate_pool(
         "trans_csv_sha256": trans_hash,
         "trans_csv_path": str(resolved_trans_path),
         "patterns_txt_path": str(resolved_patterns_path) if resolved_patterns_path else None,
-        "patterns_txt_sha256": compute_file_sha256(resolved_patterns_path) if resolved_patterns_path else None,
+        "patterns_txt_sha256": (
+            compute_file_sha256(resolved_patterns_path) if resolved_patterns_path else None
+        ),
         "max_transactions": max_tx,
         "max_cycles": max_cycles,
         "candidate_cycle_bounds": [min_cycle_length, max_cycle_length],
@@ -239,6 +221,7 @@ def build_candidate_pool(
     )
 
     from datetime import datetime, timezone
+
     graph = nx.MultiDiGraph()
     t_base = None
     stream_count = 0
@@ -247,7 +230,9 @@ def build_candidate_pool(
             graph.add_node(tx.sender_key, bank=tx.from_bank, account=tx.from_account)
             graph.add_node(tx.receiver_key, bank=tx.to_bank, account=tx.to_account)
             try:
-                ts = datetime.strptime(tx.timestamp, "%Y/%m/%d %H:%M").replace(tzinfo=timezone.utc).timestamp()
+                ts = (
+                    datetime.strptime(tx.timestamp, "%Y/%m/%d %H:%M").replace(tzinfo=timezone.utc).timestamp()
+                )
             except ValueError as exc:
                 raise ValueError(f"Invalid AMLworld timestamp in {tx.tx_id}: {tx.timestamp}") from exc
             if t_base is None:
@@ -279,17 +264,18 @@ def build_candidate_pool(
     candidates: List[CandidateSubgraph] = []
     for idx, cycle in enumerate(raw_cycles):
         c = extractor.extract_subgraph(
-            graph=graph,
-            cycle_nodes=cycle,
-            hop_radius=hop_radius,
-        candidate_id=f"aml_cycle_{idx:06d}"
+            graph=graph, cycle_nodes=cycle, hop_radius=hop_radius, candidate_id=f"aml_cycle_{idx:06d}"
         )
         cycle_pairs = {(cycle[i], cycle[(i + 1) % len(cycle)]) for i in range(len(cycle))}
         on_cycle = [e for e in c.edges if (e["source"], e["target"]) in cycle_pairs]
         # A positive is a fully labelled cycle. Mixed/adjacent laundering evidence is
         # ambiguous for this binary target and is excluded, never relabelled benign.
-        positive = all(any(int(e.get("is_laundering", 0)) == 1 for e in on_cycle if
-                               e["source"] == u and e["target"] == v) for u, v in cycle_pairs)
+        positive = all(
+            any(
+                int(e.get("is_laundering", 0)) == 1 for e in on_cycle if e["source"] == u and e["target"] == v
+            )
+            for u, v in cycle_pairs
+        )
         negative = all(int(e.get("is_laundering", 0)) == 0 for e in c.edges)
         if not positive and not negative:
             continue
@@ -302,11 +288,15 @@ def build_candidate_pool(
 
     provenance["transactions_ingested"] = stream_count
     provenance["candidate_count"] = len(candidates)
-    provenance["candidate_labels"] = {"positive": sum(c.label == 1 for c in candidates), "negative": sum(c.label == 0 for c in candidates)}
+    provenance["candidate_labels"] = {
+        "positive": sum(c.label == 1 for c in candidates),
+        "negative": sum(c.label == 0 for c in candidates),
+    }
     if set(c.label for c in candidates) != {0, 1}:
-        raise ValueError(f"Cohort lacks both classes after label-blind extraction: {provenance['candidate_labels']}")
+        raise ValueError(
+            f"Cohort lacks both classes after label-blind extraction: {provenance['candidate_labels']}"
+        )
     return candidates, cleanup_fn, provenance
-
 
 
 def main():

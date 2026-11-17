@@ -33,7 +33,7 @@ Recomputes the equal-world means, the five exact signed-rank tests with Holm adj
 
 ## 4. Figures
 
-The plotting script writes the exact PDF files used in the manuscript, plus SVG copies. It refuses to overwrite existing files, so write to an empty directory.
+The plotting script writes the PDF figures used in the paper, plus SVG copies (the SVGs are tracked here). It refuses to overwrite existing files, so write to an empty directory.
 
 ```sh
 python -s -B source/scripts/plot_s1_results.py \
@@ -57,14 +57,9 @@ The worlds, fitted models and prediction files are distributed with the anonymou
 
 Checkpoints written by the training scripts are pickled objects; load them only from sources you trust. The supplement ships neural weights as plain tensor dictionaries (`torch.load(..., weights_only=True)`) and the GBDT as its training matrix, because the GBDT fit is deterministic and takes under a second.
 
-## 6. Manuscript
+## 6. Code versions and checks
 
-```sh
-cd docs/tmlr
-pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manuscript
-```
-
-Needs a TeX Live installation with `float`, `booktabs`, `tabularx`, `microtype`, `hyperref`, `lmodern` and `eso-pic`. The official TMLR style files (`tmlr.sty`, `tmlr.bst`, `fancyhdr.sty`) sit next to the source, and the figures are in `docs/tmlr/figures/`, so the directory is self-contained.
+The scripts here are tidied versions of the ones that produced the reported results: the same computations, formatted with Black, with clearer messages, argument-based paths and pinned jar hashes. The byte-exact executed files, with their SHA-256 values, are distributed with the review supplement. `source/pyproject.toml` configures Ruff and Black; continuous integration runs both, the unit tests, the statistics and the figures.
 
 ## Legacy code
 

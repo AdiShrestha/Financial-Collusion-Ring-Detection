@@ -12,16 +12,10 @@ Upholds Invariants:
 - INV-008 (Self-Contained Verification Scripts).
 """
 
-import os
-import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
-import numpy as np
+from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 def pool_rank(x: torch.Tensor, dim: int) -> torch.Tensor:
@@ -44,9 +38,9 @@ class TopoTuneInspiredAdapter(nn.Module):
         super().__init__()
         self.in_dims = in_dims
         self.out_dim = out_dim
-        self.proj_layers = nn.ModuleDict({
-            str(r): nn.Linear(dim, out_dim, bias=True) for r, dim in in_dims.items()
-        })
+        self.proj_layers = nn.ModuleDict(
+            {str(r): nn.Linear(dim, out_dim, bias=True) for r, dim in in_dims.items()}
+        )
 
     def forward(
         self,
@@ -146,6 +140,7 @@ class HybridTopologicalReadout(nn.Module):
 
 class TopoTuneInspiredModel(nn.Module):
     """TopoTune-inspired model combining adapter layer and hybrid readout."""
+
     def __init__(
         self,
         in_dim0: int = 13,

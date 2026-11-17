@@ -3,7 +3,7 @@ Combinatorial Boundary Operators and Hodge Laplacians for Simplicial and Cellula
 Implements exact signed boundary matrices B1, B2 and verifies the nilpotency condition B1 @ B2 == 0.
 """
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 import numpy as np
 import scipy.sparse as sp
 
@@ -33,9 +33,7 @@ def build_b1(nodes: List[str], edges: List[Tuple[str, str]]) -> sp.csr_matrix:
     return B1
 
 
-def build_b2_simplicial(
-    edges: List[Tuple[str, str]], triangles: List[Tuple[str, str, str]]
-) -> sp.csr_matrix:
+def build_b2_simplicial(edges: List[Tuple[str, str]], triangles: List[Tuple[str, str, str]]) -> sp.csr_matrix:
     """
     Construct boundary matrix B2 for a 2-simplicial complex (edges x triangles).
     Assumes canonical sorted vertex order v0 < v1 < v2 for each triangle [v0, v1, v2].
@@ -75,9 +73,7 @@ def build_b2_simplicial(
     return B2
 
 
-def build_b2_cellular(
-    edges: List[Tuple[str, str]], cycle_cells: List[List[str]]
-) -> sp.csr_matrix:
+def build_b2_cellular(edges: List[Tuple[str, str]], cycle_cells: List[List[str]]) -> sp.csr_matrix:
     """
     Construct boundary matrix B2 for a rank-2 cell complex (edges x polygonal cells).
     Each cell is an ordered cycle of vertices [v0, v1, ..., v_{k-1}].

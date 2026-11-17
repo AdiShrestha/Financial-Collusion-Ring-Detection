@@ -7,22 +7,18 @@ Traces to Contract C03-01, FR-003, INV-008, INV-010.
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 import torch
-import numpy as np
 
-try:
-    from source.src.data.candidate_extractor import CandidateSubgraph
-except ModuleNotFoundError:
-    from src.data.candidate_extractor import CandidateSubgraph
+from ..data.candidate_extractor import CandidateSubgraph
 
 
 @dataclass
 class GraphData:
-    x: torch.Tensor          # (num_nodes, node_feat_dim) float32
-    edge_index: torch.Tensor # (2, num_edges) int64
+    x: torch.Tensor  # (num_nodes, node_feat_dim) float32
+    edge_index: torch.Tensor  # (2, num_edges) int64
     edge_attr: torch.Tensor  # (num_edges, edge_feat_dim) float32
-    y: torch.Tensor          # (1,) int64
+    y: torch.Tensor  # (1,) int64
     node_map: Dict[str, int]
     num_nodes: int
     num_edges: int
@@ -94,11 +90,13 @@ def lift_to_graph(candidate: CandidateSubgraph) -> GraphData:
         # Is cycle edge (both endpoints in cycle_nodes)
         is_cycle_edge = 1.0 if (src in cycle_nodes_set and dst in cycle_nodes_set) else 0.0
 
-        edge_features.append([
-            log_amt,
-            raw_amt,
-            is_cycle_edge,
-        ])
+        edge_features.append(
+            [
+                log_amt,
+                raw_amt,
+                is_cycle_edge,
+            ]
+        )
 
     num_edges = len(src_indices)
 
@@ -109,17 +107,23 @@ def lift_to_graph(candidate: CandidateSubgraph) -> GraphData:
         tot_deg = in_degrees[i] + out_degrees[i]
         cycle_ratio = in_degrees[i] / (tot_deg + 1e-6)
 
-        node_features.append([
-            float(in_degrees[i]),
-            float(out_degrees[i]),
-            float(in_flow[i]),
-            float(out_flow[i]),
-            is_cycle_node,
-            float(cycle_ratio),
-        ])
+        node_features.append(
+            [
+                float(in_degrees[i]),
+                float(out_degrees[i]),
+                float(in_flow[i]),
+                float(out_flow[i]),
+                is_cycle_node,
+                float(cycle_ratio),
+            ]
+        )
 
     # 4. Assemble PyTorch tensors
-    x = torch.tensor(node_features, dtype=torch.float32) if node_features else torch.empty((0, 6), dtype=torch.float32)
+    x = (
+        torch.tensor(node_features, dtype=torch.float32)
+        if node_features
+        else torch.empty((0, 6), dtype=torch.float32)
+    )
     if num_edges > 0:
         edge_index = torch.tensor([src_indices, dst_indices], dtype=torch.long)
         edge_attr = torch.tensor(edge_features, dtype=torch.float32)

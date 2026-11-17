@@ -31,7 +31,7 @@ AMLSim's cycle typology places the first transfer of every cycle at the start of
 
 ## Inputs available to models
 
-Event times (step / 120), log(1 + amount), transfer direction, the candidate's event and account masks, and the whole world's topology. Labels, alert flags, account and event identifiers, seeds and world identity are excluded. The 20 summary features are listed in the manuscript.
+Event times (step / 120), log(1 + amount), transfer direction, the candidate's event and account masks, and the whole world's topology. Labels, alert flags, account and event identifiers, seeds and world identity are excluded. The 20 summary features are listed as `FEATURE_COLUMNS` in `source/scripts/train_s1_development.py`: cycle length; minimum, mean, maximum and population SD of selected-event time and of log amount; the two spans; minimum, mean and maximum in- and out-degree of candidate accounts; and minimum, mean and maximum selected directed-pair multiplicity.
 
 ## Custody
 

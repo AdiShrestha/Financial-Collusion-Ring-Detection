@@ -12,16 +12,10 @@ Upholds Invariants:
 - INV-009 (Model Parameter and FLOP Matching Protocol): parameter delta <= 2%.
 """
 
-import os
-import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
-import numpy as np
+from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 def global_simplex_pool(x: torch.Tensor) -> torch.Tensor:
@@ -74,7 +68,9 @@ class SimplicialMessagePassingLayer(nn.Module):
             deg1_up = abs_b2.sum(dim=1, keepdim=True).clamp(min=1.0)
             norm_b2 = abs_b2 / deg1_up
             m1 = m1 + torch.matmul(norm_b2, x2)
-        h1_out = F.relu(self.linear1(m1)) if x1.numel() > 0 else torch.empty((0, self.out_dim), device=x1.device)
+        h1_out = (
+            F.relu(self.linear1(m1)) if x1.numel() > 0 else torch.empty((0, self.out_dim), device=x1.device)
+        )
 
         # 3. Update 2-simplices from 1-simplices (|B2|^T)
         if x2.numel() > 0:
@@ -115,11 +111,13 @@ class SimplicialComplexNetwork(nn.Module):
         self.dropout = dropout
 
         # 2-layer simplicial message passing
-        self.input_projections = nn.ModuleList([
-            nn.Linear(in_dim0, hidden_dim),
-            nn.Linear(in_dim1, hidden_dim),
-            nn.Linear(in_dim2, hidden_dim),
-        ])
+        self.input_projections = nn.ModuleList(
+            [
+                nn.Linear(in_dim0, hidden_dim),
+                nn.Linear(in_dim1, hidden_dim),
+                nn.Linear(in_dim2, hidden_dim),
+            ]
+        )
         self.conv1 = SimplicialMessagePassingLayer(hidden_dim, hidden_dim, hidden_dim, hidden_dim)
         self.conv2 = SimplicialMessagePassingLayer(hidden_dim, hidden_dim, hidden_dim, hidden_dim)
 
@@ -165,8 +163,16 @@ class SimplicialComplexNetwork(nn.Module):
 
         # Multi-simplex hierarchical global readout pooling
         p0 = global_simplex_pool(h0)
-        p1 = global_simplex_pool(h1) if h1.numel() > 0 else torch.zeros((1, self.hidden_dim * 2), device=x0.device)
-        p2 = global_simplex_pool(h2) if h2.numel() > 0 else torch.zeros((1, self.hidden_dim * 2), device=x0.device)
+        p1 = (
+            global_simplex_pool(h1)
+            if h1.numel() > 0
+            else torch.zeros((1, self.hidden_dim * 2), device=x0.device)
+        )
+        p2 = (
+            global_simplex_pool(h2)
+            if h2.numel() > 0
+            else torch.zeros((1, self.hidden_dim * 2), device=x0.device)
+        )
 
         pooled = torch.cat([p0, p1, p2], dim=-1)
 

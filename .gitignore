@@ -94,14 +94,12 @@
 !/docs/s1_results_dictionary.md
 !/docs/historical_amlworld_methods.md
 !/docs/historical_amlworld_findings.md
-!/docs/tmlr/
-/docs/tmlr/*
-!/docs/tmlr/manuscript.tex
-!/docs/tmlr/references.bib
 # Result tables: the benchmark tables and the historical summary
 /results/*
 !/results/development_summary.json
 !/results/s1_benchmark/
+# Generated figure PDFs (regenerate with source/scripts/plot_s1_results.py; SVG copies are tracked)
+/figures/**/*.pdf
 # Licence texts
 !/docs/licenses/
 # Model checkpoints, serialized objects and bulk data are never committed

@@ -14,15 +14,10 @@ Upholds Invariants:
 - INV-008 (Self-Contained Verification Scripts): Numerical stability with zero NaNs.
 """
 
-import os
-import sys
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Tuple
 import networkx as nx
 import numpy as np
 import torch
-
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
 
 class NodeFeatureEncoder:
@@ -190,11 +185,11 @@ class CandidateFeatureExtractor:
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Extracts features for a CandidateSubgraph record.
-        
+
         Args:
             candidate: Dict or object with nodes, edges, label.
             mode: "basic" (8 node features) or "structure_aware" (13 node features).
-            
+
         Returns:
             Tuple of:
             - x_nodes: (N, d_v) float32 tensor
@@ -226,7 +221,9 @@ class CandidateFeatureExtractor:
         for e in raw_edges:
             if isinstance(e, dict):
                 if "amount" not in e or "timestamp" not in e:
-                    raise ValueError("Edge amount/time must be explicit; missing values need a declared static-graph protocol")
+                    raise ValueError(
+                        "Edge amount/time must be explicit; missing values need a declared static-graph protocol"
+                    )
                 u = str(e.get("source", ""))
                 v = str(e.get("target", ""))
                 amt = float(e["amount"])

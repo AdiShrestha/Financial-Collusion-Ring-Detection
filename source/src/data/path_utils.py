@@ -61,8 +61,9 @@ def resolve_amlworld_paths(
                 "or set AMLWORLD_DATA_DIR. No synthetic fallback is used."
             )
         trans = candidate.resolve()
-    patterns = _optional_sibling(patterns_txt_path, trans.parent, "HI-Small_Patterns.txt",
-                                 "AMLworld pattern file")
+    patterns = _optional_sibling(
+        patterns_txt_path, trans.parent, "HI-Small_Patterns.txt", "AMLworld pattern file"
+    )
     return trans, patterns
 
 
@@ -82,6 +83,8 @@ def resolve_elliptic_paths(
                 "or set ELLIPTIC_DATA_DIR."
             )
         edgelist = candidate.resolve()
-    features = _optional_sibling(features_path, edgelist.parent, "wallets_features.csv", "Elliptic++ features")
+    features = _optional_sibling(
+        features_path, edgelist.parent, "wallets_features.csv", "Elliptic++ features"
+    )
     classes = _optional_sibling(classes_path, edgelist.parent, "wallets_classes.csv", "Elliptic++ classes")
     return edgelist, features, classes

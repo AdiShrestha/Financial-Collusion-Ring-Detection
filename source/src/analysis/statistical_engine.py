@@ -27,7 +27,7 @@ Upholds Invariants:
 """
 
 import math
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 import numpy as np
 
 
@@ -57,7 +57,7 @@ def cluster_bootstrap_paired_difference(
     cluster_ids: List[Any],
     n_bootstraps: int = 2000,
     alpha: float = 0.05,
-    seed: int = 42
+    seed: int = 42,
 ) -> Dict[str, Any]:
     """
     Performs cluster bootstrap resampling by pattern group cluster.
@@ -129,7 +129,7 @@ def two_one_sided_tests_equivalence(
     delta_equiv: float = 0.025,
     alpha: float = 0.05,
     n_bootstraps: int = 2000,
-    seed: int = 42
+    seed: int = 42,
 ) -> Dict[str, Any]:
     """
     Two One-Sided Tests (TOST) for practical equivalence within [-delta_equiv, +delta_equiv].
@@ -191,10 +191,7 @@ def two_one_sided_tests_equivalence(
     }
 
 
-def holm_bonferroni_correction(
-    p_values: Dict[str, float],
-    alpha: float = 0.05
-) -> Dict[str, Any]:
+def holm_bonferroni_correction(p_values: Dict[str, float], alpha: float = 0.05) -> Dict[str, Any]:
     """
     Applies Holm-Bonferroni step-down procedure to control Family-Wise Error Rate (FWER).
 
@@ -215,7 +212,7 @@ def holm_bonferroni_correction(
     for rank, (hyp_name, raw_p) in enumerate(sorted_hypotheses):
         divisor = k - rank
         threshold = alpha / divisor
-        
+
         # Step-down rejection: if previously stopped, cannot reject
         if not stopped and raw_p <= threshold:
             rejected = True

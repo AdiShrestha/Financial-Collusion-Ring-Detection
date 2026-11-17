@@ -1,8 +1,8 @@
 """Data-independent checks for the neutral S1 heldout inference adapter."""
+
 from __future__ import annotations
 
 import json
-import math
 import sys
 import tempfile
 import unittest
@@ -15,7 +15,6 @@ import torch
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 import evaluate_s1_heldout as adapter  # noqa: E402
-
 
 FEATURES = [f"feature_{index}" for index in range(20)]
 
@@ -31,16 +30,19 @@ def write_jsonl(path: Path, rows) -> None:
 def make_fixture(root: Path, candidate_count: int = 2, world_id: str = "S1_test_fixture"):
     attempt = root / "worlds" / world_id / "attempts" / "run_01"
     attempt.mkdir(parents=True)
-    write_jsonl(attempt / "candidate_observations.jsonl", [
-        {
-            "cycle_length": 2,
-            "world_event_time_steps": [0.1, 0.3],
-            "world_event_log1p_amounts": [1.0, 2.0],
-            "central_node_mask": [1, 1],
-            "selected_event_mask": [1, 1],
-        }
-        for _ in range(candidate_count)
-    ])
+    write_jsonl(
+        attempt / "candidate_observations.jsonl",
+        [
+            {
+                "cycle_length": 2,
+                "world_event_time_steps": [0.1, 0.3],
+                "world_event_log1p_amounts": [1.0, 2.0],
+                "central_node_mask": [1, 1],
+                "selected_event_mask": [1, 1],
+            }
+            for _ in range(candidate_count)
+        ],
+    )
     identities = [
         {
             "candidate_id": f"cand{index:07d}",
@@ -51,30 +53,45 @@ def make_fixture(root: Path, candidate_count: int = 2, world_id: str = "S1_test_
         for index in range(candidate_count)
     ]
     write_jsonl(attempt / "candidate_identity.jsonl", identities)
-    write_jsonl(attempt / "cellular_polygonal_boundaries.jsonl", [
-        {"candidate_id": row["candidate_id"], "dimension": 2, "boundary": [{"event_id": 1}, {"event_id": 2}]}
-        for row in identities
-    ])
-    write_jsonl(attempt / "simplicial_subdivision.jsonl", [
-        {"candidate_id": row["candidate_id"], "triangles": []} for row in identities
-    ])
-    write_jsonl(attempt / "hasse_incidence.jsonl", [
-        {"candidate_id": row["candidate_id"], "incidence": []} for row in identities
-    ])
-    write_jsonl(attempt / "world_directed_multigraph_identity.jsonl", [
-        {"physical_event_id": 1, "source_account": "A0", "target_account": "A1"},
-        {"physical_event_id": 2, "source_account": "A1", "target_account": "A0"},
-    ])
-    write_json(attempt / "world_node_identity.json", {
-        "world_id": world_id,
-        "node_order": ["A0", "A1"],
-        "event_order": [1, 2],
-    })
+    write_jsonl(
+        attempt / "cellular_polygonal_boundaries.jsonl",
+        [
+            {
+                "candidate_id": row["candidate_id"],
+                "dimension": 2,
+                "boundary": [{"event_id": 1}, {"event_id": 2}],
+            }
+            for row in identities
+        ],
+    )
+    write_jsonl(
+        attempt / "simplicial_subdivision.jsonl",
+        [{"candidate_id": row["candidate_id"], "triangles": []} for row in identities],
+    )
+    write_jsonl(
+        attempt / "hasse_incidence.jsonl",
+        [{"candidate_id": row["candidate_id"], "incidence": []} for row in identities],
+    )
+    write_jsonl(
+        attempt / "world_directed_multigraph_identity.jsonl",
+        [
+            {"physical_event_id": 1, "source_account": "A0", "target_account": "A1"},
+            {"physical_event_id": 2, "source_account": "A1", "target_account": "A0"},
+        ],
+    )
+    write_json(
+        attempt / "world_node_identity.json",
+        {
+            "world_id": world_id,
+            "node_order": ["A0", "A1"],
+            "event_order": [1, 2],
+        },
+    )
     # A trap target exists so an accidental read is observable.
-    write_jsonl(attempt / "candidate_labels.jsonl", [
-        {"candidate_id": row["candidate_id"], "label": index % 2}
-        for index, row in enumerate(identities)
-    ])
+    write_jsonl(
+        attempt / "candidate_labels.jsonl",
+        [{"candidate_id": row["candidate_id"], "label": index % 2} for index, row in enumerate(identities)],
+    )
     index_path = root / "world_index.json"
     if not index_path.exists():
         write_json(index_path, {"schema": "fixture"})
@@ -92,12 +109,14 @@ def load_test_benchmark():
     path = SCRIPTS / "check_s1_benchmark.py"
     binding = adapter.file_binding(path)
     lock = {
-        "source_reference": [{
-            "path": str(path),
-            "bytes": binding["bytes"],
-            "sha256": binding["sha256"],
-            "copy": dict(binding),
-        }]
+        "source_reference": [
+            {
+                "path": str(path),
+                "bytes": binding["bytes"],
+                "sha256": binding["sha256"],
+                "copy": dict(binding),
+            }
+        ]
     }
     return adapter.load_benchmark(lock)[0]
 
@@ -131,11 +150,13 @@ class HeldoutAdapterTests(unittest.TestCase):
             world = adapter._join_and_build_world(entry, index_path, benchmark)
             self.assertEqual(world["candidate_count"], 2)
             self.assertEqual(len(world["views"]), 2)
-            self.assertTrue(np.array_equal(
-                world["views"][0]["cell"][0].astype(np.int64)
-                @ world["views"][0]["cell"][1].astype(np.int64),
-                np.zeros((2, 1), dtype=np.int64),
-            ))
+            self.assertTrue(
+                np.array_equal(
+                    world["views"][0]["cell"][0].astype(np.int64)
+                    @ world["views"][0]["cell"][1].astype(np.int64),
+                    np.zeros((2, 1), dtype=np.int64),
+                )
+            )
             self.assertEqual(len(world["data"]["event_order"]), 2)
             self.assertNotIn("labels_path", world["data"])
             self.assertTrue(all(path.name in adapter.INPUT_ALLOWLIST for path in world["data"]["inputs"]))
@@ -162,13 +183,18 @@ class HeldoutAdapterTests(unittest.TestCase):
                 patch.object(Path, "open", guarded_open),
                 patch.object(Path, "read_bytes", guarded_read_bytes),
                 patch("torch.optim.Adam", side_effect=AssertionError("optimizer construction forbidden")),
-                patch("sklearn.ensemble.HistGradientBoostingClassifier.fit", side_effect=AssertionError("fit forbidden")),
+                patch(
+                    "sklearn.ensemble.HistGradientBoostingClassifier.fit",
+                    side_effect=AssertionError("fit forbidden"),
+                ),
             ):
                 world = adapter._join_and_build_world(entry, index_path, benchmark)
                 transform = {"mean_float64": [0.0] * 20, "scale_float64": [1.0] * 20}
                 raw, normalized = adapter.summary_feature_matrices(world, benchmark, transform)
                 model = SimpleInference()
-                logits = adapter.predict_neural_logits(model, adapter.SUMMARY_ARM, world, benchmark, normalized)
+                logits = adapter.predict_neural_logits(
+                    model, adapter.SUMMARY_ARM, world, benchmark, normalized
+                )
             self.assertEqual(world["candidate_count"], 3)
             self.assertEqual(raw.shape, (3, 20))
             self.assertEqual(normalized.shape, (3, 20))
@@ -185,13 +211,16 @@ class HeldoutAdapterTests(unittest.TestCase):
                 for index, parameter in enumerate(original.parameters()):
                     parameter.fill_(index + 0.25)
             checkpoint = root / "selected.pt"
-            torch.save({
-                "epoch": 375,
-                "arm": adapter.SUMMARY_ARM,
-                "seed": 11,
-                "learning_rate": 0.001,
-                "model": original.state_dict(),
-            }, checkpoint)
+            torch.save(
+                {
+                    "epoch": 375,
+                    "arm": adapter.SUMMARY_ARM,
+                    "seed": 11,
+                    "learning_rate": 0.001,
+                    "model": original.state_dict(),
+                },
+                checkpoint,
+            )
             binding = adapter.file_binding(checkpoint)
             record = {
                 "model_id": f"{adapter.SUMMARY_ARM}/seed_11",
@@ -219,12 +248,21 @@ class HeldoutAdapterTests(unittest.TestCase):
             }
             write_json(transform_path, transform_value)
             transform_binding = adapter.file_binding(transform_path)
-            lock = {"summary_transform": {"refit_authorized": False, "fit_worlds": transform_value["fit_worlds"], "frozen": {
-                "path": str(transform_path),
-                "bytes": transform_binding["bytes"],
-                "sha256": transform_binding["sha256"],
-            }}}
-            study = {"features": {"feature_order": FEATURES}, "training_worlds_unchanged": transform_value["fit_worlds"]}
+            lock = {
+                "summary_transform": {
+                    "refit_authorized": False,
+                    "fit_worlds": transform_value["fit_worlds"],
+                    "frozen": {
+                        "path": str(transform_path),
+                        "bytes": transform_binding["bytes"],
+                        "sha256": transform_binding["sha256"],
+                    },
+                }
+            }
+            study = {
+                "features": {"feature_order": FEATURES},
+                "training_worlds_unchanged": transform_value["fit_worlds"],
+            }
             loaded_transform, _ = adapter.load_summary_transform(lock, study)
             self.assertEqual(loaded_transform["scale_float64"][3], 1.0)
             self.assertEqual(loaded_transform["mean_float64"], transform_value["mean_float64"])
@@ -286,7 +324,7 @@ class HeldoutAdapterTests(unittest.TestCase):
         self.assertNotIn("train_s1_development", source)
         self.assertNotIn("torch.optim", source)
         self.assertNotIn("HistGradientBoostingClassifier.fit", source)
-        self.assertNotIn('EXPERIMENT_ID =', source)
+        self.assertNotIn("EXPERIMENT_ID =", source)
 
 
 if __name__ == "__main__":

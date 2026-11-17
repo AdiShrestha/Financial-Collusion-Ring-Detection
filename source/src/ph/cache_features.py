@@ -17,24 +17,14 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
-import os
 from pathlib import Path
-import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 import numpy as np
 
-# Resolve imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("source"))
 
-try:
-    from source.src.ph.graph_filtration import build_temporal_filtration
-    from source.src.ph.gudhi_backend import GudhiPersistenceEngine
-    from source.src.ph.vectorize import PersistenceLandscapeVectorizer
-except ModuleNotFoundError:
-    from src.ph.graph_filtration import build_temporal_filtration
-    from src.ph.gudhi_backend import GudhiPersistenceEngine
-    from src.ph.vectorize import PersistenceLandscapeVectorizer
+from .graph_filtration import build_temporal_filtration
+from .gudhi_backend import GudhiPersistenceEngine
+from .vectorize import PersistenceLandscapeVectorizer
 
 
 def compute_file_sha256(filepath: Union[str, Path]) -> str:
@@ -189,9 +179,7 @@ class PHFeatureCache:
             "feature_dim": self.vectorizer.feature_dim,
             "num_landscapes": self.vectorizer.num_landscapes,
             "resolution": self.vectorizer.resolution,
-            "persistence_backend": (
-                "gudhi" if self.persistence_engine.has_gudhi else "algebraic_reduction"
-            ),
+            "persistence_backend": ("gudhi" if self.persistence_engine.has_gudhi else "algebraic_reduction"),
             "source_dataset_manifest_sha256": source_dataset_manifest_sha256,
             "source_provenance": source_provenance,
             "folds": self.cached_files,
