@@ -1,0 +1,26 @@
+# Exact environment for world features, training, inference, scoring and the post hoc analyses.
+# Recorded with CPython 3.12.8 on macOS arm64 (CPU only, one thread). Direct and runtime pins.
+numpy==2.5.0
+scipy==1.18.0
+scikit-learn==1.9.0
+joblib==1.5.3
+threadpoolctl==3.6.0
+torch==2.12.1
+filelock==3.29.4
+sympy==1.14.0
+mpmath==1.3.0
+networkx==3.6.1
+jinja2==3.1.6
+MarkupSafe==3.0.3
+fsspec==2026.6.0
+typing_extensions==4.15.0
+matplotlib==3.11.0
+contourpy==1.3.3
+cycler==0.12.1
+fonttools==4.63.0
+kiwisolver==1.5.0
+packaging==26.2
+Pillow==12.2.0
+pyparsing==3.3.2
+python-dateutil==2.9.0.post0
+six==1.17.0

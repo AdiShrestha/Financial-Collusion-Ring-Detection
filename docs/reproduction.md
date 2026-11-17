@@ -1,91 +1,71 @@
 # Reproduction
 
-The source layout is preserved under `source/`. Use Python with the scientific dependencies declared in `source/pyproject.toml`; the retained dependency records distinguish declared package requirements from the broader observed development environment. Creating a clean, minimal environment lock for the final model campaign remains outstanding.
+All commands run from the repository root. Tested with CPython 3.12.8 on macOS (arm64), CPU only.
 
-From the repository root, run the small data-independent implementation fixtures with:
+## 1. Environment
 
 ```sh
-python3 -B -m unittest source.tests.test_research_invariants
-python3 -B -m unittest source.tests.test_s1_diagnostic_interface
-python3 -B -m unittest source.tests.test_s1_heldout_adapter
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r source/requirements-supplement.txt   # tables, tests, figures
+python -m pip install -r source/requirements-models.txt       # adds training, inference, scoring
 ```
 
-These fixtures check extraction identities, split integrity, mathematical properties and the label-blind inference interface on explicitly constructed examples. They do not generate empirical benchmark results or validate an entire future model comparison.
+`source/requirements-supplement.txt` is enough for everything in sections 2–4. `source/requirements-models.txt` is needed only to run models (section 5). Both files hold exact pins.
 
-## Frozen simulator inference
-
-The inference adapter accepts an indexed set of already generated worlds, frozen model bytes, a study configuration and a new output directory:
+## 2. Tests
 
 ```sh
-python3 -s -B source/scripts/evaluate_s1_heldout.py \
-  --world-index /path/to/world-index.json \
-  --model-lock /path/to/model-lock.json \
-  --study-config /path/to/study-config.json \
-  --output-dir /path/to/prediction-results
+python -B -m unittest discover -s source/tests
 ```
 
-It performs prediction only. It validates the registered model and input bindings, keeps labels out of the scoring input inventory, and writes a hash-bound prediction manifest before metric code joins labels. Existing prediction outputs are protected from overwrite. The public tests use synthetic fixtures; they do not run the frozen models.
+All six test modules use small synthetic fixtures or the released aggregate tables; none needs worlds, models or labels. Expected: every test passes (57 tests, a few seconds). The same command runs in continuous integration (`.github/workflows/tests.yml`).
 
-The actual frozen model states, generated worlds and their index are not distributed in this repository. A public checkout can inspect the adapter and run its fixtures, but cannot reproduce the original pilot or the prospective replication empirical comparison without those separately supplied inputs.
-
-## S1 learning diagnostic
-
-The public diagnostic accepts ordinary paths for an indexed set of development worlds, a study configuration, and an output directory:
+## 3. Statistics from the released tables
 
 ```sh
-python3 -s -B source/scripts/diagnose_s1_learning.py \
-  --world-index /path/to/world_index.json \
-  --study-config source/configs/s1_learning_diagnostic.json \
-  --output-dir /path/to/diagnostic-results --qualify-only
-
-python3 -s -B source/scripts/diagnose_s1_learning.py \
-  --world-index /path/to/world_index.json \
-  --study-config source/configs/s1_learning_diagnostic.json \
-  --output-dir /path/to/diagnostic-results
-```
-
-The first command checks the data and model paths without optimizer updates and binds the qualification to the current inputs and source. The second runs the study using that qualification. The study configuration records the fixed summary-control and microfit settings. The world index must resolve the six development worlds named there and their retained source artifacts inside the repository checkout. Optional `--contract-report`, `--failure-history`, and `--reference-json` arguments accept explicit paths; none has a project-specific default. Supply the same optional input paths to both commands. The output directory retains trial traces, checkpoints, joined predictions, diagnostic figures, and a final report. Use a new output directory for each run; existing trial evidence is protected from overwrite.
-
-The repository does not distribute the six world artifacts or their index, so a clone alone cannot reproduce the empirical run. Public fixtures exercise only the interface and data-independent contracts; they do not run an optimizer or assert the empirical findings below.
-
-The development summary publishes exact aggregated findings and metric definitions without distributing the source datasets. Full scientific reproduction also requires the publisher's version-pinned files, the complete family index, exact annotation joins and independently checked scoring artifacts. Those artifacts have been retained locally but are not presently a public reproduction package. An ordinary clone can inspect the implementation and run its fixtures; it cannot reconstruct the complete reported census from the summary alone.
-
-IBM AMLworld's publisher source is [IBM AML-Data](https://github.com/IBM/AML-Data), which links the released data and licensing terms. Use the named v8 LI-Small source under the applicable terms. No source timestamp, amount, identity or negative laundering label may be invented to fill unavailable data. Account-sidecar metadata is unavailable because the literal account-table join failed; that finding is part of the data limitations.
-
-The historical `old` tag preserves the earlier repository. Its checkpoints, manuscript and reported metrics are historical material, not outputs of the current exploratory study. The current repository does not inherit their performance claims.
-
-## Reproduce released metric figures
-
-The complete exported metric CSV is sufficient for the neutral plotting utility. Use the dependencies declared in `source/pyproject.toml`, including matplotlib. From the repository root:
-
-```sh
-python3 -s -B source/scripts/plot_s1_results.py \
-  --metrics-csv results/s1_benchmark/metrics_by_world_initialization.csv \
-  --output-dir /path/to/new-figures
-python3 -s -B -m unittest discover -s source/tests -p test_s1_publication_plot.py
-```
-
-The utility refuses duplicate/incomplete model–world–setting coverage, nonfinite metrics and inconsistent counts, and protects existing figures from overwrite. Optional `--preview-dir` writes local PNG previews. It averages saved AP across settings within worlds and renders every predeclared contrast. It does not load a model, generate a world or compute scores. Null required AP makes the corresponding aggregate unavailable instead of dropping that world.
-
-The manuscript, data card and result dictionary explain target/alias/phase/missingness conventions. Released CSVs contain full aggregate metrics and counts only. Figure reproduction and synthetic fixtures do not reproduce the empirical run: frozen states, raw worlds and candidate-level evidence are not distributed. The benchmark shares a fixed simulator mechanism, and the published draft does not establish population precision, qualified neural learning, financial generalization or external review/custody assurance.
-
-## Reproduce separate replication arithmetic and plots
-
-The following commands operate exclusively on published aggregate endpoints and world means, and do not load weights, query labels, generate worlds or compute empirical scores. Use a fresh output location.
-
-```sh
-python3 -s -B source/scripts/reproduce_s1_statistics.py \
+python -s -B source/scripts/reproduce_s1_statistics.py \
   --world-ap-csv results/s1_benchmark/replication/ap_by_world.csv \
-  --output-json /path/to/new-statistics.json
-python3 -s -B source/scripts/plot_s1_results.py \
-  --panel replication \
+  --output-json /tmp/statistics.json
+```
+
+Recomputes the equal-world means, the five exact signed-rank tests with Holm adjustment and the 20,000-resample paired world bootstrap (PCG64, seed 2026101103). Output matches `results/s1_benchmark/replication/summary.json`, `paired_ap_inference.csv` and `mean_ap_intervals.csv`.
+
+## 4. Figures
+
+The plotting script writes the exact PDF files used in the manuscript, plus SVG copies. It refuses to overwrite existing files, so write to an empty directory.
+
+```sh
+python -s -B source/scripts/plot_s1_results.py \
+  --metrics-csv results/s1_benchmark/metrics_by_world_initialization.csv \
+  --output-dir /tmp/figures
+python -s -B source/scripts/plot_s1_results.py --panel replication \
   --metrics-csv results/s1_benchmark/replication/metrics_by_world_initialization.csv \
   --mean-intervals-csv results/s1_benchmark/replication/mean_ap_intervals.csv \
   --contrast-intervals-csv results/s1_benchmark/replication/paired_ap_inference.csv \
-  --output-dir /path/to/new-replication-figures
-python3 -s -B -m unittest discover -s source/tests -p test_s1_replication_publication.py
+  --output-dir /tmp/figures
 ```
 
-The statistics command requires every replication arm/world row and preserves required-AP missingness. It reproduces the complete exact conditional rank/Holm family and 20000 paired world bootstrap resamples with PCG64(2026101103). It never pools the original pilot, selects an arm or resamples candidates/initializations. Small arithmetic floating-point differences may occur across numerical-library versions; integer rank/tail counts and exact binary-rational p-values are inspectable. Plot interval inputs are checked against the complete saved world means. Both utilities protect existing outputs.
+## 5. Models, worlds and predictions
 
-The inference adapter's explicit optional `--world-registry /path/to/world-registry.json` argument supplies the separate prospective replication registry when used with separately available frozen inputs. Those inputs and weights remain withheld; this public interface does not make the empirical run reproducible from a clone. The manuscript's anonymous LaTeX/bibliography source is under `docs/tmlr/`. A genuine local TMLR style/template and working typesetting environment are still required; its SVG inclusion also requires a compatible vector conversion toolchain. Formatting and the ≤12-page main-text target excluding references/appendix have not been verified. No PDF binary is supplied and no template download is required by these arithmetic/plot commands.
+The worlds, fitted models and prediction files are distributed with the anonymous review supplement, not with this repository. With those files:
+
+- `source/scripts/check_s1_benchmark.py` defines candidate tensors, the 20 summary features, the four neural graph and complex models and the AP and AUROC metrics.
+- `source/scripts/train_s1_development.py`, `continue_s1_development.py` and `diagnose_s1_learning.py` reproduce training, continuation and the summary-MLP grid and microfits.
+- `source/scripts/evaluate_s1_heldout.py` runs label-blind inference from a world index, a model lock and a study configuration.
+- `source/scripts/run_s1.py` regenerates worlds. It needs a Java 11 JDK (`JAVA_HOME`), an AMLSim checkout at commit `7338a4b` and network access to fetch ten jars, which are checked against pinned SHA-256 values.
+
+Checkpoints written by the training scripts are pickled objects; load them only from sources you trust. The supplement ships neural weights as plain tensor dictionaries (`torch.load(..., weights_only=True)`) and the GBDT as its training matrix, because the GBDT fit is deterministic and takes under a second.
+
+## 6. Manuscript
+
+```sh
+cd docs/tmlr
+pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manuscript
+```
+
+Needs a TeX Live installation with `float`, `booktabs`, `tabularx`, `microtype`, `hyperref`, `lmodern` and `eso-pic`. The official TMLR style files (`tmlr.sty`, `tmlr.bst`, `fancyhdr.sty`) sit next to the source, and the figures are in `docs/tmlr/figures/`, so the directory is self-contained.
+
+## Legacy code
+
+`source/src/` and `source/scripts/run_amlworld_benchmark.py`, `run_elliptic_benchmark.py` and `run_integration_test.py` belong to earlier exploratory work on AMLworld and Elliptic++ and are not used by the benchmark paper. They need the `legacy` extra in `source/pyproject.toml`. Data paths are taken from arguments, from `AMLWORLD_DATA_DIR` / `ELLIPTIC_DATA_DIR`, or from `data/raw/` in the repository; nothing else is searched. The historical `old` tag preserves the earlier repository; its metrics are not results of the current study.

@@ -1,0 +1,36 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned dependencies (CPU-only PyTorch)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r source/requirements-models.txt
+          python -m pip install pandas
+      - name: Unit tests
+        run: python -B -m unittest discover -s source/tests -v
+      - name: Statistics reproduce the released tables
+        run: |
+          python -s -B source/scripts/reproduce_s1_statistics.py \
+            --world-ap-csv results/s1_benchmark/replication/ap_by_world.csv \
+            --output-json "$RUNNER_TEMP/statistics.json"
+      - name: Figures regenerate from the released tables
+        run: |
+          python -s -B source/scripts/plot_s1_results.py \
+            --metrics-csv results/s1_benchmark/metrics_by_world_initialization.csv \
+            --output-dir "$RUNNER_TEMP/figures"
+          python -s -B source/scripts/plot_s1_results.py --panel replication \
+            --metrics-csv results/s1_benchmark/replication/metrics_by_world_initialization.csv \
+            --mean-intervals-csv results/s1_benchmark/replication/mean_ap_intervals.csv \
+            --contrast-intervals-csv results/s1_benchmark/replication/paired_ap_inference.csv \
+            --output-dir "$RUNNER_TEMP/figures"

@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
-"""
+"""DEPRECATED: historical bootstrap/TOST interface, retained for historical replication only.
+
+This module is not used by the active thirty-world E3 replication. Active
+conditional inference uses exact Wilcoxon signed-rank distributions and Holm
+adjustment in reproduce_s1_statistics.py; marginal intervals use paired-world
+bootstrap resampling. The legacy p_value fields below are rounded, uncentered
+bootstrap tail fractions, can equal zero and are not qualified null-calibrated
+significance tests. Unequal cluster sizes also change the weighting. Do not
+use this interface for new confirmatory claims or replace historical outputs.
+
+Historical documentation follows; its assertions are not current qualification:
+
 Group-Level Clustered Bootstrap & TOST Practical Equivalence Statistical Engine.
 
 Implements:

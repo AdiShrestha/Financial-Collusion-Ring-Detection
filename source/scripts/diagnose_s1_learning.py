@@ -34,6 +34,8 @@ import matplotlib.pyplot as plt
 
 
 ROOT = Path(__file__).resolve().parents[2]
+SCRIPTS = Path(__file__).resolve().parent  # sibling scripts and ../configs, in the repository or the supplement
+CONFIGS = SCRIPTS.parent / "configs"
 ARMS = (
     "cellular_cwn_style_local",
     "simplicial_mpsn_style_local",
@@ -194,7 +196,7 @@ def import_module(path: Path, name: str):
 
 def load_helpers():
     global TRAIN_HELPERS, BENCH
-    TRAIN_HELPERS = import_module(ROOT / "source/scripts/train_s1_development.py", "s1_f_train_helpers")
+    TRAIN_HELPERS = import_module(SCRIPTS / "train_s1_development.py", "s1_f_train_helpers")
     BENCH = TRAIN_HELPERS.load_bench()
     return TRAIN_HELPERS, BENCH
 
@@ -486,9 +488,9 @@ def inspect_physical_world(world: dict, entry: dict, helper) -> dict:
 def all_input_paths(entries, index_path, config_path, failure_history_path=None, reference_json_path=None) -> list[Path]:
     paths = [index_path.resolve(strict=True), config_path.resolve(strict=True)]
     paths.extend([
-        (ROOT / "source/scripts/check_s1_benchmark.py").resolve(strict=True),
-        (ROOT / "source/scripts/train_s1_development.py").resolve(strict=True),
-        (ROOT / "source/configs/s1_matched_smoke.json").resolve(strict=True),
+        (SCRIPTS / "check_s1_benchmark.py").resolve(strict=True),
+        (SCRIPTS / "train_s1_development.py").resolve(strict=True),
+        (CONFIGS / "s1_matched_smoke.json").resolve(strict=True),
         Path(__file__).resolve(strict=True),
     ])
     for optional_path in (failure_history_path, reference_json_path):
@@ -1218,7 +1220,7 @@ def prepare_data(index_path: Path, config_path: Path, output_root: Path, write_a
         raise ValueError("S1-F Adam beta values differ")
 
     entries, excluded = resolve_worlds(index_path, spec)
-    raw_widths = strict_json(ROOT / "source/configs/s1_matched_smoke.json")["hidden_widths"]
+    raw_widths = strict_json(CONFIGS / "s1_matched_smoke.json")["hidden_widths"]
     if raw_widths != EXPECTED_WIDTHS:
         raise ValueError("unchanged S1-E hidden widths differ from the assigned S1-F contract")
     worlds = {}

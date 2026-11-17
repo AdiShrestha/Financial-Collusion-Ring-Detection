@@ -17,7 +17,7 @@ def fixture():
     for ai, arm in enumerate(plot.ARMS):
         for wi, world in enumerate(plot.WORLDS):
             for ii, setting in enumerate(plot.SETTINGS):
-                rows.append(dict(arm=arm, world=world, initialization=setting,
+                rows.append(dict(phase='heldout', arm=arm, world=world, initialization=setting,
                     ap=(ai + wi + ii) / 14, ap_undefined_reason='', auroc=.5, auroc_undefined_reason='',
                     bce=.7, candidate_count=9, positives=2, negatives=7,
                     true_positive=1, false_negative=1, true_negative=6, false_positive=1))
@@ -104,12 +104,19 @@ class SavedMetricPlots(unittest.TestCase):
         rows=fixture();rows[0].update(auroc='',auroc_undefined_reason='incorrect')
         with self.assertRaisesRegex(ValueError,'AUROC support'):self.load(rows)
 
+    def test_mixed_phase_rejected(self):
+        rows = fixture(); rows[0]['phase'] = 'replication'
+        with self.assertRaisesRegex(ValueError, 'phase'): self.load(rows)
+
     def test_svg_and_overwrite_guard(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             plot.make_plots(self.load(fixture()), root)
-            expected={'average_precision_by_world.svg','descriptive_ap_contrasts.svg'}
-            self.assertEqual({p.name for p in root.glob('*.svg')},expected)
+            expected={'average_precision_by_world','descriptive_ap_contrasts'}
+            self.assertEqual({p.stem for p in root.glob('*.svg')},expected)
+            self.assertEqual({p.stem for p in root.glob('*.pdf')},expected)
+            for path in sorted(root.glob('*.pdf')):
+                self.assertNotIn(str(root).encode(), path.read_bytes())
             for path in sorted(root.glob('*.svg')):
                 text = path.read_text()
                 self.assertIn('W1', text)

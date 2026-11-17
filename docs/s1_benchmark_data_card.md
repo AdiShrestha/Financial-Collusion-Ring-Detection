@@ -1,39 +1,46 @@
-# Data card: controlled simulated cycle recovery
+# Data card: controlled AMLSim cycle-membership benchmark
 
-## Purpose and provenance
+## Purpose
 
-The target is exact complete persisted generated CYCLE tuple membership, including both SAR and non-SAR instances. This is a controlled synthetic proxy benchmark. It supplies no claim about actual laundering, legitimate activity, currency conservation, independent institutions or deployment. Earlier AMLworld and Elliptic studies remain separate exploratory context.
+The benchmark asks a model to rank enumerated candidate cycles by whether each one exactly matches a generated laundering-cycle instance in a simulated transaction world. It is a controlled synthetic benchmark for studying evaluation practice. It makes no claim about real laundering, legitimate activity or deployment.
 
-The fixed mechanism derives from IBM AMLSim at revision `7338a4bcb1af9bcfea2201ad7daccfe2a4d569ca`. It uses disclosed controlled input generation, Java runtime/build variants and observation/persistence instrumentation. Upstream authors and source license are cited in the manuscript. All realized source/observation joins were retained locally. The source license does not grant distribution of the project's raw/model artifacts.
+## How worlds are produced
 
-## Design and units
+- **Simulator.** IBM AMLSim at commit `7338a4bcb1af9bcfea2201ad7daccfe2a4d569ca`, compiled for Java 8 and run on a Java 11 runtime, with a logging patch that records every attempted and persisted transfer. AMLSim's own Python graph generator is not used: `source/scripts/run_s1.py` writes the simulator's input tables directly. The ten third-party jars it needs are verified against pinned SHA-256 values.
+- **Template.** 32 accounts and 120 steps. Six cycle alerts (lengths 3, 3, 4, 4, 5 and 6; two each with fixed-interval, ordered-random and unordered schedules), one fan-in and one fan-out alert, and periodic background transfers. Every cycle alert has the same alert window, steps 0 to 29.
+- **What the seed changes.** Which account identifiers play which role, initial balances, and the simulator's draws of start steps, transfer times and amounts. Models and summary features never use account identifiers, so worlds differ in timing and amounts only.
+- **Worlds.** 40 in total: six development worlds (seeds 101, 103, 107, 109 for training; 113, 127 for validation), four pilot worlds W1–W4 and thirty held-out worlds W5–W34. World identifiers contain the seed (`S1_test_<seed>`). Held-out seeds were drawn uniformly without replacement from 1 to 2³¹ − 1 after excluding all earlier seeds, and registered before generation.
 
-The design has 32 accounts, 120 native simulator steps, 6 CYCLE templates and 2 noncycle alert templates, plus background events. Generation used the same tiny template with separate registered random draws. 4 training worlds and 2 validation worlds were used during development; aliases D1–D4 and D5–D6 keep those scopes distinct. The 4 prospective worlds W1–W4 follow registered order; I1–I5 follow initialization-setting order. The exact seed/namespace/state crosswalk remains private. A realization is the evaluation unit conditional on this fixed design. Rows, initializations and graph fragments do not multiply the number of worlds.
+## Candidates and labels
 
-The candidate census includes every directed simple account cycle of lengths 2–12, and every combination choosing one physical transfer per directed arc. Rotations are canonicalized without reversing direction. Parallel equal-content transfers have distinct identities, reciprocal cycles are retained and self-loops remain in the world context. Cash-in/out events are excluded from candidate arcs. Overflow stops without clipping at the declared 128 noncash-event/10000 tuple guards; no replacement draw is allowed.
+A candidate is a directed simple account cycle (length 2–12, modulo rotation) together with one logged non-cash transfer per arc. Parallel transfers stay distinct. A candidate is a **member** if it exactly matches one complete logged generated cycle instance, whether or not the simulator flags that instance as a SAR. A nonmember is outside the annotation target; it is not verified legitimate activity.
 
-Each original pilot realization produced 77 physical events, 78 candidate tuples, 6 positives and 72 nonmembers. Actual candidate prevalence is 0.0769; no acceptance rule demanded these counts. Native amounts use emitted persistence truncation, and times are integer simulator steps scaled by the configured step count. There is no wall-clock interpretation or conversion to real currency.
+Every one of the 40 worlds has the same frame:
 
-## Annotations and permitted inputs
+| Cycle length | 2 | 3 | 4 | 5 | 6 | Total |
+|---|---|---|---|---|---|---|
+| Candidates | 36 | 14 | 14 | 7 | 7 | 78 |
+| Members | 0 | 2 | 2 | 1 | 1 | 6 |
+| Nonmembers | 36 | 12 | 12 | 6 | 6 | 72 |
 
-Positives require exact complete physical-event equality to a persisted generated CYCLE, reconciled through intended membership, finalized schedule, arc attempts and native event rows. Incomplete intentions cannot be treated as successful positives. Nonmembership means only absence from these exact annotations. SAR flags do not define the target.
+The 36 two-cycles come from one reciprocal pair of background accounts. Each generated cycle's first arc also carries six periodic background transfers, so each cycle yields seven tuples: the member and six decoys that differ only in the first-arc transfer.
 
-Predictors see full-world event topology/attributes, selected-event and central-account masks, and the candidate's legitimate derived representations. Account/event identifiers serve joins and coordinate maps rather than predictor channels. Labels, annotation IDs, SAR, seed, world identity and candidate rank are excluded from features. Summary baselines receive lossy fixed summaries of permitted observations; graph/complex models retain their distinct full-world representation paths.
+## Known shortcut
 
-The GBDT reads staged round 70 of retained 800-round objects, with 7 maximum leaves, learning rate 0.1 and minimum leaf sample count 2. Summary neural normalization was fit only to the original training frame with population SD; exactly constant features use unit scale. Transformation is float64 and model tensors float32. No holdout transform fitting occurs.
+AMLSim's cycle typology places the first transfer of every cycle at the start of its alert window and another at the end. In this template every member therefore spans exactly 29 steps, and its first-arc transfer is its earliest. The rule "selected-event span equals 29" has recall 1 by construction; its mean AP is 0.839 on the development worlds and 0.861 on W5–W34. Anyone using these worlds should report this rule and the cycle-length reference (AP 1/7, AUROC 0.75) beside any model.
 
-## Access, custody and missing analyses
+## Inputs available to models
 
-Generation reconciliation is annotation-aware. Prediction uses its blind inventory; every model–world block is bound before the metric label join. This is same-user local custody, without external label sealing or witnessed execution. The completed review used saved-metric arithmetic/native source joins in the same session after conclusions were exposed. This supports local consistency, not cold or externally independent assurance.
+Event times (step / 120), log(1 + amount), transfer direction, the candidate's event and account masks, and the whole world's topology. Labels, alert flags, account and event identifiers, seeds and world identity are excluded. The 20 summary features are listed in the manuscript.
 
-All evaluation worlds are now exposed. The original pilot remains descriptive with no retrospectively added p-values or intervals. The separate prospective replication reports conditional rank tests and marginal world-bootstrap intervals for 30 new realizations. Neural comparative learning/stability, feature/readout/tuning parity, causal interventions, root AMLworld precision, external PH parity and broad financial generalization remain unresolved. Nominal realization count is not qualification of the original population design. Candidates/settings are not independent units.
+## Custody
 
-## Availability and intended use
+Models and the analysis plan were fixed before W5–W34 were generated. Generation uses labels (it must reconcile transfers with generated instances); prediction read only observation and topology files, and all 900 prediction files were hashed before a separate process read the labels. Everything ran on one machine under one user account, without external registration or audit.
 
-The publication candidate contains complete aggregate model/world/setting metrics, class counts, fixed-threshold confusions, separate development tables and source-generated SVG figures. It excludes candidate identities, labels/logits, raw world rows, exact seed literals, checkpoints and operational files. Public plots/fixtures can be reproduced from those aggregate rows; the empirical comparison requires withheld inputs/weights. Original public project software is licensed under Apache License 2.0; the manuscript, documentation, aggregate tables and figures are licensed under CC BY 4.0. Third-party rights and credits remain under their original terms. These licenses cover released public material and do not release withheld worlds or weights. The work was conducted independently, without university funding or institutional support. This benchmark is intended for bounded methods inspection and negative-result reporting, not real financial decision making.
+## Availability and licence
 
-## Separate prospective replication
+The anonymous review supplement contains all 40 worlds (candidate observations, identities, labels and topology files), the fitted models, all prediction files, the analysis plan and every result table. The public repository contains the code and the aggregate result tables. Original software is Apache-2.0; data, documentation, tables and figures are CC BY 4.0. AMLSim keeps its own Apache-2.0 licence.
 
-The W1–W4 study was prospectively registered as a four-world study; “Pre-Registered Primary Pilot” is a retrospective descriptor assigned after exposure. W5–W34 were registered before generation and evaluated with the same 30 previously selected states and unchanged transform/checkpoint/threshold policies. All 900 prediction blocks were completed and bound before separate metric label access. The two panels are not pooled. Every new realized census contained 78 candidates and 6 exact members; all actual census rows remain in the replication chance table. Shared accounts, templates and schedules limit the scope to realizations of one controlled design.
+## Intended use and limits
 
-The replication exports every model/world/setting endpoint and all prespecified contrasts. Exact signed-rank tests use conditional sign symmetry and assumed independent realizations; they do not specifically test arithmetic mean differences. Paired world percentile intervals are marginal, not simultaneous or a precision/power guarantee. Actual-census constant-score AP and uniform-random tie-free AP are expectations, not floors. Review used distinct arithmetic in the same exposed local session, without external assurance. Full empirical reproduction remains unavailable without the withheld worlds and weights.
+Use for studying benchmark construction, shortcut audits and evaluation protocols. Do not use scores from this benchmark as evidence of real-world AML detection ability, and never to make decisions about individuals. One template, one training corpus of 24 members and fixed models limit every conclusion.

@@ -1,3 +1,5 @@
+> **Historical.** This file describes earlier exploratory work on IBM AMLworld (LI-Small), not the AMLSim cycle benchmark. It is kept for the record; see the README for the current study.
+
 # Development findings
 
 The verified LI-Small development frame contains 6,924,049 source transactions, 5,810 directed cycle families and 96,361,568,254 implicit selected-transaction tuples. Exact source identities resolve 10 of 12 supplied CYCLE instances in the fixed length-2–12 frame. Both length-13 instances remain in the complete supplied-instance denominator.

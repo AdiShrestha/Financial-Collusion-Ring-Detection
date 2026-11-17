@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Score a registered S1 holdout with frozen states; this process never reads labels."""
+"""Score a registered S1 holdout with frozen states; this process never reads labels.
+
+Trusted local inputs only: pickle.load and torch.load(weights_only=False) can
+execute code embedded in checkpoints. Loading the hash-pinned benchmark
+helper also executes Python source. Accept model locks, serialized states
+and helper modules only from a trusted local operator and provenance chain.
+SHA-256 binds bytes to a supplied manifest; it does not authenticate an
+untrusted party who supplies both manifest and payload. This interface is
+not a sandbox or a safe loader for third-party uploads. Locked evidence is
+left unchanged; no serialization migration is performed here."""
 from __future__ import annotations
 
 import argparse

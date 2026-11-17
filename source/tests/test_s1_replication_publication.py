@@ -152,7 +152,8 @@ class ReplicationTables(unittest.TestCase):
             out = root / 'figures'
             plot.make_replication_plots(rows, mean_path, contrast_path, out)
             svgs = list(out.glob('*.svg'))
-            self.assertEqual(len(svgs), 3)
+            self.assertEqual({p.stem for p in svgs}, {'replication_ap_by_world', 'replication_means_and_contrasts'})
+            self.assertEqual({p.stem for p in out.glob('*.pdf')}, {p.stem for p in svgs})
             all_worlds = (out / 'replication_ap_by_world.svg').read_text()
             for world in stats.WORLDS:
                 self.assertIn('>' + world + '<', all_worlds)
@@ -160,7 +161,7 @@ class ReplicationTables(unittest.TestCase):
                 text = path.read_text()
                 self.assertNotIn(str(root), text)
                 self.assertNotIn('<dc:date>', text)
-            self.assertIn('marginal 95%', (out / 'replication_mean_ap_intervals.svg').read_text())
+            self.assertIn('pointwise 95%', (out / 'replication_means_and_contrasts.svg').read_text())
             with self.assertRaises(FileExistsError):
                 plot.make_replication_plots(rows, mean_path, contrast_path, out)
 

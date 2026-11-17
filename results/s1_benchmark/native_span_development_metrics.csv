@@ -1,0 +1,7 @@
+phase,world,score_rule,ap,auroc_half_tie,candidate_count,positive_count,false_matches
+exploratory_development,S1_dev_101,native_selected_event_span_equals_29,0.8571428571428571,0.9930555555555556,78,6,1
+exploratory_development,S1_dev_103,native_selected_event_span_equals_29,0.8571428571428571,0.9930555555555556,78,6,1
+exploratory_development,S1_dev_107,native_selected_event_span_equals_29,0.75,0.9861111111111112,78,6,2
+exploratory_development,S1_dev_109,native_selected_event_span_equals_29,0.8571428571428571,0.9930555555555556,78,6,1
+exploratory_development,S1_dev_113,native_selected_event_span_equals_29,0.8571428571428571,0.9930555555555556,78,6,1
+exploratory_development,S1_dev_127,native_selected_event_span_equals_29,0.8571428571428571,0.9930555555555556,78,6,1

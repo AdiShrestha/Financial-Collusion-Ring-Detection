@@ -1,3 +1,5 @@
+> **Historical.** This file describes earlier exploratory work on IBM AMLworld (LI-Small), not the AMLSim cycle benchmark. It is kept for the record; see the README for the current study.
+
 # Methods and limitations
 
 The primary target is equality to a supplied IBM AMLworld CYCLE transaction instance. A candidate selects exactly one original transaction on each arc of a directed simple account cycle. Accounts are identified by the original bank token paired with the original account token. Strings remain literal: numerical conversion or removal of leading zeros changes identity and is not permitted.

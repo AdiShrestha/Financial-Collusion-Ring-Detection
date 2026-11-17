@@ -4,7 +4,7 @@ All numeric values are exported from retained measurements at full JSON/CSV roun
 
 AP uses complete equal-logit threshold groups without identifier tie breaking; AUROC gives half credit for ties; BCE uses stable logit arithmetic. AP is unavailable for no-positive support, AUROC for a single class. Null AP blocks required aggregate/contrast output rather than removing an unfavorable world. The retained holdout has complete defined metrics. Counts are integer physical-candidate counts and fixed-zero-logit confusions. No empirical score computation is performed by the plotting utility.
 
-World/initialization aliases preserve registered order. D aliases identify development worlds only. Mean rows average metrics across all settings, then weight every world equally. Original pilot contrasts are descriptive neural minus fixed-summary GBDT, without retrospectively added p-values or intervals. Separate replication tables carry conditional inference and marginal intervals. No raw labels, predictions or exact seed/state identities are distributed.
+World/initialization aliases preserve registered order. D aliases identify development worlds only. Mean rows average metrics across all settings, then weight every world equally. Original pilot contrasts are descriptive neural minus fixed-summary GBDT, without retrospectively added p-values or intervals. Separate replication tables carry conditional inference and marginal intervals. Candidate-level labels, predictions, worlds and fitted models are distributed with the anonymous review supplement, not in this repository.
 
 ## metrics_by_world_initialization.csv
 
@@ -219,3 +219,13 @@ Original `phase=heldout` rows refer only to W1–W4 and remain byte-identical. N
 | `rank_rounding_decimal_places`, `test_status` | Registered rounding scope and exact/degenerate status; all-zero tests return unit p-value. |
 
 `replication/chance_references.csv` has one actual-census row per new world: candidate/positive counts, prevalence, constant-score AP, uniform-random tie-free expected AP and undefined reason. References are expectations, not hard lower bounds. `replication/summary.json` records the full separate panel, estimates, intervals, rank diagnostics and statistical/reproduction limitations. The bootstrap uses 20000 common world resamples with PCG64(2026101103), linear marginal percentile endpoints, and no candidate/setting resampling.
+
+## native_span_development_metrics.csv (Table D6)
+
+Development-world results of the rule "selected-event span equals 29 steps": one row per development world with `ap` (grouped-threshold AP), `auroc_half_tie`, `candidate_count`, `positive_count` and `false_matches` (nonmembers that also span 29 steps).
+
+## posthoc/ (exploratory analyses run after the held-out results were final)
+
+- `span_rule_by_world.csv`: one row per world (development, pilot, held-out) with the frame size, member count, the distinct spans of members (always 29), the number of coincidental span-29 nonmembers, and AP and AUROC of the span rule and of the cycle-length reference. Produced by `source/scripts/posthoc_span_rule.py`.
+- `gbdt_ablation_by_world.csv`: GBDT refits on feature subsets; one row per subset and pilot or held-out world with the selected round, the validation BCE used to select it, AP and AUROC. Produced by `source/scripts/posthoc_gbdt_ablation.py`; the all-feature refit reproduces the published GBDT.
+- `summary.csv`: equal-world means of the two files above (paper Table 7).

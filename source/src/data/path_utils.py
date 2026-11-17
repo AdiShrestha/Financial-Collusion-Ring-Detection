@@ -1,166 +1,87 @@
 """
-Path resolution utilities for raw datasets across the Toporing Engine.
+Path resolution for the legacy AMLworld and Elliptic++ datasets.
 
-Guarantees deterministic, robust resolution of real datasets regardless of current working directory:
-- Project root (the directory containing source/ and data/)
-- Subdirectory (e.g. source/, source/scripts/, etc.)
-- Custom paths or environment variables
+Resolution order, with no other fallbacks:
+1. an explicit path argument (absolute, or relative to the current directory);
+2. a directory given by an environment variable
+   (``AMLWORLD_DATA_DIR`` or ``ELLIPTIC_DATA_DIR``);
+3. the repository-relative default under ``data/raw/``.
+
+Nothing outside these locations is searched, so data can never be picked up
+from an unrelated directory on the machine.
 """
 
 from pathlib import Path
 from typing import Optional, Tuple, Union
 import os
 
+PathLike = Union[str, Path]
+
 
 def get_project_root() -> Path:
-    """Returns the absolute path to the project root (Toporing Engine)."""
-    # This file is located at <project_root>/source/src/data/path_utils.py
-    # parents: [0]=src/data, [1]=src, [2]=source, [3]=Toporing Engine
+    """Return the repository root (the directory that contains ``source/``)."""
+    # This file is located at <root>/source/src/data/path_utils.py.
     return Path(__file__).resolve().parents[3]
 
 
+def _explicit(path: Optional[PathLike], what: str) -> Optional[Path]:
+    if path is None or not str(path).strip():
+        return None
+    p = Path(path).expanduser()
+    if not p.is_file():
+        raise FileNotFoundError(f"{what} not found: {path}")
+    return p.resolve()
+
+
+def _data_dir(env_var: str, default: Path) -> Path:
+    value = os.environ.get(env_var, "").strip()
+    return Path(value).expanduser().resolve() if value else default
+
+
+def _optional_sibling(explicit: Optional[PathLike], directory: Path, name: str, what: str) -> Optional[Path]:
+    found = _explicit(explicit, what)
+    if found is not None:
+        return found
+    candidate = directory / name
+    return candidate.resolve() if candidate.is_file() else None
+
+
 def resolve_amlworld_paths(
-    trans_csv_path: Optional[Union[str, Path]] = None,
-    patterns_txt_path: Optional[Union[str, Path]] = None,
+    trans_csv_path: Optional[PathLike] = None,
+    patterns_txt_path: Optional[PathLike] = None,
 ) -> Tuple[Path, Optional[Path]]:
-    """
-    Resolves paths to the IBM AMLworld transaction CSV and patterns file.
-    Raises FileNotFoundError if trans_csv_path is not found.
-    """
-    root = get_project_root()
-    
-    # 1. Resolve transaction CSV
-    if trans_csv_path is not None and str(trans_csv_path).strip():
-        p = Path(trans_csv_path)
-        if p.is_file():
-            resolved_trans = p.resolve()
-        elif (root / p).is_file():
-            resolved_trans = (root / p).resolve()
-        elif (Path.cwd() / p).is_file():
-            resolved_trans = (Path.cwd() / p).resolve()
-        elif (Path.cwd().parent / p).is_file():
-            resolved_trans = (Path.cwd().parent / p).resolve()
-        else:
+    """Resolve the AMLworld transaction CSV (required) and patterns file (optional)."""
+    directory = _data_dir("AMLWORLD_DATA_DIR", get_project_root() / "data" / "raw" / "ibm_amlworld")
+    trans = _explicit(trans_csv_path, "AMLworld transaction CSV")
+    if trans is None:
+        candidate = directory / "HI-Small_Trans.csv"
+        if not candidate.is_file():
             raise FileNotFoundError(
-                f"[INV-001 / INV-012 Violation] Specified transaction CSV not found: {trans_csv_path}"
+                f"AMLworld transactions not found at {candidate}. Pass the path explicitly "
+                "or set AMLWORLD_DATA_DIR. No synthetic fallback is used."
             )
-    else:
-        candidates = [
-            root / "data" / "raw" / "ibm_amlworld" / "HI-Small_Trans.csv",
-            Path.cwd() / "data" / "raw" / "ibm_amlworld" / "HI-Small_Trans.csv",
-            Path.cwd().parent / "data" / "raw" / "ibm_amlworld" / "HI-Small_Trans.csv",
-            Path.cwd().parent.parent / "data" / "raw" / "ibm_amlworld" / "HI-Small_Trans.csv",
-            Path.home() / "Desktop" / "Test" / "data" / "raw" / "ibm_amlworld" / "HI-Small_Trans.csv",
-            Path.home() / "Desktop" / "Toporing Engine" / "data" / "raw" / "ibm_amlworld" / "HI-Small_Trans.csv",
-        ]
-        resolved_trans = None
-        for c in candidates:
-            if c.is_file():
-                resolved_trans = c.resolve()
-                break
-        if resolved_trans is None:
-            raise FileNotFoundError(
-                "[INV-001 / INV-012 Violation] Real IBM AMLworld transactions not found. "
-                "Expected at 'data/raw/ibm_amlworld/HI-Small_Trans.csv'. "
-                "No mock data fallback is permitted in production."
-            )
-
-    # 2. Resolve patterns file
-    resolved_patterns = None
-    if patterns_txt_path is not None and str(patterns_txt_path).strip():
-        p = Path(patterns_txt_path)
-        if p.is_file():
-            resolved_patterns = p.resolve()
-        elif (root / p).is_file():
-            resolved_patterns = (root / p).resolve()
-        elif (Path.cwd() / p).is_file():
-            resolved_patterns = (Path.cwd() / p).resolve()
-        elif (Path.cwd().parent / p).is_file():
-            resolved_patterns = (Path.cwd().parent / p).resolve()
-        else:
-            raise FileNotFoundError(f"Specified AMLworld pattern file not found: {patterns_txt_path}")
-    else:
-        # Default alongside the trans csv or in raw dir
-        sibling = resolved_trans.parent / "HI-Small_Patterns.txt"
-        if sibling.is_file():
-            resolved_patterns = sibling.resolve()
-        else:
-            candidates = [
-                root / "data" / "raw" / "ibm_amlworld" / "HI-Small_Patterns.txt",
-                Path.cwd() / "data" / "raw" / "ibm_amlworld" / "HI-Small_Patterns.txt",
-                Path.cwd().parent / "data" / "raw" / "ibm_amlworld" / "HI-Small_Patterns.txt",
-            ]
-            for c in candidates:
-                if c.is_file():
-                    resolved_patterns = c.resolve()
-                    break
-
-    return resolved_trans, resolved_patterns
+        trans = candidate.resolve()
+    patterns = _optional_sibling(patterns_txt_path, trans.parent, "HI-Small_Patterns.txt",
+                                 "AMLworld pattern file")
+    return trans, patterns
 
 
 def resolve_elliptic_paths(
-    edgelist_path: Optional[Union[str, Path]] = None,
-    features_path: Optional[Union[str, Path]] = None,
-    classes_path: Optional[Union[str, Path]] = None,
+    edgelist_path: Optional[PathLike] = None,
+    features_path: Optional[PathLike] = None,
+    classes_path: Optional[PathLike] = None,
 ) -> Tuple[Path, Optional[Path], Optional[Path]]:
-    """
-    Resolves paths to the Elliptic++ Actor files.
-    Raises FileNotFoundError if edgelist_path is not found.
-    """
-    root = get_project_root()
-    base_dir = root / "data" / "raw" / "elliptic_actors"
-
-    # 1. Resolve edgelist
-    if edgelist_path is not None and str(edgelist_path).strip():
-        p = Path(edgelist_path)
-        if p.is_file():
-            resolved_edgelist = p.resolve()
-        elif (root / p).is_file():
-            resolved_edgelist = (root / p).resolve()
-        elif (Path.cwd() / p).is_file():
-            resolved_edgelist = (Path.cwd() / p).resolve()
-        elif (Path.cwd().parent / p).is_file():
-            resolved_edgelist = (Path.cwd().parent / p).resolve()
-        else:
-            raise FileNotFoundError(f"Elliptic++ edgelist not found: {edgelist_path}")
-    else:
-        candidates = [
-            base_dir / "AddrAddr_edgelist.csv",
-            Path.cwd() / "data" / "raw" / "elliptic_actors" / "AddrAddr_edgelist.csv",
-            Path.cwd().parent / "data" / "raw" / "elliptic_actors" / "AddrAddr_edgelist.csv",
-            Path.home() / "Desktop" / "Test" / "data" / "raw" / "elliptic_actors" / "AddrAddr_edgelist.csv",
-            Path.home() / "Desktop" / "Toporing Engine" / "data" / "raw" / "elliptic_actors" / "AddrAddr_edgelist.csv",
-        ]
-        resolved_edgelist = None
-        for c in candidates:
-            if c.is_file():
-                resolved_edgelist = c.resolve()
-                break
-        if resolved_edgelist is None:
+    """Resolve the Elliptic++ actor edge list (required) and feature/class files (optional)."""
+    directory = _data_dir("ELLIPTIC_DATA_DIR", get_project_root() / "data" / "raw" / "elliptic_actors")
+    edgelist = _explicit(edgelist_path, "Elliptic++ edgelist")
+    if edgelist is None:
+        candidate = directory / "AddrAddr_edgelist.csv"
+        if not candidate.is_file():
             raise FileNotFoundError(
-                "Elliptic++ edgelist not found. Expected at 'data/raw/elliptic_actors/AddrAddr_edgelist.csv'."
+                f"Elliptic++ edgelist not found at {candidate}. Pass the path explicitly "
+                "or set ELLIPTIC_DATA_DIR."
             )
-
-    # 2. Resolve features
-    resolved_features = None
-    if features_path is not None:
-        p = Path(features_path)
-        if p.is_file():
-            resolved_features = p.resolve()
-    else:
-        default_feat = resolved_edgelist.parent / "wallets_features.csv"
-        if default_feat.is_file():
-            resolved_features = default_feat.resolve()
-
-    # 3. Resolve classes
-    resolved_classes = None
-    if classes_path is not None:
-        p = Path(classes_path)
-        if p.is_file():
-            resolved_classes = p.resolve()
-    else:
-        default_classes = resolved_edgelist.parent / "wallets_classes.csv"
-        if default_classes.is_file():
-            resolved_classes = default_classes.resolve()
-
-    return resolved_edgelist, resolved_features, resolved_classes
+        edgelist = candidate.resolve()
+    features = _optional_sibling(features_path, edgelist.parent, "wallets_features.csv", "Elliptic++ features")
+    classes = _optional_sibling(classes_path, edgelist.parent, "wallets_classes.csv", "Elliptic++ classes")
+    return edgelist, features, classes

@@ -86,11 +86,42 @@
 
 # Source datasets are acquired separately
 /data/*
-# Purpose-selected scientific documentation
+# Documentation: explicit list of released files
 /docs/*
-!/docs/methods.md
 !/docs/reproduction.md
-!/docs/development_findings.md
-# Purpose-selected summaries
+!/docs/licensing.md
+!/docs/s1_benchmark_data_card.md
+!/docs/s1_results_dictionary.md
+!/docs/historical_amlworld_methods.md
+!/docs/historical_amlworld_findings.md
+!/docs/tmlr/
+/docs/tmlr/*
+!/docs/tmlr/manuscript.tex
+!/docs/tmlr/references.bib
+# Result tables: the benchmark tables and the historical summary
 /results/*
 !/results/development_summary.json
+!/results/s1_benchmark/
+# Licence texts
+!/docs/licenses/
+# Model checkpoints, serialized objects and bulk data are never committed
+**/*.pt
+**/*.pth
+**/*.ckpt
+**/*.safetensors
+**/*.pkl
+**/*.pickle
+**/*.joblib
+**/*.npz
+**/*.parquet
+**/*.feather
+**/*.zip
+# LaTeX build products
+**/*.aux
+**/*.bbl
+**/*.blg
+**/*.log
+**/*.out
+**/*.synctex.gz
+**/*.fdb_latexmk
+**/*.fls
